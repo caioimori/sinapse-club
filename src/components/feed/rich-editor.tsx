@@ -48,7 +48,7 @@ export function RichEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-invert prose-sm max-w-none min-h-[120px] px-4 py-3 focus:outline-none [&_p.is-editor-empty:first-child::before]:text-muted-foreground [&_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_p.is-editor-empty:first-child::before]:float-left [&_p.is-editor-empty:first-child::before]:h-0 [&_p.is-editor-empty:first-child::before]:pointer-events-none",
+          "prose dark:prose-invert prose-sm max-w-none min-h-[120px] px-4 py-3 focus:outline-none [&_p.is-editor-empty:first-child::before]:text-muted-foreground [&_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_p.is-editor-empty:first-child::before]:float-left [&_p.is-editor-empty:first-child::before]:h-0 [&_p.is-editor-empty:first-child::before]:pointer-events-none",
       },
     },
   });

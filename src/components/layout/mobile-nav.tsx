@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, Calendar, Search, User } from "lucide-react";
+import { Home, Search, Bell, User, PenSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/feed", label: "Home", icon: Home },
-  { href: "/courses", label: "Cursos", icon: BookOpen },
-  { href: "/calendar", label: "Agenda", icon: Calendar },
   { href: "/search", label: "Buscar", icon: Search },
+  { href: "/notifications", label: "Alertas", icon: Bell },
   { href: "/profile", label: "Perfil", icon: User },
 ];
 

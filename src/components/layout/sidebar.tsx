@@ -30,8 +30,8 @@ const spaces = [
 ];
 
 const navItems = [
-  { href: "/courses", name: "Cursos", icon: BookOpen },
-  { href: "/calendar", name: "Calendario", icon: Calendar },
+  // { href: "/courses", name: "Cursos", icon: BookOpen },     // MVP: forum-only, courses later
+  // { href: "/calendar", name: "Calendario", icon: Calendar }, // MVP: forum-only, calendar later
   { href: "/settings", name: "Configuracoes", icon: Settings },
 ];
 

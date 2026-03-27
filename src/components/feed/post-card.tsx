@@ -252,7 +252,7 @@ export function PostCard({
         {/* Content */}
         <div
           className={cn(
-            "prose prose-invert prose-sm max-w-none",
+            "prose dark:prose-invert prose-sm max-w-none",
             "[&_a]:text-sinapse-cyan-400 [&_code]:text-sinapse-purple-300 [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded",
             !compact && "line-clamp-[12]"
           )}
