@@ -4,7 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Heart, MessageCircle, Bookmark, Share2, Globe, MoreHorizontal } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  Globe,
+  MoreHorizontal,
+  Bookmark,
+  ExternalLink,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,32 +26,50 @@ interface PostAuthor {
   role: string;
 }
 
-interface PostCardProps {
+interface QuotedPost {
+  id: string;
+  title: string | null;
+  content: string;
+  author: PostAuthor;
+  created_at: string;
+}
+
+export interface PostCardProps {
   id: string;
   title: string | null;
   content: string;
   type: string;
   author: PostAuthor;
-  space: { name: string; slug: string; icon: string | null };
+  space?: { name: string; slug: string; icon: string | null };
   likes_count: number;
   comments_count: number;
+  reposts_count?: number;
+  replies_count?: number;
   created_at: string;
   is_liked?: boolean;
   is_saved?: boolean;
+  is_reposted?: boolean;
   // curated-specific
   source?: string | null;
   source_url?: string | null;
   original_text?: string | null;
   translated_text?: string | null;
+  // repost/quote
+  repost_of?: QuotedPost | null;
+  quote_of?: QuotedPost | null;
+  // reply context
+  reply_to_author?: string | null;
+  // display options
+  compact?: boolean;
 }
 
-const sourceIcons: Record<string, string> = {
-  x: "𝕏",
-  reddit: "🤖",
-  rss: "📄",
-  docs: "📄",
-  youtube: "🎥",
-  newsletter: "📧",
+const sourceIcons: Record<string, { icon: string; label: string; color: string }> = {
+  x: { icon: "𝕏", label: "X", color: "text-white" },
+  reddit: { icon: "↑", label: "Reddit", color: "text-orange-400" },
+  rss: { icon: "◉", label: "Blog", color: "text-emerald-400" },
+  docs: { icon: "◉", label: "Docs", color: "text-blue-400" },
+  youtube: { icon: "▶", label: "YouTube", color: "text-red-400" },
+  newsletter: { icon: "✉", label: "Newsletter", color: "text-purple-400" },
 };
 
 export function PostCard({
@@ -54,63 +81,76 @@ export function PostCard({
   space,
   likes_count,
   comments_count,
+  reposts_count = 0,
+  replies_count = 0,
   created_at,
   is_liked = false,
   is_saved = false,
+  is_reposted = false,
   source,
   source_url,
   original_text,
   translated_text,
+  repost_of,
+  quote_of,
+  reply_to_author,
+  compact = false,
 }: PostCardProps) {
   const [liked, setLiked] = useState(is_liked);
   const [saved, setSaved] = useState(is_saved);
+  const [reposted, setReposted] = useState(is_reposted);
   const [likes, setLikes] = useState(likes_count);
+  const [reposts, setReposts] = useState(reposts_count);
   const [showOriginal, setShowOriginal] = useState(false);
   const supabase = createClient();
 
-  async function toggleLike() {
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setLikes((prev) => (newLiked ? prev + 1 : prev - 1));
+  const timeAgo = formatDistanceToNow(new Date(created_at), {
+    addSuffix: false,
+    locale: ptBR,
+  });
 
-    if (newLiked) {
-      await (supabase as any).from("reactions").insert({
-        user_id: (await supabase.auth.getUser()).data.user!.id,
-        target_type: "post",
-        target_id: id,
-        type: "like",
-      });
+  async function toggleLike() {
+    setLiked(!liked);
+    setLikes((prev) => (liked ? prev - 1 : prev + 1));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (!liked) {
+      await (supabase as any).from("reactions").insert({ user_id: user.id, target_type: "post", target_id: id, type: "like" });
     } else {
-      await (supabase as any)
-        .from("reactions")
-        .delete()
-        .match({ target_type: "post", target_id: id, type: "like" });
+      await (supabase as any).from("reactions").delete().match({ target_type: "post", target_id: id, type: "like", user_id: user.id });
+    }
+  }
+
+  async function toggleRepost() {
+    setReposted(!reposted);
+    setReposts((prev) => (reposted ? prev - 1 : prev + 1));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (!reposted) {
+      // Get the default space for reposts
+      const { data: space } = await (supabase as any).from("spaces").select("id").eq("slug", "ai-news").single();
+      if (space) {
+        await (supabase as any).from("posts").insert({
+          author_id: user.id,
+          space_id: space.id,
+          content: "",
+          type: "repost",
+          repost_of: id,
+        });
+      }
     }
   }
 
   async function toggleSave() {
-    const newSaved = !saved;
-    setSaved(newSaved);
-
-    if (newSaved) {
-      await (supabase as any).from("reactions").insert({
-        user_id: (await supabase.auth.getUser()).data.user!.id,
-        target_type: "post",
-        target_id: id,
-        type: "save",
-      });
+    setSaved(!saved);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    if (!saved) {
+      await (supabase as any).from("reactions").insert({ user_id: user.id, target_type: "post", target_id: id, type: "save" });
     } else {
-      await (supabase as any)
-        .from("reactions")
-        .delete()
-        .match({ target_type: "post", target_id: id, type: "save" });
+      await (supabase as any).from("reactions").delete().match({ target_type: "post", target_id: id, type: "save", user_id: user.id });
     }
   }
-
-  const timeAgo = formatDistanceToNow(new Date(created_at), {
-    addSuffix: true,
-    locale: ptBR,
-  });
 
   const displayContent = type === "curated" && showOriginal && original_text
     ? original_text
@@ -118,108 +158,191 @@ export function PostCard({
       ? translated_text
       : content;
 
+  // Pure repost (no content, just sharing)
+  if (type === "repost" && repost_of) {
+    return (
+      <div className="border-b border-border">
+        <div className="flex items-center gap-2 px-4 pt-3 text-xs text-muted-foreground">
+          <Repeat2 className="h-3.5 w-3.5" />
+          <Link href={`/profile/${author.username}`} className="hover:underline font-medium">
+            {author.display_name || author.username}
+          </Link>
+          <span>repostou</span>
+        </div>
+        <PostCard {...(repost_of as any)} compact />
+      </div>
+    );
+  }
+
   return (
-    <article className="rounded-xl border border-border bg-card p-5 transition-colors hover:border-border/80">
-      {/* Header */}
-      <div className="mb-3 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sinapse-purple-600 text-sm font-medium text-white">
-            {author.avatar_url ? (
-              <img src={author.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-            ) : (
-              author.display_name?.[0]?.toUpperCase() || author.username[0].toUpperCase()
+    <article className={cn(
+      "flex gap-3 border-b border-border px-4 py-3 transition-colors hover:bg-card/50",
+      compact && "border-b-0"
+    )}>
+      {/* Avatar (left column — Twitter style) */}
+      <Link href={`/profile/${author.username}`} className="shrink-0">
+        {author.avatar_url ? (
+          <img
+            src={author.avatar_url}
+            alt={author.username}
+            className="h-10 w-10 rounded-full object-cover hover:opacity-80 transition-opacity"
+          />
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sinapse-purple-600 text-sm font-medium text-white hover:opacity-80 transition-opacity">
+            {author.display_name?.[0]?.toUpperCase() || author.username[0].toUpperCase()}
+          </div>
+        )}
+      </Link>
+
+      {/* Content (right column) */}
+      <div className="flex-1 min-w-0">
+        {/* Header line */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 min-w-0">
+            <Link href={`/profile/${author.username}`} className="truncate font-semibold text-sm hover:underline">
+              {author.display_name || author.username}
+            </Link>
+            {author.role !== "free" && (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-sinapse-purple-600/50 text-sinapse-purple-400">
+                {author.role === "admin" ? "ADMIN" : author.role === "instructor" ? "INST" : "PRO"}
+              </Badge>
+            )}
+            <span className="text-sm text-muted-foreground truncate">@{author.username}</span>
+            <span className="text-muted-foreground">·</span>
+            <Link href={`/posts/${id}`} className="text-sm text-muted-foreground hover:underline whitespace-nowrap">
+              {timeAgo}
+            </Link>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground hover:text-foreground">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Reply context */}
+        {reply_to_author && (
+          <p className="text-sm text-muted-foreground mb-1">
+            Respondendo a <Link href={`/profile/${reply_to_author}`} className="text-sinapse-cyan-400 hover:underline">@{reply_to_author}</Link>
+          </p>
+        )}
+
+        {/* Source badge for curated */}
+        {type === "curated" && source && (
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className={cn("text-xs font-mono", sourceIcons[source]?.color)}>
+              {sourceIcons[source]?.icon}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              via {sourceIcons[source]?.label || source}
+            </span>
+            {source_url && (
+              <a href={source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-sinapse-cyan-400">
+                <ExternalLink className="h-3 w-3" />
+              </a>
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{author.display_name || author.username}</span>
-              <span className="text-xs text-muted-foreground">@{author.username}</span>
-              <span className="text-xs text-muted-foreground">·</span>
-              <span className="text-xs text-muted-foreground">{timeAgo}</span>
+        )}
+
+        {/* Title */}
+        {title && (
+          <Link href={`/posts/${id}`}>
+            <h3 className="font-semibold mb-1 hover:underline">{title}</h3>
+          </Link>
+        )}
+
+        {/* Content */}
+        <div
+          className={cn(
+            "prose prose-invert prose-sm max-w-none",
+            "[&_a]:text-sinapse-cyan-400 [&_code]:text-sinapse-purple-300 [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded",
+            !compact && "line-clamp-[12]"
+          )}
+          dangerouslySetInnerHTML={{ __html: displayContent }}
+        />
+
+        {/* Translation toggle */}
+        {type === "curated" && translated_text && original_text && (
+          <button
+            onClick={() => setShowOriginal(!showOriginal)}
+            className="mt-2 flex items-center gap-1.5 text-xs text-sinapse-cyan-400 hover:underline"
+          >
+            <Globe className="h-3 w-3" />
+            {showOriginal ? "Ver tradução (PT-BR)" : "Ver original (EN)"}
+          </button>
+        )}
+
+        {/* Quoted post */}
+        {quote_of && (
+          <Link href={`/posts/${quote_of.id}`} className="mt-3 block rounded-xl border border-border p-3 hover:bg-muted/50 transition-colors">
+            <div className="flex items-center gap-1 mb-1">
+              <div className="h-5 w-5 rounded-full bg-sinapse-purple-600/80 flex items-center justify-center text-[10px] text-white">
+                {quote_of.author.display_name?.[0] || quote_of.author.username[0]}
+              </div>
+              <span className="text-xs font-medium">{quote_of.author.display_name || quote_of.author.username}</span>
+              <span className="text-xs text-muted-foreground">@{quote_of.author.username}</span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <Badge variant="outline" className="text-xs px-1.5 py-0">
-                {space.icon} {space.name}
-              </Badge>
-              {type === "curated" && source && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0">
-                  {sourceIcons[source] || "📰"} {source.toUpperCase()}
-                </Badge>
+            {quote_of.title && <p className="text-sm font-medium mb-0.5">{quote_of.title}</p>}
+            <div className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: quote_of.content }} />
+          </Link>
+        )}
+
+        {/* Action bar (Twitter-style, spread across) */}
+        <div className="flex items-center justify-between mt-3 max-w-md -ml-2">
+          {/* Reply */}
+          <Link href={`/posts/${id}`}>
+            <button className="group flex items-center gap-1.5 text-muted-foreground hover:text-sinapse-cyan-400 transition-colors">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-sinapse-cyan-400/10">
+                <MessageCircle className="h-[18px] w-[18px]" />
+              </div>
+              {(comments_count + replies_count) > 0 && (
+                <span className="text-xs">{comments_count + replies_count}</span>
               )}
+            </button>
+          </Link>
+
+          {/* Repost */}
+          <button
+            className={cn(
+              "group flex items-center gap-1.5 transition-colors",
+              reposted ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500"
+            )}
+            onClick={toggleRepost}
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-emerald-500/10">
+              <Repeat2 className="h-[18px] w-[18px]" />
             </div>
+            {reposts > 0 && <span className="text-xs">{reposts}</span>}
+          </button>
+
+          {/* Like */}
+          <button
+            className={cn(
+              "group flex items-center gap-1.5 transition-colors",
+              liked ? "text-rose-500" : "text-muted-foreground hover:text-rose-500"
+            )}
+            onClick={toggleLike}
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-rose-500/10">
+              <Heart className={cn("h-[18px] w-[18px]", liked && "fill-current")} />
+            </div>
+            {likes > 0 && <span className="text-xs">{likes}</span>}
+          </button>
+
+          {/* Bookmark + Share */}
+          <div className="flex items-center">
+            <button
+              className={cn(
+                "group flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+                saved ? "text-sinapse-cyan-400" : "text-muted-foreground hover:text-sinapse-cyan-400"
+              )}
+              onClick={toggleSave}
+            >
+              <Bookmark className={cn("h-[18px] w-[18px]", saved && "fill-current")} />
+            </button>
+            <button className="group flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-sinapse-cyan-400 transition-colors">
+              <Share className="h-[18px] w-[18px]" />
+            </button>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Title */}
-      {title && (
-        <Link href={`/posts/${id}`}>
-          <h3 className="mb-2 text-lg font-semibold hover:text-sinapse-purple-400 transition-colors">
-            {title}
-          </h3>
-        </Link>
-      )}
-
-      {/* Content */}
-      <div
-        className="prose prose-invert prose-sm max-w-none mb-4 line-clamp-6"
-        dangerouslySetInnerHTML={{ __html: displayContent }}
-      />
-
-      {/* Translation toggle */}
-      {type === "curated" && translated_text && original_text && (
-        <button
-          onClick={() => setShowOriginal(!showOriginal)}
-          className="mb-3 flex items-center gap-1.5 text-xs text-sinapse-cyan-400 hover:underline"
-        >
-          <Globe className="h-3 w-3" />
-          {showOriginal ? "Ver tradução (PT-BR)" : "Ver original (EN)"}
-        </button>
-      )}
-
-      {/* Source link */}
-      {source_url && (
-        <a
-          href={source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-sinapse-cyan-400"
-        >
-          ↗ Fonte original
-        </a>
-      )}
-
-      {/* Actions */}
-      <div className="flex items-center gap-1 border-t border-border pt-3 -mx-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn("gap-1.5 text-muted-foreground", liked && "text-rose-500")}
-          onClick={toggleLike}
-        >
-          <Heart className={cn("h-4 w-4", liked && "fill-current")} />
-          <span className="text-xs">{likes}</span>
-        </Button>
-        <Link href={`/posts/${id}`}>
-          <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-            <MessageCircle className="h-4 w-4" />
-            <span className="text-xs">{comments_count}</span>
-          </Button>
-        </Link>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn("gap-1.5 text-muted-foreground", saved && "text-sinapse-cyan-400")}
-          onClick={toggleSave}
-        >
-          <Bookmark className={cn("h-4 w-4", saved && "fill-current")} />
-        </Button>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground ml-auto">
-          <Share2 className="h-4 w-4" />
-        </Button>
       </div>
     </article>
   );
