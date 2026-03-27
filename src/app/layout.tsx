@@ -16,6 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sinapse.club"),
   title: {
     default: "sinapse.club — Comunidade de AI em Portugues",
     template: "%s | sinapse.club",
@@ -31,6 +32,10 @@ export const metadata: Metadata = {
     "machine learning",
     "LLM",
   ],
+  icons: {
+    icon: "/favicon.svg",
+  },
+  manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     locale: "pt_BR",

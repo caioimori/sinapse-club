@@ -1,0 +1,52 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+// Manual trigger for curation pipeline (admin only)
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check admin role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single() as any;
+
+  if (profile?.role !== "admin") {
+    return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  }
+
+  const { step } = await request.json().catch(() => ({ step: "all" }));
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  const results: Record<string, any> = {};
+
+  const steps = step === "all"
+    ? ["curate-rss", "translate-content", "publish-curated"]
+    : [step];
+
+  for (const fn of steps) {
+    try {
+      const res = await fetch(`${supabaseUrl}/functions/v1/${fn}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${serviceKey}`,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
+      });
+      results[fn] = await res.json();
+    } catch (err) {
+      results[fn] = { error: (err as Error).message };
+    }
+  }
+
+  return NextResponse.json({ results });
+}
