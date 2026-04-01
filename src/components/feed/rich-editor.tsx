@@ -38,7 +38,7 @@ export function RichEditor({
       Placeholder.configure({ placeholder }),
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: { class: "text-sinapse-cyan-400 underline" },
+        HTMLAttributes: { class: "text-muted-foreground underline" },
       }),
     ],
     content,

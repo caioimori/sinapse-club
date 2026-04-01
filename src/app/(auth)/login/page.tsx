@@ -2,19 +2,22 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const redirectTo = searchParams.get("redirect") || "/forum";
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -29,22 +32,23 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/feed");
+    router.push(redirectTo);
     router.refresh();
   }
 
   async function handleGoogleLogin() {
+    const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
     if (error) setError(error.message);
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center gradient-mesh">
+    <div className="flex min-h-dvh items-center justify-center ">
       <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8">
         <div className="text-center">
           <Link href="/" className="text-2xl font-bold text-gradient">sinapse.club</Link>
@@ -99,18 +103,26 @@ export default function LoginPage() {
           {error && (
             <p className="text-sm text-destructive">{error}</p>
           )}
-          <Button type="submit" className="w-full gradient-synapse border-0" disabled={loading}>
+          <Button type="submit" className="w-full bg-foreground border-0" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
           Nao tem conta?{" "}
-          <Link href="/register" className="text-sinapse-cyan-400 hover:underline">
+          <Link href="/register" className="text-muted-foreground hover:underline">
             Criar conta
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

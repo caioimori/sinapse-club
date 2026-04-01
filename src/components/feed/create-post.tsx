@@ -72,7 +72,7 @@ export function CreatePost({
       {avatarUrl ? (
         <img src={avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover shrink-0" />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sinapse-purple-600 text-sm font-medium text-white shrink-0">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-sm font-medium text-white shrink-0">
           {initial}
         </div>
       )}
@@ -100,23 +100,23 @@ export function CreatePost({
             {/* Bottom bar */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-0.5 -ml-2">
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-sinapse-cyan-400 hover:bg-sinapse-cyan-400/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-foreground/5">
                   <Image className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-sinapse-cyan-400 hover:bg-sinapse-cyan-400/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-foreground/5">
                   <BarChart3 className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-sinapse-cyan-400 hover:bg-sinapse-cyan-400/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-foreground/5">
                   <Smile className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-sinapse-cyan-400 hover:bg-sinapse-cyan-400/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:bg-foreground/5">
                   <MapPin className="h-5 w-5" />
                 </Button>
               </div>
 
               <Button
                 size="sm"
-                className="rounded-full gradient-synapse border-0 px-5 font-semibold"
+                className="rounded-full bg-foreground border-0 px-5 font-semibold"
                 onClick={handleSubmit}
                 disabled={loading || !plain.trim()}
               >

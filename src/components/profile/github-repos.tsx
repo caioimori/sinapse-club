@@ -52,10 +52,10 @@ export function GitHubRepos({ username, repos }: GitHubReposProps) {
           href={repo.html_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-xl border border-border p-4 hover:border-sinapse-purple-600/50 hover:bg-card/50 transition-all space-y-2"
+          className="rounded-xl border border-border p-4 hover:border-border hover:bg-card/50 transition-all space-y-2"
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-sinapse-cyan-400 hover:underline truncate">
+            <span className="text-sm font-semibold text-muted-foreground hover:underline truncate">
               {repo.name}
             </span>
           </div>
@@ -69,7 +69,7 @@ export function GitHubRepos({ username, repos }: GitHubReposProps) {
               {repo.topics.slice(0, 4).map((topic) => (
                 <span
                   key={topic}
-                  className="rounded-full bg-sinapse-cyan-400/10 px-2 py-0.5 text-[10px] text-sinapse-cyan-400 font-medium"
+                  className="rounded-full bg-foreground/5 px-2 py-0.5 text-[10px] text-muted-foreground font-medium"
                 >
                   {topic}
                 </span>

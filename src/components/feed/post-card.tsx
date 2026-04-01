@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -13,13 +14,24 @@ import {
   MoreHorizontal,
   Bookmark,
   ExternalLink,
+  UserPlus,
+  UserMinus,
+  Trash2,
+  Flag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
 
 interface PostAuthor {
+  id?: string;
   username: string;
   display_name: string | null;
   avatar_url: string | null;
@@ -61,15 +73,19 @@ export interface PostCardProps {
   reply_to_author?: string | null;
   // display options
   compact?: boolean;
+  showSource?: boolean;
+  // follow system
+  currentUserId?: string;
+  isFollowingAuthor?: boolean;
 }
 
 const sourceIcons: Record<string, { icon: string; label: string; color: string }> = {
-  x: { icon: "𝕏", label: "X", color: "text-white" },
-  reddit: { icon: "↑", label: "Reddit", color: "text-orange-400" },
-  rss: { icon: "◉", label: "Blog", color: "text-emerald-400" },
-  docs: { icon: "◉", label: "Docs", color: "text-blue-400" },
-  youtube: { icon: "▶", label: "YouTube", color: "text-red-400" },
-  newsletter: { icon: "✉", label: "Newsletter", color: "text-purple-400" },
+  x: { icon: "\ud835\udd4f", label: "X", color: "text-white" },
+  reddit: { icon: "\u2191", label: "Reddit", color: "text-orange-400" },
+  rss: { icon: "\u25c9", label: "Blog", color: "text-muted-foreground" },
+  docs: { icon: "\u25c9", label: "Docs", color: "text-blue-400" },
+  youtube: { icon: "\u25b6", label: "YouTube", color: "text-red-400" },
+  newsletter: { icon: "\u2709", label: "Newsletter", color: "text-purple-400" },
 };
 
 export function PostCard({
@@ -95,6 +111,9 @@ export function PostCard({
   quote_of,
   reply_to_author,
   compact = false,
+  showSource = false,
+  currentUserId,
+  isFollowingAuthor = false,
 }: PostCardProps) {
   const [liked, setLiked] = useState(is_liked);
   const [saved, setSaved] = useState(is_saved);
@@ -102,7 +121,11 @@ export function PostCard({
   const [likes, setLikes] = useState(likes_count);
   const [reposts, setReposts] = useState(reposts_count);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [followingAuthor, setFollowingAuthor] = useState(isFollowingAuthor);
   const supabase = createClient();
+  const router = useRouter();
+
+  const isOwnPost = currentUserId && author.id === currentUserId;
 
   const timeAgo = formatDistanceToNow(new Date(created_at), {
     addSuffix: false,
@@ -127,7 +150,6 @@ export function PostCard({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     if (!reposted) {
-      // Get the default space for reposts
       const { data: space } = await (supabase as any).from("spaces").select("id").eq("slug", "ai-news").single();
       if (space) {
         await (supabase as any).from("posts").insert({
@@ -149,6 +171,36 @@ export function PostCard({
       await (supabase as any).from("reactions").insert({ user_id: user.id, target_type: "post", target_id: id, type: "save" });
     } else {
       await (supabase as any).from("reactions").delete().match({ target_type: "post", target_id: id, type: "save", user_id: user.id });
+    }
+  }
+
+  async function toggleFollowAuthor() {
+    if (!author.id) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (followingAuthor) {
+      await (supabase as any).from("follows").delete().match({ follower_id: user.id, following_id: author.id });
+      setFollowingAuthor(false);
+    } else {
+      await (supabase as any).from("follows").insert({ follower_id: user.id, following_id: author.id });
+      setFollowingAuthor(true);
+    }
+  }
+
+  async function deletePost() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await (supabase as any).from("posts").delete().eq("id", id).eq("author_id", user.id);
+    router.refresh();
+  }
+
+  async function handleShare() {
+    const url = `${window.location.origin}/posts/${id}`;
+    if (navigator.share) {
+      navigator.share({ title: title || "Post", url });
+    } else {
+      await navigator.clipboard.writeText(url);
     }
   }
 
@@ -188,7 +240,7 @@ export function PostCard({
             className="h-10 w-10 rounded-full object-cover hover:opacity-80 transition-opacity"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sinapse-purple-600 text-sm font-medium text-white hover:opacity-80 transition-opacity">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-sm font-medium text-white hover:opacity-80 transition-opacity">
             {author.display_name?.[0]?.toUpperCase() || author.username[0].toUpperCase()}
           </div>
         )}
@@ -203,30 +255,64 @@ export function PostCard({
               {author.display_name || author.username}
             </Link>
             {author.role !== "free" && (
-              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-sinapse-purple-600/50 text-sinapse-purple-400">
+              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-border text-muted-foreground">
                 {author.role === "admin" ? "ADMIN" : author.role === "instructor" ? "INST" : "PRO"}
               </Badge>
             )}
             <span className="text-sm text-muted-foreground truncate">@{author.username}</span>
-            <span className="text-muted-foreground">·</span>
+            <span className="text-muted-foreground">&middot;</span>
             <Link href={`/posts/${id}`} className="text-sm text-muted-foreground hover:underline whitespace-nowrap">
               {timeAgo}
             </Link>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground hover:text-foreground">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="inline-flex h-8 w-8 -mr-2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {!isOwnPost && author.id && (
+                <DropdownMenuItem onClick={toggleFollowAuthor}>
+                  {followingAuthor ? (
+                    <><UserMinus className="h-4 w-4 mr-2" /> Deixar de seguir @{author.username}</>
+                  ) : (
+                    <><UserPlus className="h-4 w-4 mr-2" /> Seguir @{author.username}</>
+                  )}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handleShare}>
+                <Share className="h-4 w-4 mr-2" /> Copiar link
+              </DropdownMenuItem>
+              {!isOwnPost && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-muted-foreground">
+                    <Flag className="h-4 w-4 mr-2" /> Denunciar
+                  </DropdownMenuItem>
+                </>
+              )}
+              {isOwnPost && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={deletePost} className="text-red-500 focus:text-red-500">
+                    <Trash2 className="h-4 w-4 mr-2" /> Excluir post
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Reply context */}
         {reply_to_author && (
           <p className="text-sm text-muted-foreground mb-1">
-            Respondendo a <Link href={`/profile/${reply_to_author}`} className="text-sinapse-cyan-400 hover:underline">@{reply_to_author}</Link>
+            Respondendo a <Link href={`/profile/${reply_to_author}`} className="text-muted-foreground hover:underline">@{reply_to_author}</Link>
           </p>
         )}
 
-        {/* Source badge for curated */}
-        {type === "curated" && source && (
+        {/* Source badge — hidden in feed, visible only in post detail page via showSource prop */}
+        {type === "curated" && source && showSource && (
           <div className="flex items-center gap-2 mb-1.5">
             <span className={cn("text-xs font-mono", sourceIcons[source]?.color)}>
               {sourceIcons[source]?.icon}
@@ -235,7 +321,7 @@ export function PostCard({
               via {sourceIcons[source]?.label || source}
             </span>
             {source_url && (
-              <a href={source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-sinapse-cyan-400">
+              <a href={source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-muted-foreground">
                 <ExternalLink className="h-3 w-3" />
               </a>
             )}
@@ -253,7 +339,7 @@ export function PostCard({
         <div
           className={cn(
             "prose dark:prose-invert prose-sm max-w-none",
-            "[&_a]:text-sinapse-cyan-400 [&_code]:text-sinapse-purple-300 [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded",
+            "[&_a]:text-muted-foreground [&_code]:text-muted-foreground [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded",
             !compact && "line-clamp-[12]"
           )}
           dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -263,10 +349,10 @@ export function PostCard({
         {type === "curated" && translated_text && original_text && (
           <button
             onClick={() => setShowOriginal(!showOriginal)}
-            className="mt-2 flex items-center gap-1.5 text-xs text-sinapse-cyan-400 hover:underline"
+            className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:underline"
           >
             <Globe className="h-3 w-3" />
-            {showOriginal ? "Ver tradução (PT-BR)" : "Ver original (EN)"}
+            {showOriginal ? "Ver traducao (PT-BR)" : "Ver original (EN)"}
           </button>
         )}
 
@@ -274,7 +360,7 @@ export function PostCard({
         {quote_of && (
           <Link href={`/posts/${quote_of.id}`} className="mt-3 block rounded-xl border border-border p-3 hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-1 mb-1">
-              <div className="h-5 w-5 rounded-full bg-sinapse-purple-600/80 flex items-center justify-center text-[10px] text-white">
+              <div className="h-5 w-5 rounded-full bg-foreground/80 flex items-center justify-center text-[10px] text-white">
                 {quote_of.author.display_name?.[0] || quote_of.author.username[0]}
               </div>
               <span className="text-xs font-medium">{quote_of.author.display_name || quote_of.author.username}</span>
@@ -289,8 +375,8 @@ export function PostCard({
         <div className="flex items-center justify-between mt-3 max-w-md -ml-2">
           {/* Reply */}
           <Link href={`/posts/${id}`}>
-            <button className="group flex items-center gap-1.5 text-muted-foreground hover:text-sinapse-cyan-400 transition-colors">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-sinapse-cyan-400/10">
+            <button className="group flex items-center gap-1.5 text-muted-foreground hover:text-muted-foreground transition-colors">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-foreground/5">
                 <MessageCircle className="h-[18px] w-[18px]" />
               </div>
               {(comments_count + replies_count) > 0 && (
@@ -303,11 +389,11 @@ export function PostCard({
           <button
             className={cn(
               "group flex items-center gap-1.5 transition-colors",
-              reposted ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500"
+              reposted ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
             onClick={toggleRepost}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-emerald-500/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-foreground/5">
               <Repeat2 className="h-[18px] w-[18px]" />
             </div>
             {reposts > 0 && <span className="text-xs">{reposts}</span>}
@@ -332,13 +418,16 @@ export function PostCard({
             <button
               className={cn(
                 "group flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                saved ? "text-sinapse-cyan-400" : "text-muted-foreground hover:text-sinapse-cyan-400"
+                saved ? "text-muted-foreground" : "text-muted-foreground hover:text-muted-foreground"
               )}
               onClick={toggleSave}
             >
               <Bookmark className={cn("h-[18px] w-[18px]", saved && "fill-current")} />
             </button>
-            <button className="group flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-sinapse-cyan-400 transition-colors">
+            <button
+              className="group flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-muted-foreground transition-colors"
+              onClick={handleShare}
+            >
               <Share className="h-[18px] w-[18px]" />
             </button>
           </div>

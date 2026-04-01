@@ -36,8 +36,8 @@ interface EventCardProps {
 
 const typeLabels: Record<string, { label: string; color: string }> = {
   live: { label: "Live", color: "bg-rose-500" },
-  office_hours: { label: "Office Hours", color: "bg-sinapse-cyan-600" },
-  workshop: { label: "Workshop", color: "bg-sinapse-purple-600" },
+  office_hours: { label: "Office Hours", color: "bg-muted-foreground" },
+  workshop: { label: "Workshop", color: "bg-foreground" },
   ama: { label: "AMA", color: "bg-amber-500" },
 };
 
@@ -116,7 +116,7 @@ export function EventCard({ event, host, isRsvpd, variant }: EventCardProps) {
         )}
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="h-5 w-5 rounded-full bg-sinapse-purple-600 flex items-center justify-center text-[10px] text-white font-medium">
+          <div className="h-5 w-5 rounded-full bg-foreground flex items-center justify-center text-[10px] text-white font-medium">
             {host.display_name?.[0] || host.username[0]}
           </div>
           <span>{host.display_name || host.username}</span>
@@ -128,7 +128,7 @@ export function EventCard({ event, host, isRsvpd, variant }: EventCardProps) {
             <>
               <Button
                 size="sm"
-                className={rsvpd ? "bg-sinapse-purple-600/20 text-sinapse-purple-400 border border-sinapse-purple-600/50" : "gradient-synapse border-0"}
+                className={rsvpd ? "bg-foreground/20 text-muted-foreground border border-border" : "bg-foreground border-0"}
                 onClick={toggleRsvp}
               >
                 {rsvpd ? "✓ Confirmado" : "Confirmar presenca"}
@@ -149,7 +149,7 @@ export function EventCard({ event, host, isRsvpd, variant }: EventCardProps) {
           )}
           {variant === "recording" && event.recording_url && (
             <a href={event.recording_url} target="_blank" rel="noopener noreferrer">
-              <Button size="sm" className="gradient-synapse border-0 gap-1">
+              <Button size="sm" className="bg-foreground border-0 gap-1">
                 <Play className="h-3.5 w-3.5" /> Assistir gravacao
               </Button>
             </a>

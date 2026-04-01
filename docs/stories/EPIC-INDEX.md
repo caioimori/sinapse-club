@@ -224,8 +224,58 @@ Files created/modified.
 
 ---
 
+---
+
+## EPIC-7: Forum MVP Visual (BlackRat Clone)
+
+**Goal:** Transformar a plataforma de Twitter-style feed para forum BlackRat-style. 14 categorias, cargos profissionais, threads, gamificacao visual.
+**Depends on:** EPIC-1 (auth + layout), EPIC-2 (posts/comments base)
+**Blocks:** Phase 2 (gamificacao funcional, marketplace, real-time)
+**ADR:** `docs/architecture/ADR-001-forum-blackrat-clone.md`
+
+### Stories
+
+| # | Story | Priority | Est. | Agent | Dependencies |
+|---|-------|----------|------|-------|-------------|
+| FORUM-1 | Database Foundation (categories, roles, badges, levels) | P0 | 2d | @data-engineer | None |
+| FORUM-2 | Feed Removal & Space-to-Category Migration | P0 | 0.5d | @developer + @data-engineer | FORUM-1 |
+| FORUM-3 | Sample Threads & Realistic Content Seeding | P0 | 0.5d | @developer | FORUM-1, FORUM-2 |
+| FORUM-4 | Layout Overhaul (Sidebar, Topbar, Mobile Nav) | P0 | 1.5d | @developer | FORUM-1, FORUM-2 |
+| FORUM-5 | Forum Core Pages (Home, Category, Subcategory) | P0 | 2d | @developer | FORUM-1..4 |
+| FORUM-6 | Thread Detail & Thread Creation | P0 | 1.5d | @developer | FORUM-1, FORUM-4, FORUM-5 |
+| FORUM-7 | Cargo System (Badge, Onboarding, Profile) | P0 | 1d | @developer | FORUM-1 |
+| FORUM-8 | Placeholder Pages (Leaderboard, Tools, Benefits, Marketplace) | P1 | 1d | @developer | FORUM-4, FORUM-7 |
+
+### Execution Order (Critical Path)
+
+```
+FORUM-1 (DB foundation) ──────────────────────────────────────→ blocks all
+  ├─→ FORUM-2 (feed removal + migration) ──→ FORUM-3 (seed content)
+  ├─→ FORUM-7 (cargo system — can start in parallel with FORUM-2)
+  └─→ FORUM-4 (layout overhaul — after FORUM-2)
+        └─→ FORUM-5 (forum pages — after FORUM-3, FORUM-4)
+              └─→ FORUM-6 (thread detail/creation)
+                    └─→ FORUM-8 (placeholders — last, lowest priority)
+```
+
+**Estimated Total:** ~10 days of dev work
+
+### Acceptance Criteria (Epic-level)
+- [ ] Forum home page shows 14 categories with stats
+- [ ] Category/subcategory navigation works with collapsible sidebar
+- [ ] Thread creation and detail pages functional
+- [ ] Cargo system with onboarding step and profile display
+- [ ] 15-20 sample threads with realistic AI content
+- [ ] Feed route removed, redirects to /forum
+- [ ] Placeholder pages for Leaderboard, Tools, Benefits, Marketplace
+- [ ] B&W design system maintained throughout
+- [ ] Mobile navigation updated for forum-first experience
+
+---
+
 ## Changelog
 
 | Date | Change | Author |
 |------|--------|--------|
 | 2026-03-27 | Initial epic index + stories | @pm (Morgan) + @sm (River) + Imperator |
+| 2026-03-31 | Added EPIC-7: Forum MVP Visual with 8 stories | @sprint-lead (River) |

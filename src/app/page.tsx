@@ -27,7 +27,7 @@ export default function LandingPage() {
               <Button variant="ghost" size="sm">Entrar</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="gradient-synapse border-0">
+              <Button size="sm" className="bg-foreground border-0">
                 Comecar gratis
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -38,10 +38,10 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative flex min-h-dvh items-center justify-center overflow-hidden pt-14">
-        <div className="gradient-mesh absolute inset-0" />
-        <div className="gradient-glow absolute inset-0" />
+        <div className=" absolute inset-0" />
+        <div className=" absolute inset-0" />
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-sinapse-purple-600/30 bg-sinapse-purple-600/10 px-4 py-1.5 text-sm text-sinapse-purple-300">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/30 bg-foreground/5 px-4 py-1.5 text-sm text-muted-foreground">
             <Zap className="h-3.5 w-3.5" />
             Vagas de fundador abertas
           </div>
@@ -56,7 +56,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/register">
-              <Button size="lg" className="gradient-synapse border-0 text-base px-8">
+              <Button size="lg" className="bg-foreground border-0 text-base px-8">
                 Comecar gratis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -102,9 +102,9 @@ export default function LandingPage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="rounded-xl border border-border bg-background p-6 transition-all hover:border-sinapse-purple-600/50 hover:shadow-[var(--shadow-glow-purple)]"
+                className="rounded-xl border border-border bg-background p-6 transition-all hover:border-border hover:shadow-[var(--shadow-glow-purple)]"
               >
-                <item.icon className="mb-4 h-8 w-8 text-sinapse-purple-400" />
+                <item.icon className="mb-4 h-8 w-8 text-muted-foreground" />
                 <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               </div>
@@ -124,12 +124,12 @@ export default function LandingPage() {
           </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { icon: Zap, title: "Feed Curado", description: "50+ items/dia das maiores fontes de AI. Categorizado por tema.", color: "text-sinapse-purple-400" },
-              { icon: Globe, title: "Traducao EN↔PT", description: "Toggle entre original e traduzido. DeepL — a melhor traducao do mercado.", color: "text-sinapse-cyan-400" },
-              { icon: MessageSquare, title: "Forum", description: "Poste, comente, discuta. Spaces tematicos para cada area de AI.", color: "text-sinapse-purple-400" },
-              { icon: BookOpen, title: "Cursos Gravados", description: "Aprenda AI com cursos praticos em portugues. No seu ritmo.", color: "text-sinapse-cyan-400" },
-              { icon: Calendar, title: "Lives & Calls", description: "Lives semanais, office hours, workshops exclusivos.", color: "text-sinapse-purple-400" },
-              { icon: Trophy, title: "Gamificacao", description: "Pontos, badges, leaderboard. Suba no ranking da comunidade.", color: "text-sinapse-cyan-400" },
+              { icon: Zap, title: "Feed Curado", description: "50+ items/dia das maiores fontes de AI. Categorizado por tema.", color: "text-muted-foreground" },
+              { icon: Globe, title: "Traducao EN↔PT", description: "Toggle entre original e traduzido. DeepL — a melhor traducao do mercado.", color: "text-muted-foreground" },
+              { icon: MessageSquare, title: "Forum", description: "Poste, comente, discuta. Spaces tematicos para cada area de AI.", color: "text-muted-foreground" },
+              { icon: BookOpen, title: "Cursos Gravados", description: "Aprenda AI com cursos praticos em portugues. No seu ritmo.", color: "text-muted-foreground" },
+              { icon: Calendar, title: "Lives & Calls", description: "Lives semanais, office hours, workshops exclusivos.", color: "text-muted-foreground" },
+              { icon: Trophy, title: "Gamificacao", description: "Pontos, badges, leaderboard. Suba no ranking da comunidade.", color: "text-muted-foreground" },
             ].map((feature) => (
               <div
                 key={feature.title}
@@ -162,15 +162,15 @@ export default function LandingPage() {
                 <span className="text-4xl font-bold">R$ 0</span>
               </div>
               <ul className="mb-8 space-y-3 text-sm">
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Feed curado (limitado)</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> 1 space</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Perfil basico</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Feed curado (limitado)</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> 1 space</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Perfil basico</li>
               </ul>
               <Link href="/register"><Button variant="outline" className="w-full">Comecar gratis</Button></Link>
             </div>
             {/* Pro */}
-            <div className="relative rounded-xl border-2 border-sinapse-purple-600 bg-background p-8 shadow-[var(--shadow-glow-purple)]">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-sinapse-purple-600 px-3 py-0.5 text-xs font-medium text-white">
+            <div className="relative rounded-xl border-2 border-foreground bg-background p-8 shadow-[var(--shadow-glow-purple)]">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-foreground px-3 py-0.5 text-xs font-medium text-white">
                 Popular
               </div>
               <h3 className="mb-1 text-lg font-semibold">Pro</h3>
@@ -180,14 +180,14 @@ export default function LandingPage() {
                 <span className="text-muted-foreground">/mes</span>
               </div>
               <ul className="mb-8 space-y-3 text-sm">
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Tudo do Free</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Forum completo</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Todos os spaces</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Lives semanais</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Calendario</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Toggle bilingual</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Tudo do Free</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Forum completo</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Todos os spaces</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Lives semanais</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Calendario</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Toggle bilingual</li>
               </ul>
-              <Link href="/register?plan=pro"><Button className="w-full gradient-synapse border-0">Assinar Pro</Button></Link>
+              <Link href="/register?plan=pro"><Button className="w-full bg-foreground border-0">Assinar Pro</Button></Link>
             </div>
             {/* Premium */}
             <div className="rounded-xl border border-border bg-background p-8">
@@ -198,11 +198,11 @@ export default function LandingPage() {
                 <span className="text-muted-foreground">/mes</span>
               </div>
               <ul className="mb-8 space-y-3 text-sm">
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Tudo do Pro</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Workshops</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Office hours</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Conteudo exclusivo</li>
-                <li className="flex items-center gap-2"><span className="text-sinapse-cyan-400">✓</span> Suporte prioritario</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Tudo do Pro</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Workshops</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Office hours</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Conteudo exclusivo</li>
+                <li className="flex items-center gap-2"><span className="text-muted-foreground">✓</span> Suporte prioritario</li>
               </ul>
               <Link href="/register?plan=premium"><Button variant="outline" className="w-full">Assinar Premium</Button></Link>
             </div>
@@ -223,7 +223,7 @@ export default function LandingPage() {
             Curadoria. Traducao. Comunidade. Cursos. Tudo em um lugar so.
           </p>
           <Link href="/register">
-            <Button size="lg" className="gradient-synapse border-0 text-base px-8">
+            <Button size="lg" className="bg-foreground border-0 text-base px-8">
               Criar minha conta gratis
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

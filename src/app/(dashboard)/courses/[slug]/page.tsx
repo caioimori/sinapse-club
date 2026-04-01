@@ -94,7 +94,7 @@ export default async function CourseDetailPage({ params, searchParams }: {
               <div className="text-center space-y-3">
                 <Lock className="mx-auto h-12 w-12 text-muted-foreground" />
                 <p className="text-muted-foreground">Compre o curso para acessar</p>
-                <Button className="gradient-synapse border-0">{price}</Button>
+                <Button className="bg-foreground border-0">{price}</Button>
               </div>
             ) : (
               <div className="text-center space-y-2">
@@ -113,7 +113,7 @@ export default async function CourseDetailPage({ params, searchParams }: {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-sinapse-purple-600 flex items-center justify-center text-xs text-white font-medium">
+              <div className="h-8 w-8 rounded-full bg-foreground flex items-center justify-center text-xs text-white font-medium">
                 {course.instructor?.display_name?.[0] || "?"}
               </div>
               <span className="text-sm">{course.instructor?.display_name || course.instructor?.username}</span>
@@ -158,11 +158,11 @@ export default async function CourseDetailPage({ params, searchParams }: {
                     key={lesson.id}
                     href={accessible ? `/courses/${slug}?lesson=${lesson.id}` : "#"}
                     className={`flex items-center gap-3 px-4 py-3 text-sm border-b border-border/50 transition-colors ${
-                      isCurrent ? "bg-sinapse-purple-600/10 border-l-2 border-l-sinapse-purple-600" : "hover:bg-muted/50"
+                      isCurrent ? "bg-foreground/5 border-l-2 border-l-foreground" : "hover:bg-muted/50"
                     } ${!accessible ? "opacity-50" : ""}`}
                   >
                     {isCompleted ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" />
                     ) : !accessible ? (
                       <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                     ) : (

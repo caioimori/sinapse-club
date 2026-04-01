@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Bot, Code, Briefcase, Brain, Sparkles, Cpu, ArrowRight, Check } from "lucide-react";
+import { Bot, Code, Briefcase, Brain, Sparkles, Cpu, ArrowRight, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { CargoSelector } from "@/components/profile/cargo-selector";
 import { cn } from "@/lib/utils";
 
 const INTERESTS = [
@@ -17,14 +18,19 @@ const INTERESTS = [
 ];
 
 const LOCALES = [
-  { id: "pt-BR", label: "Portugues (BR)", flag: "🇧🇷" },
-  { id: "en", label: "English", flag: "🌐" },
+  { id: "pt-BR", label: "Portugues (BR)", flag: "\u{1F1E7}\u{1F1F7}" },
+  { id: "en", label: "English", flag: "\u{1F310}" },
 ];
+
+const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [locale, setLocale] = useState("pt-BR");
   const [interests, setInterests] = useState<string[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [company, setCompany] = useState("");
+  const [headline, setHeadline] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -40,23 +46,30 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("profiles").update({ locale, interests, onboarded: true }).eq("id", user.id);
+      await (supabase as any).from("profiles").update({
+        locale,
+        interests,
+        professional_role_id: selectedRoleId,
+        company: company || null,
+        headline: headline || null,
+        onboarded: true,
+      }).eq("id", user.id);
     }
-    router.push("/feed");
+    router.push("/forum");
     router.refresh();
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center gradient-mesh">
+    <div className="flex min-h-dvh items-center justify-center ">
       <div className="w-full max-w-lg space-y-8 rounded-xl border border-border bg-card p-8">
         {/* Progress */}
         <div className="flex items-center gap-2">
-          {[1, 2, 3].map((s) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
             <div
               key={s}
               className={cn(
                 "h-1.5 flex-1 rounded-full transition-colors",
-                s <= step ? "gradient-synapse" : "bg-muted"
+                s <= step ? "bg-foreground" : "bg-muted"
               )}
             />
           ))}
@@ -77,7 +90,7 @@ export default function OnboardingPage() {
                   className={cn(
                     "flex items-center gap-4 rounded-xl border p-4 text-left transition-colors",
                     locale === l.id
-                      ? "border-sinapse-purple-600 bg-sinapse-purple-600/10"
+                      ? "border-foreground bg-foreground/5"
                       : "border-border hover:border-border/80"
                   )}
                 >
@@ -88,11 +101,11 @@ export default function OnboardingPage() {
                       {l.id === "pt-BR" ? "Conteudo traduzido + original" : "Original content + translations"}
                     </p>
                   </div>
-                  {locale === l.id && <Check className="ml-auto h-5 w-5 text-sinapse-purple-400" />}
+                  {locale === l.id && <Check className="ml-auto h-5 w-5 text-muted-foreground" />}
                 </button>
               ))}
             </div>
-            <Button className="w-full gradient-synapse border-0" onClick={() => setStep(2)}>
+            <Button className="w-full bg-foreground border-0" onClick={() => setStep(2)}>
               Continuar <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -113,13 +126,13 @@ export default function OnboardingPage() {
                   className={cn(
                     "flex items-start gap-3 rounded-xl border p-4 text-left transition-colors",
                     interests.includes(interest.id)
-                      ? "border-sinapse-purple-600 bg-sinapse-purple-600/10"
+                      ? "border-foreground bg-foreground/5"
                       : "border-border hover:border-border/80"
                   )}
                 >
                   <interest.icon className={cn(
                     "h-5 w-5 mt-0.5 shrink-0",
-                    interests.includes(interest.id) ? "text-sinapse-purple-400" : "text-muted-foreground"
+                    interests.includes(interest.id) ? "text-muted-foreground" : "text-muted-foreground"
                   )} />
                   <div>
                     <p className="text-sm font-medium">{interest.label}</p>
@@ -131,7 +144,7 @@ export default function OnboardingPage() {
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(1)}>Voltar</Button>
               <Button
-                className="flex-1 gradient-synapse border-0"
+                className="flex-1 bg-foreground border-0"
                 onClick={() => setStep(3)}
                 disabled={interests.length === 0}
               >
@@ -141,10 +154,45 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 3: Ready */}
+        {/* Step 3: Professional Role */}
         {step === 3 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold">Qual seu cargo?</h1>
+              <p className="mt-2 text-muted-foreground">
+                Isso ajuda a comunidade a te conhecer melhor. Voce pode pular se preferir.
+              </p>
+            </div>
+            <CargoSelector
+              selectedRoleId={selectedRoleId}
+              company={company}
+              headline={headline}
+              onRoleChange={setSelectedRoleId}
+              onCompanyChange={setCompany}
+              onHeadlineChange={setHeadline}
+            />
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setStep(2)}>Voltar</Button>
+              <Button
+                variant="outline"
+                onClick={() => setStep(4)}
+              >
+                Pular
+              </Button>
+              <Button
+                className="flex-1 bg-foreground border-0"
+                onClick={() => setStep(4)}
+              >
+                Continuar <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Ready */}
+        {step === 4 && (
           <div className="space-y-6 text-center">
-            <div className="text-6xl">🚀</div>
+            <div className="text-6xl">{"\u{1F680}"}</div>
             <div>
               <h1 className="text-2xl font-bold">Tudo pronto!</h1>
               <p className="mt-2 text-muted-foreground">
@@ -154,11 +202,14 @@ export default function OnboardingPage() {
             <div className="space-y-2 text-left rounded-xl border border-border p-4">
               <p className="text-sm"><span className="font-medium">Idioma:</span> {LOCALES.find(l => l.id === locale)?.label}</p>
               <p className="text-sm"><span className="font-medium">Interesses:</span> {interests.map(i => INTERESTS.find(x => x.id === i)?.label).join(", ")}</p>
+              {selectedRoleId && (
+                <p className="text-sm"><span className="font-medium">Cargo:</span> Selecionado{company ? ` @ ${company}` : ""}</p>
+              )}
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(2)}>Voltar</Button>
+              <Button variant="outline" onClick={() => setStep(3)}>Voltar</Button>
               <Button
-                className="flex-1 gradient-synapse border-0"
+                className="flex-1 bg-foreground border-0"
                 onClick={handleComplete}
                 disabled={loading}
               >

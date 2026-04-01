@@ -39,7 +39,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/feed");
+    router.push("/forum");
     router.refresh();
   }
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center gradient-mesh">
+    <div className="flex min-h-dvh items-center justify-center ">
       <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8">
         <div className="text-center">
           <Link href="/" className="text-2xl font-bold text-gradient">sinapse.club</Link>
@@ -122,14 +122,14 @@ export default function RegisterPage() {
           {error && (
             <p className="text-sm text-destructive">{error}</p>
           )}
-          <Button type="submit" className="w-full gradient-synapse border-0" disabled={loading}>
+          <Button type="submit" className="w-full bg-foreground border-0" disabled={loading}>
             {loading ? "Criando conta..." : "Criar conta"}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
           Ja tem conta?{" "}
-          <Link href="/login" className="text-sinapse-cyan-400 hover:underline">
+          <Link href="/login" className="text-muted-foreground hover:underline">
             Entrar
           </Link>
         </p>

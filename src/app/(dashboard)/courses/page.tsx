@@ -38,7 +38,7 @@ export default async function CoursesPage() {
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2">
-        <Badge variant="default" className="bg-sinapse-purple-600 cursor-pointer">Todos</Badge>
+        <Badge variant="default" className="bg-foreground cursor-pointer">Todos</Badge>
         <Badge variant="outline" className="cursor-pointer">Perpetuos</Badge>
         <Badge variant="outline" className="cursor-pointer">Lancamentos</Badge>
         <Badge variant="outline" className="cursor-pointer">Mini-cursos</Badge>

@@ -4,13 +4,47 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Category mapping: old space-based categories -> forum category slugs
+// Per ADR-001 Section 3.2
+const CATEGORY_MAP: Record<string, string> = {
+  "llms-agents": "llms-agentes",
+  "coding-tools": "automacao-no-code",
+  "ai-news": "llms-agentes",
+  "carreira-ai": "carreira-ai",
+  "show-and-tell": "off-topic",
+  "off-topic": "off-topic",
+  "ferramentas-reviews": "ferramentas-reviews",
+};
+
 const RSS_FEEDS = [
-  { url: "https://blog.openai.com/rss/", source: "rss" as const, category: "llms-agents" },
-  { url: "https://www.anthropic.com/feed", source: "rss" as const, category: "llms-agents" },
-  { url: "https://blog.google/technology/ai/rss/", source: "rss" as const, category: "llms-agents" },
-  { url: "https://ai.meta.com/blog/rss/", source: "rss" as const, category: "llms-agents" },
-  { url: "https://huggingface.co/blog/feed.xml", source: "rss" as const, category: "coding-tools" },
-  { url: "https://simonwillison.net/atom/everything/", source: "rss" as const, category: "coding-tools" },
+  // === US — Labs & Research (fastest breaking news) ===
+  { url: "https://blog.openai.com/rss/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://www.anthropic.com/feed", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://blog.google/technology/ai/rss/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://ai.meta.com/blog/rss/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://huggingface.co/blog/feed.xml", source: "rss" as const, category: "ferramentas-reviews" },
+  { url: "https://mistral.ai/feed/", source: "rss" as const, category: "llms-agentes" },
+
+  // === US — Tech Media (fast, reliable) ===
+  { url: "https://techcrunch.com/category/artificial-intelligence/feed/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://venturebeat.com/category/ai/feed/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://arstechnica.com/tag/artificial-intelligence/feed/", source: "rss" as const, category: "llms-agentes" },
+
+  // === US — Practitioners & Community ===
+  { url: "https://simonwillison.net/atom/everything/", source: "rss" as const, category: "ferramentas-reviews" },
+  { url: "https://lilianweng.github.io/index.xml", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://newsletter.ruder.io/feed", source: "rss" as const, category: "llms-agentes" },
+
+  // === Reddit (via RSS — no API key needed) ===
+  { url: "https://www.reddit.com/r/MachineLearning/hot.rss", source: "reddit" as const, category: "llms-agentes" },
+  { url: "https://www.reddit.com/r/LocalLLaMA/hot.rss", source: "reddit" as const, category: "ferramentas-reviews" },
+  { url: "https://www.reddit.com/r/ClaudeAI/hot.rss", source: "reddit" as const, category: "ferramentas-reviews" },
+  { url: "https://www.reddit.com/r/artificial/hot.rss", source: "reddit" as const, category: "llms-agentes" },
+
+  // === BR — Portuguese sources ===
+  { url: "https://canaltech.com.br/rss/inteligencia-artificial/", source: "rss" as const, category: "llms-agentes" },
+  { url: "https://olhardigital.com.br/feed/", source: "rss" as const, category: "llms-agentes" },
 ];
 
 // Simple RSS/Atom parser

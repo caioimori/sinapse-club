@@ -70,7 +70,7 @@ export function CommentSection({ postId, comments }: CommentSectionProps) {
           <div className="flex justify-end">
             <Button
               size="sm"
-              className="gradient-synapse border-0"
+              className="bg-foreground border-0"
               onClick={() => handleSubmit(replyTo)}
               disabled={loading || !text.trim()}
             >
@@ -114,7 +114,7 @@ function CommentItem({
   return (
     <div className={cn("space-y-2", depth > 0 && "ml-8 border-l-2 border-border pl-4")}>
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sinapse-purple-600/80 text-xs font-medium text-white">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground/80 text-xs font-medium text-white">
           {comment.author.display_name?.[0]?.toUpperCase() || comment.author.username[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/components/feed/post-card";
 import { GitHubRepos } from "@/components/profile/github-repos";
+import { CargoBadge } from "@/components/profile/cargo-badge";
 import { CalendarDays, MapPin, LinkIcon, GitFork } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -21,7 +22,7 @@ export default async function ProfilePage() {
 
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select("*, professional_role:professional_roles(name, cluster)")
     .eq("id", user.id)
     .single() as any;
 
@@ -39,17 +40,6 @@ export default async function ProfilePage() {
     .eq("author_id", user.id)
     .order("created_at", { ascending: false })
     .limit(30) as any);
-
-  // Get follow counts
-  const { count: followersCount } = await (supabase as any)
-    .from("follows")
-    .select("*", { count: "exact", head: true })
-    .eq("following_id", user.id);
-
-  const { count: followingCount } = await (supabase as any)
-    .from("follows")
-    .select("*", { count: "exact", head: true })
-    .eq("follower_id", user.id);
 
   // Get liked posts
   const { data: likedReactions } = await (supabase as any)
@@ -84,7 +74,7 @@ export default async function ProfilePage() {
         {profile.header_url ? (
           <img src={profile.header_url} alt="" className="h-48 w-full object-cover" />
         ) : (
-          <div className="h-48 w-full gradient-hero" />
+          <div className="h-48 w-full bg-foreground" />
         )}
 
         {/* Avatar */}
@@ -96,7 +86,7 @@ export default async function ProfilePage() {
               className="h-32 w-32 rounded-full border-4 border-background object-cover"
             />
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-background bg-sinapse-purple-600 text-4xl font-bold text-white">
+            <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-background bg-foreground text-4xl font-bold text-white">
               {profile.display_name?.[0]?.toUpperCase() || profile.username[0].toUpperCase()}
             </div>
           )}
@@ -114,8 +104,26 @@ export default async function ProfilePage() {
 
       {/* Profile info */}
       <div className="px-4 pt-8 pb-3">
-        <h1 className="text-xl font-bold">{profile.display_name || profile.username}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">{profile.display_name || profile.username}</h1>
+          {profile.professional_role && (
+            <CargoBadge
+              cluster={profile.professional_role.cluster}
+              roleName={profile.professional_role.name}
+              size="md"
+            />
+          )}
+        </div>
         <p className="text-muted-foreground">@{profile.username}</p>
+        {profile.headline && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {profile.headline}
+            {profile.company && <span> @ {profile.company}</span>}
+          </p>
+        )}
+        {!profile.headline && profile.company && (
+          <p className="mt-1 text-sm text-muted-foreground">@ {profile.company}</p>
+        )}
 
         {profile.bio && <p className="mt-3 text-[15px]">{profile.bio}</p>}
 
@@ -127,12 +135,12 @@ export default async function ProfilePage() {
             </span>
           )}
           {profile.website_url && (
-            <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sinapse-cyan-400 hover:underline">
+            <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-muted-foreground hover:underline">
               <LinkIcon className="h-4 w-4" /> {profile.website_url.replace(/^https?:\/\//, "")}
             </a>
           )}
           {profile.github_username && (
-            <a href={`https://github.com/${profile.github_username}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sinapse-cyan-400 hover:underline">
+            <a href={`https://github.com/${profile.github_username}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-muted-foreground hover:underline">
               <GitFork className="h-4 w-4" /> {profile.github_username}
             </a>
           )}
@@ -144,33 +152,33 @@ export default async function ProfilePage() {
         {/* Follow counts */}
         <div className="mt-3 flex items-center gap-4 text-sm">
           <span>
-            <strong>{followingCount || 0}</strong>{" "}
+            <strong>{profile.following_count || 0}</strong>{" "}
             <span className="text-muted-foreground">seguindo</span>
           </span>
           <span>
-            <strong>{followersCount || 0}</strong>{" "}
+            <strong>{profile.followers_count || 0}</strong>{" "}
             <span className="text-muted-foreground">seguidores</span>
           </span>
           <span className="ml-2">
-            <Badge variant="outline" className="text-xs">🔥 {profile.streak_days} dias</Badge>
+            <Badge variant="outline" className="text-xs">Level {profile.level || 1}</Badge>
           </span>
-          <Badge variant="outline" className="text-xs">{profile.points} pts</Badge>
+          <Badge variant="outline" className="text-xs">{profile.xp || 0} XP</Badge>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="posts" className="mt-1">
         <TabsList className="w-full justify-start rounded-none border-b border-border bg-transparent h-auto p-0">
-          <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-sinapse-purple-600 data-[state=active]:bg-transparent px-6 py-3 font-semibold">
+          <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent px-6 py-3 font-semibold">
             Posts
           </TabsTrigger>
-          <TabsTrigger value="replies" className="rounded-none border-b-2 border-transparent data-[state=active]:border-sinapse-purple-600 data-[state=active]:bg-transparent px-6 py-3 font-semibold">
+          <TabsTrigger value="replies" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent px-6 py-3 font-semibold">
             Respostas
           </TabsTrigger>
-          <TabsTrigger value="likes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-sinapse-purple-600 data-[state=active]:bg-transparent px-6 py-3 font-semibold">
+          <TabsTrigger value="likes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent px-6 py-3 font-semibold">
             Curtidas
           </TabsTrigger>
-          <TabsTrigger value="repos" className="rounded-none border-b-2 border-transparent data-[state=active]:border-sinapse-purple-600 data-[state=active]:bg-transparent px-6 py-3 font-semibold">
+          <TabsTrigger value="repos" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent px-6 py-3 font-semibold">
             <GitFork className="h-4 w-4 mr-1.5" /> Repos
           </TabsTrigger>
         </TabsList>

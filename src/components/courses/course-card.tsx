@@ -49,24 +49,24 @@ export function CourseCard({
           {thumbnail_url ? (
             <img src={thumbnail_url} alt={title} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sinapse-purple-900 to-sinapse-purple-700">
-              <BookOpen className="h-12 w-12 text-sinapse-purple-300" />
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-600">
+              <BookOpen className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
             <Play className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           {type === "launch" && (
-            <Badge className="absolute top-2 right-2 bg-sinapse-purple-600">Lancamento</Badge>
+            <Badge className="absolute top-2 right-2 bg-foreground">Lancamento</Badge>
           )}
           {type === "mini" && (
-            <Badge className="absolute top-2 right-2 bg-sinapse-cyan-600">Mini-curso</Badge>
+            <Badge className="absolute top-2 right-2 bg-muted-foreground">Mini-curso</Badge>
           )}
         </div>
 
         {/* Info */}
         <div className="p-4 space-y-2">
-          <h3 className="font-semibold line-clamp-2 group-hover:text-sinapse-purple-400 transition-colors">
+          <h3 className="font-semibold line-clamp-2 group-hover:text-muted-foreground transition-colors">
             {title}
           </h3>
           {description && (
@@ -91,7 +91,7 @@ export function CourseCard({
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full gradient-synapse transition-all"
+                  className="h-full rounded-full bg-foreground transition-all"
                   style={{ width: `${progress_pct}%` }}
                 />
               </div>
@@ -99,7 +99,7 @@ export function CourseCard({
           ) : (
             <div className="flex items-center justify-between pt-1">
               <span className="text-lg font-bold">{price}</span>
-              <Button size="sm" className="gradient-synapse border-0">
+              <Button size="sm" className="bg-foreground border-0">
                 {price_cents === 0 ? "Comecar" : "Comprar"}
               </Button>
             </div>

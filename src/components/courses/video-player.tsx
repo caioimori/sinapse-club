@@ -126,7 +126,7 @@ export function VideoPlayer({
           onClick={handleSeek}
         >
           <div
-            className="h-full rounded-full gradient-synapse transition-all"
+            className="h-full rounded-full bg-foreground transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -158,7 +158,7 @@ export function VideoPlayer({
       {/* Big play button (when paused) */}
       {!playing && (
         <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={togglePlay}>
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sinapse-purple-600/90 text-white">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground/90 text-white">
             <Play className="h-8 w-8 ml-1" />
           </div>
         </div>

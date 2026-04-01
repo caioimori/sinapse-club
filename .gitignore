@@ -39,3 +39,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment & Secrets (SINAPSE)
+.env
+.env.local
+.env.*.local
+*.key
+
+# Dependencies (SINAPSE)
+node_modules/
+
+# Build & Logs (SINAPSE)
+dist/
+build/
+*.log
+logs/
+
+# IDE & OS (SINAPSE)
+Thumbs.db
+.idea/
+*.swp
+
+# SINAPSE Local (SINAPSE)
+.sinapse-ai/local/
+.claude/settings.local.json
+.sinapse/install-log.txt
