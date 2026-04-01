@@ -24,13 +24,17 @@ export function CargoBadge({ cluster, roleName, size = "sm", className }: CargoB
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border bg-transparent font-mono whitespace-nowrap",
+        "inline-flex items-center border bg-transparent font-mono whitespace-nowrap",
         styles.border,
         styles.text,
         size === "sm" && "px-1.5 py-0 text-[10px] leading-4",
         size === "md" && "px-2 py-0.5 text-xs leading-4",
         className,
       )}
+      style={{
+        borderRadius: "var(--radius-badge)",
+        letterSpacing: "var(--tracking-widest)",
+      }}
     >
       {roleName}
     </span>

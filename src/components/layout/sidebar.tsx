@@ -42,13 +42,16 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
   return (
     <aside
       className={cn(
-        "w-[280px] flex-shrink-0 flex-col border-r border-border bg-sidebar",
+        "w-[280px] flex-shrink-0 flex-col border-r bg-sidebar glass",
         className
       )}
+      style={{
+        borderColor: "var(--glass-border)",
+      }}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center px-6 border-b border-border">
-        <Link href="/forum" className="text-xl font-bold text-gradient">
+      <div className="flex h-14 items-center px-6" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+        <Link href="/forum" className="text-xl font-bold tracking-tight text-gradient">
           sinapse.club
         </Link>
       </div>
@@ -79,7 +82,7 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
                   key={category.id}
                   href={`/forum/${category.slug}`}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors group",
+                    "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm group",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -161,12 +164,15 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
 
       {/* User card */}
       {profile && (
-        <div className="border-t border-border p-3">
+        <div className="p-3" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <Link
             href="/profile"
-            className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-sidebar-accent transition-colors"
+            className="flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm hover:bg-sidebar-accent"
+            style={{
+              borderRadius: "var(--radius-card)",
+            }}
           >
-            <Avatar size="default">
+            <Avatar size="default" className="ring-1 ring-border">
               {profile.avatar_url ? (
                 <AvatarImage src={profile.avatar_url} alt={profile.display_name || profile.username} />
               ) : null}

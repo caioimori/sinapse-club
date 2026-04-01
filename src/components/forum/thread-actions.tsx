@@ -80,7 +80,7 @@ export function ThreadActions({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "12px" }}>
       <Button
         variant="ghost"
         size="sm"

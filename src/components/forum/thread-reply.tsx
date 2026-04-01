@@ -135,8 +135,9 @@ export function ThreadReply({
     <div
       className={cn(
         "space-y-3",
-        depth > 0 && "ml-8 border-l-2 border-border pl-4"
+        depth > 0 && "ml-8 pl-4"
       )}
+      style={depth > 0 ? { borderLeft: "2px solid var(--border-subtle)" } : undefined}
     >
       <div className="flex items-start gap-3">
         <Avatar size="default" className="mt-0.5 flex-shrink-0">

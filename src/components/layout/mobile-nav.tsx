@@ -37,9 +37,12 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
     <>
       <nav
         className={cn(
-          "flex h-16 items-center justify-around border-t border-border bg-background px-2",
+          "flex h-16 items-center justify-around px-2 glass-nav",
           className
         )}
+        style={{
+          borderTop: "1px solid var(--glass-border)",
+        }}
       >
         {/* Home */}
         <Link

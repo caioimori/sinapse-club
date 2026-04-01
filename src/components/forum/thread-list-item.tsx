@@ -64,7 +64,7 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   return (
     <Link
       href={`/forum/thread/${thread.id}`}
-      className="group flex items-start gap-3 rounded-lg border border-transparent px-3 py-3 transition-colors hover:bg-muted/50"
+      className="group flex items-start gap-3 border-b border-[var(--border-subtle)] px-3 py-3 transition-colors duration-200 hover:bg-[var(--surface-default)]"
     >
       {/* Avatar */}
       <Avatar size="default" className="mt-0.5 flex-shrink-0">
@@ -82,25 +82,34 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
         {/* Title row */}
         <div className="flex items-center gap-2 flex-wrap">
           {thread.is_sticky && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0 text-[10px] font-medium text-muted-foreground">
+            <span
+              className="inline-flex items-center gap-0.5 bg-muted px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
+              style={{ borderRadius: "var(--radius-badge)" }}
+            >
               <Pin className="h-2.5 w-2.5" />
               FIXADO
             </span>
           )}
           {thread.is_solved && (
-            <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-500/30 px-1.5 py-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span
+              className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-1.5 py-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
+              style={{ borderRadius: "var(--radius-badge)" }}
+            >
               <CheckCircle2 className="h-2.5 w-2.5" />
               RESOLVIDO
             </span>
           )}
-          <h3 className="font-semibold text-sm text-foreground group-hover:text-foreground/80 truncate">
+          <h3
+            className="font-semibold text-sm text-foreground group-hover:text-foreground/80 truncate"
+            style={{ letterSpacing: "var(--tracking-heading)" }}
+          >
             {thread.title || "Sem titulo"}
           </h3>
         </div>
 
         {/* Meta row */}
-        <div className="mt-1 flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground">
-          <span className="font-medium text-foreground/70">
+        <div className="mt-1 flex items-center gap-1.5 flex-wrap text-xs" style={{ color: "var(--text-secondary)" }}>
+          <span className="font-medium" style={{ color: "var(--text-secondary)" }}>
             {authorName}
           </span>
           {thread.author.professional_role && (
@@ -110,27 +119,27 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
               size="sm"
             />
           )}
-          <span>·</span>
-          <span>{timeAgo}</span>
+          <span style={{ color: "var(--text-tertiary)" }}>·</span>
+          <span style={{ color: "var(--text-tertiary)" }}>{timeAgo}</span>
 
           {/* Subcategory */}
           {thread.subcategory && (
             <>
-              <span>·</span>
-              <span className="text-muted-foreground/70">{thread.subcategory.name}</span>
+              <span style={{ color: "var(--text-tertiary)" }}>·</span>
+              <span style={{ color: "var(--text-tertiary)" }}>{thread.subcategory.name}</span>
             </>
           )}
 
           {/* Category (on home page) */}
           {showCategory && thread.category && (
             <>
-              <span>·</span>
+              <span style={{ color: "var(--text-tertiary)" }}>·</span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-1.5 w-1.5 rounded-full inline-block"
                   style={{ backgroundColor: thread.category.color || "#71717A" }}
                 />
-                <span className="text-muted-foreground/70">{thread.category.name}</span>
+                <span style={{ color: "var(--text-tertiary)" }}>{thread.category.name}</span>
               </span>
             </>
           )}
@@ -142,7 +151,8 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             {thread.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-muted px-2 py-0 text-[10px] font-medium text-muted-foreground"
+                className="bg-muted px-2 py-0 text-[10px] font-medium text-muted-foreground"
+                style={{ borderRadius: "var(--radius-badge)" }}
               >
                 {tag}
               </span>
@@ -157,7 +167,7 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
       </div>
 
       {/* Stats (right side) */}
-      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-xs text-muted-foreground pt-0.5">
+      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-xs pt-0.5" style={{ color: "var(--text-tertiary)" }}>
         <span className="flex items-center gap-1">
           <MessageSquare className="h-3 w-3" />
           <span className="tabular-nums">{thread.replies_count}</span>

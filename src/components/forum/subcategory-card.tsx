@@ -13,7 +13,7 @@ export function SubcategoryCard({ subcategory, categorySlug }: SubcategoryCardPr
   return (
     <Link
       href={`/forum/${categorySlug}/${subcategory.slug}`}
-      className="group flex items-center justify-between rounded-lg border border-border px-3.5 py-2.5 transition-colors hover:bg-muted/50"
+      className="group flex items-center justify-between rounded-xl border border-[var(--border-default)] px-4 py-3 transition-all duration-200 hover:shadow-xs hover:border-[var(--border-hover)] hover:bg-[var(--surface-default)]"
     >
       <div className="min-w-0">
         <p className="text-sm font-medium text-foreground truncate">
@@ -21,13 +21,13 @@ export function SubcategoryCard({ subcategory, categorySlug }: SubcategoryCardPr
           {subcategory.name}
         </p>
         {subcategory.description && (
-          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+          <p className="mt-0.5 text-xs line-clamp-1" style={{ color: "var(--text-tertiary)" }}>
             {subcategory.description}
           </p>
         )}
       </div>
 
-      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 ml-3">
+      <div className="flex items-center gap-1 text-xs flex-shrink-0 ml-3" style={{ color: "var(--text-tertiary)" }}>
         <MessageSquare className="h-3 w-3" />
         <span className="tabular-nums">{subcategory.threads_count}</span>
       </div>

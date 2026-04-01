@@ -93,7 +93,12 @@ export function Topbar({ profile }: TopbarProps) {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:px-6">
+    <header
+      className="sticky top-0 z-30 flex h-14 items-center justify-between px-4 lg:px-6 glass-nav"
+      style={{
+        borderBottom: "1px solid var(--glass-border)",
+      }}
+    >
       {/* Left: Breadcrumb (forum) or Search (other) */}
       <div className="flex flex-1 items-center gap-4 min-w-0">
         {breadcrumbs.length > 0 ? (

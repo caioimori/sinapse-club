@@ -67,10 +67,20 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
   const authorInitial = authorName[0]?.toUpperCase() || "?";
 
   return (
-    <article className="space-y-4">
+    <article
+      className="space-y-4 p-5"
+      style={{
+        background: "var(--glass-bg)",
+        backdropFilter: "var(--glass-blur) var(--glass-saturate)",
+        WebkitBackdropFilter: "var(--glass-blur) var(--glass-saturate)",
+        borderRadius: "var(--radius-card)",
+        border: "1px solid var(--glass-border)",
+        boxShadow: "var(--shadow-xs)",
+      }}
+    >
       {/* Author header */}
       <div className="flex items-start gap-3">
-        <Avatar size="lg" className="mt-0.5 flex-shrink-0">
+        <Avatar size="lg" className="mt-0.5 flex-shrink-0 ring-1 ring-border">
           {thread.author.avatar_url ? (
             <AvatarImage
               src={thread.author.avatar_url}
@@ -92,11 +102,11 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
                 size="sm"
               />
             )}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
               {timeAgo}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs" style={{ color: "var(--text-tertiary)" }}>
             {thread.author.headline && (
               <span>{thread.author.headline}</span>
             )}
@@ -116,19 +126,28 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
       <div className="space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
           {thread.is_sticky && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0 text-[10px] font-medium text-muted-foreground">
+            <span
+              className="inline-flex items-center gap-0.5 bg-muted px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
+              style={{ borderRadius: "var(--radius-badge)" }}
+            >
               <Pin className="h-2.5 w-2.5" />
               FIXADO
             </span>
           )}
           {thread.is_solved && (
-            <span className="inline-flex items-center gap-0.5 rounded-full border border-emerald-500/30 px-1.5 py-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+            <span
+              className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-1.5 py-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
+              style={{ borderRadius: "var(--radius-badge)" }}
+            >
               <CheckCircle2 className="h-2.5 w-2.5" />
               RESOLVIDO
             </span>
           )}
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1
+          className="text-2xl font-bold text-foreground"
+          style={{ letterSpacing: "var(--tracking-heading)" }}
+        >
           {thread.title || "Sem titulo"}
         </h1>
       </div>
@@ -145,7 +164,8 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
           {thread.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+              className="bg-muted px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground"
+              style={{ borderRadius: "var(--radius-badge)" }}
             >
               {tag}
             </span>
@@ -154,7 +174,13 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
       )}
 
       {/* Stats bar */}
-      <div className="flex items-center gap-3 pt-1 text-xs text-muted-foreground border-t border-border">
+      <div
+        className="flex items-center gap-3 pt-3 text-xs"
+        style={{
+          color: "var(--text-tertiary)",
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      >
         <span className="tabular-nums">
           {thread.replies_count}{" "}
           {thread.replies_count === 1 ? "resposta" : "respostas"}
