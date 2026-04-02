@@ -8,6 +8,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import type { ProfessionalCluster } from "@/types/database";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export interface ThreadDetailAuthor {
   id: string;
@@ -155,7 +156,7 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
       {/* Body (rendered HTML) */}
       <div
         className="prose dark:prose-invert prose-sm max-w-none text-foreground/90 [&_a]:text-muted-foreground [&_a]:underline [&_pre]:bg-muted [&_pre]:border [&_pre]:border-border [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_blockquote]:border-border"
-        dangerouslySetInnerHTML={{ __html: thread.content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(thread.content) }}
       />
 
       {/* Tags */}

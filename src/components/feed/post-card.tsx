@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { sanitizeHtml } from "@/lib/sanitize";
 import {
   Heart,
   MessageCircle,
@@ -342,7 +343,7 @@ export function PostCard({
             "[&_a]:text-muted-foreground [&_code]:text-muted-foreground [&_code]:bg-muted [&_code]:px-1 [&_code]:rounded",
             !compact && "line-clamp-[12]"
           )}
-          dangerouslySetInnerHTML={{ __html: displayContent }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayContent) }}
         />
 
         {/* Translation toggle */}
@@ -367,7 +368,7 @@ export function PostCard({
               <span className="text-xs text-muted-foreground">@{quote_of.author.username}</span>
             </div>
             {quote_of.title && <p className="text-sm font-medium mb-0.5">{quote_of.title}</p>}
-            <div className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: quote_of.content }} />
+            <div className="text-sm text-muted-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: sanitizeHtml(quote_of.content) }} />
           </Link>
         )}
 

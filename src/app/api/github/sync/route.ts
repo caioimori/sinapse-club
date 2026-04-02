@@ -11,8 +11,8 @@ export async function POST(request: Request) {
 
   const { github_username } = await request.json();
 
-  if (!github_username) {
-    return NextResponse.json({ error: "github_username required" }, { status: 400 });
+  if (!github_username || !/^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(github_username)) {
+    return NextResponse.json({ error: "Invalid github_username" }, { status: 400 });
   }
 
   try {

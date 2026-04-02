@@ -8,6 +8,7 @@ import { Heart, Reply, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
@@ -179,7 +180,7 @@ export function ThreadReply({
           {/* Content */}
           <div
             className="mt-1.5 text-sm text-foreground/90 prose dark:prose-invert prose-sm max-w-none [&_a]:text-muted-foreground [&_a]:underline [&_pre]:bg-muted [&_pre]:border [&_pre]:border-border [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs"
-            dangerouslySetInnerHTML={{ __html: reply.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(reply.content) }}
           />
 
           {/* Actions bar */}
