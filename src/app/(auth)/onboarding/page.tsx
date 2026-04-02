@@ -32,6 +32,7 @@ export default function OnboardingPage() {
   const [company, setCompany] = useState("");
   const [headline, setHeadline] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -43,10 +44,16 @@ export default function OnboardingPage() {
 
   async function handleComplete() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    setError(null);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Sessao expirada. Faca login novamente.");
+        setLoading(false);
+        return;
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("profiles").update({
+      const { error: updateError } = await (supabase as any).from("profiles").update({
         locale,
         interests,
         professional_role_id: selectedRoleId,
@@ -54,9 +61,14 @@ export default function OnboardingPage() {
         headline: headline || null,
         onboarded: true,
       }).eq("id", user.id);
+      if (updateError) throw updateError;
+      router.push("/forum");
+      router.refresh();
+    } catch (err) {
+      console.error("Onboarding error:", err);
+      setError("Erro ao salvar perfil. Tente novamente.");
+      setLoading(false);
     }
-    router.push("/forum");
-    router.refresh();
   }
 
   return (
@@ -206,6 +218,9 @@ export default function OnboardingPage() {
                 <p className="text-sm"><span className="font-medium">Cargo:</span> Selecionado{company ? ` @ ${company}` : ""}</p>
               )}
             </div>
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(3)}>Voltar</Button>
               <Button

@@ -34,7 +34,11 @@ export async function createCheckout(
     return { error: "Sistema de pagamento indisponivel. Tente novamente mais tarde." };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    console.error("NEXT_PUBLIC_APP_URL not configured");
+    return { error: "Configuracao do servidor incompleta. Contate o suporte." };
+  }
   const completionUrl = `${appUrl}/pricing?success=true`;
   const externalId = `PLAN-${plan}`;
 
@@ -110,7 +114,11 @@ export async function createCourseCheckout(
     return { error: "Sistema de pagamento indisponivel. Tente novamente mais tarde." };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    console.error("NEXT_PUBLIC_APP_URL not configured");
+    return { error: "Configuracao do servidor incompleta. Contate o suporte." };
+  }
   const completionUrl = `${appUrl}/courses/${courseSlug}?enrolled=true`;
   const externalId = `COURSE-${courseId}`;
 

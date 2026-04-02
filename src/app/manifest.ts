@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
       "A comunidade de inteligencia artificial mais acessivel do mundo lusofono.",
     start_url: "/",
     display: "standalone",
-    theme_color: "#7C3AED",
+    theme_color: "#000000",
     background_color: "#FFFFFF",
     icons: [
       {

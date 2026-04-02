@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sinapse.club"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://forum.sinapse.club"),
   title: {
     default: "sinapse.club — Comunidade de AI em Portugues",
     template: "%s | sinapse.club",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://sinapse.club",
+    url: "https://forum.sinapse.club",
     siteName: "sinapse.club",
     title: "sinapse.club — AI sem barreira. Comunidade sem fronteira.",
     description:
