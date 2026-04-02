@@ -1,13 +1,25 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ChevronRight, MessageSquare } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ChevronRight, MessageSquare, AlertCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import { ThreadCreateForm } from "@/components/forum/thread-create-form";
 
 export const metadata = {
   title: "Novo Thread",
 };
 
-export default function ForumNewThreadPage() {
+export default async function ForumNewThreadPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?redirect=/forum/new");
+  }
+
+  // Check if user can create a thread (free tier: 3/month limit)
+  const { data: canCreate } = await supabase.rpc("user_can_create_thread");
+  const threadLimitReached = canCreate === false;
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -33,12 +45,31 @@ export default function ForumNewThreadPage() {
         </p>
       </div>
 
+      {/* Thread limit warning */}
+      {threadLimitReached && (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-4">
+          <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+          <div>
+            <p className="font-medium">Limite de threads atingido</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Membros Free podem criar ate 3 threads por mes.{" "}
+              <Link href="/pricing?upgrade=pro&from=/forum/new" className="underline hover:text-foreground transition-colors">
+                Faca upgrade para Pro
+              </Link>{" "}
+              para threads ilimitados.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Form */}
-      <div className="rounded-lg border border-border bg-card p-5">
-        <Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">Carregando...</div>}>
-          <ThreadCreateForm />
-        </Suspense>
-      </div>
+      {!threadLimitReached && (
+        <div className="rounded-lg border border-border bg-card p-5">
+          <Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">Carregando...</div>}>
+            <ThreadCreateForm />
+          </Suspense>
+        </div>
+      )}
     </div>
   );
 }

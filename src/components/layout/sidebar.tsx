@@ -9,6 +9,9 @@ import {
   Wrench,
   Gift,
   Lock,
+  BookOpen,
+  ShoppingBag,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,16 +20,24 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { TierBadge } from "@/components/access/tier-badge";
+import { hasAccess } from "@/lib/access";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 type ProfessionalRole = Database["public"]["Tables"]["professional_roles"]["Row"];
 
+const platformItems = [
+  { href: "/courses", name: "Cursos", icon: BookOpen, requiredTier: null },
+  { href: "/marketplace", name: "Marketplace", icon: ShoppingBag, requiredTier: "pro" as const },
+  { href: "/calendar", name: "Calendario", icon: Calendar, requiredTier: null },
+];
+
 const extraItems = [
-  { href: "/leaderboard", name: "Leaderboard", icon: Trophy },
-  { href: "/tools", name: "Ferramentas AI", icon: Wrench },
-  { href: "/benefits", name: "Beneficios", icon: Gift },
+  { href: "/leaderboard", name: "Leaderboard", icon: Trophy, requiredTier: null },
+  { href: "/tools", name: "Ferramentas AI", icon: Wrench, requiredTier: "pro" as const },
+  { href: "/benefits", name: "Beneficios", icon: Gift, requiredTier: "pro" as const },
 ];
 
 interface SidebarProps {
@@ -116,14 +127,15 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
 
         <Separator className="my-3 mx-3" />
 
-        {/* Extras */}
+        {/* Plataforma */}
         <div className="px-3">
           <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Extras
+            Plataforma
           </p>
           <nav className="space-y-0.5">
-            {extraItems.map((item) => {
+            {platformItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
+              const isLocked = item.requiredTier && profile && !hasAccess(profile.role, item.requiredTier);
               return (
                 <Link
                   key={item.href}
@@ -136,7 +148,43 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
                   )}
                 >
                   <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
+                  <span className="flex-1">{item.name}</span>
+                  {isLocked && (
+                    <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <Separator className="my-3 mx-3" />
+
+        {/* Extras */}
+        <div className="px-3">
+          <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Extras
+          </p>
+          <nav className="space-y-0.5">
+            {extraItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              const isLocked = item.requiredTier && profile && !hasAccess(profile.role, item.requiredTier);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="flex-1">{item.name}</span>
+                  {isLocked && (
+                    <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  )}
                 </Link>
               );
             })}
@@ -181,9 +229,12 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="truncate font-medium text-sm leading-tight">
-                {profile.display_name || profile.username}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="truncate font-medium text-sm leading-tight">
+                  {profile.display_name || profile.username}
+                </p>
+                <TierBadge tier={profile.role} size="sm" />
+              </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 {professionalRole ? (
                   <CargoBadge

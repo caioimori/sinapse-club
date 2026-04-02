@@ -3,12 +3,25 @@ import { CategoryCard } from "@/components/forum/category-card";
 import { ForumStats } from "@/components/forum/forum-stats";
 import { ThreadList } from "@/components/forum/thread-list";
 import { ThreadListItem, type ThreadData } from "@/components/forum/thread-list-item";
+import { hasAccess } from "@/lib/access";
 import type { Database, ProfessionalCluster } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
 export default async function ForumPage() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get user role for category access filtering
+  let userRole = "free";
+  if (user) {
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    userRole = (profile as any)?.role ?? "free";
+  }
 
   // Parallel fetches for categories, recent threads, and stats
   const [categoriesRes, threadsRes, membersRes, totalRepliesRes] =
@@ -134,7 +147,11 @@ export default async function ForumPage() {
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+            <CategoryCard
+              key={category.id}
+              category={category}
+              locked={!hasAccess(userRole, category.access)}
+            />
           ))}
         </div>
       </section>

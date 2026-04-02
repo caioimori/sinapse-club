@@ -44,15 +44,20 @@ export default async function CourseDetailPage({ params, searchParams }: {
 
   // Check enrollment
   let isEnrolled = false;
+  let hasFullAccess = false;
   if (user) {
-    const { data } = await supabase
-      .from("enrollments")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("course_id", course.id)
-      .eq("status", "active")
-      .single();
-    isEnrolled = !!data;
+    const [enrollmentRes, accessRes] = await Promise.all([
+      supabase
+        .from("enrollments")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("course_id", course.id)
+        .eq("status", "active")
+        .single(),
+      (supabase as any).rpc("user_has_course_access", { course_uuid: course.id }),
+    ]);
+    isEnrolled = !!enrollmentRes.data;
+    hasFullAccess = accessRes.data === true;
   }
 
   // Get all lessons flat
@@ -72,7 +77,7 @@ export default async function CourseDetailPage({ params, searchParams }: {
     (data || []).forEach((p: any) => progressMap.set(p.lesson_id, p));
   }
 
-  const canWatch = isEnrolled || currentLesson?.is_preview || course.price_cents === 0;
+  const canWatch = hasFullAccess || isEnrolled || currentLesson?.is_preview || course.price_cents === 0;
   const price = course.price_cents === 0 ? "Gratis" : `R$ ${(course.price_cents / 100).toFixed(0)}`;
   const currentProgress = currentLesson ? progressMap.get(currentLesson.id) : null;
 
@@ -93,8 +98,20 @@ export default async function CourseDetailPage({ params, searchParams }: {
             {!canWatch ? (
               <div className="text-center space-y-3">
                 <Lock className="mx-auto h-12 w-12 text-muted-foreground" />
-                <p className="text-muted-foreground">Compre o curso para acessar</p>
-                <Button className="bg-foreground border-0">{price}</Button>
+                <p className="font-medium">Acesso restrito</p>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                  {course.included_in_premium
+                    ? "Este curso esta incluso no plano Premium ou pode ser adquirido separadamente."
+                    : "Adquira este curso para acessar todas as aulas."}
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <Button className="bg-foreground border-0">{price}</Button>
+                  {course.included_in_premium && (
+                    <Link href="/pricing">
+                      <Button variant="outline">Ver planos</Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="text-center space-y-2">
@@ -152,7 +169,7 @@ export default async function CourseDetailPage({ params, searchParams }: {
                 const prog = progressMap.get(lesson.id);
                 const isCompleted = prog?.status === "completed";
                 const isCurrent = currentLesson?.id === lesson.id;
-                const accessible = isEnrolled || lesson.is_preview || course.price_cents === 0;
+                const accessible = hasFullAccess || isEnrolled || lesson.is_preview || course.price_cents === 0;
                 return (
                   <Link
                     key={lesson.id}

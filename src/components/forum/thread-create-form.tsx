@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichEditor } from "@/components/feed/rich-editor";
 import { createClient } from "@/lib/supabase/client";
+import { ThreadLimitIndicator } from "@/components/access/thread-limit-indicator";
+import { hasAccess } from "@/lib/access";
 
 interface Category {
   id: string;
@@ -23,7 +25,15 @@ interface Subcategory {
   icon: string | null;
 }
 
-export function ThreadCreateForm() {
+interface ThreadCreateFormProps {
+  userRole?: string;
+  threadsCreatedThisMonth?: number;
+}
+
+export function ThreadCreateForm({
+  userRole = "free",
+  threadsCreatedThisMonth = 0,
+}: ThreadCreateFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -167,8 +177,17 @@ export function ThreadCreateForm() {
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
 
+  const isFreeAtLimit = !hasAccess(userRole, "pro") && threadsCreatedThisMonth >= 3;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Thread limit indicator for free users */}
+      <ThreadLimitIndicator
+        currentCount={threadsCreatedThisMonth}
+        maxCount={3}
+        userRole={userRole}
+      />
+
       {/* Category */}
       <div className="space-y-2">
         <Label htmlFor="category" className="text-sm font-medium">
@@ -297,7 +316,7 @@ export function ThreadCreateForm() {
         <Button
           type="submit"
           className="bg-foreground border-0 px-6"
-          disabled={loading}
+          disabled={loading || isFreeAtLimit}
         >
           {loading ? "Publicando..." : "Publicar Thread"}
         </Button>

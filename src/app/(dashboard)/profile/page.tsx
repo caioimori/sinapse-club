@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/components/feed/post-card";
 import { GitHubRepos } from "@/components/profile/github-repos";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { TierBadge } from "@/components/access/tier-badge";
 import { CalendarDays, MapPin, LinkIcon, GitFork } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -106,6 +107,7 @@ export default async function ProfilePage() {
       <div className="px-4 pt-8 pb-3">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold">{profile.display_name || profile.username}</h1>
+          <TierBadge tier={profile.role} size="md" />
           {profile.professional_role && (
             <CargoBadge
               cluster={profile.professional_role.cluster}

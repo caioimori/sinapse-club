@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getRoleRank } from "@/lib/access";
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -60,6 +61,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/settings") ||
     pathname.startsWith("/spaces") ||
     pathname.startsWith("/posts") ||
+    pathname.startsWith("/marketplace") ||
+    pathname.startsWith("/benefits") ||
+    pathname.startsWith("/tools") ||
     pathname.startsWith("/admin");
 
   if (!user && isDashboardRoute) {
@@ -88,6 +92,21 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/forum";
       return NextResponse.redirect(url);
+    }
+
+    // Pro-gated routes — require pro tier or above
+    const proGatedRoutes = ["/marketplace", "/benefits", "/tools"];
+    const isProGated = proGatedRoutes.some((route) => pathname.startsWith(route));
+
+    if (isProGated && profile) {
+      const userRank = getRoleRank(profile.role);
+      if (userRank < 20) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/pricing";
+        url.searchParams.set("upgrade", "pro");
+        url.searchParams.set("from", pathname);
+        return NextResponse.redirect(url);
+      }
     }
   }
 

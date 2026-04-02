@@ -6,15 +6,17 @@ type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
 interface CategoryCardProps {
   category: ForumCategory;
+  /** Whether the current user lacks access to this category */
+  locked?: boolean;
 }
 
-export function CategoryCard({ category }: CategoryCardProps) {
+export function CategoryCard({ category, locked = false }: CategoryCardProps) {
   const isPro = category.access === "pro";
 
   return (
     <Link
-      href={`/forum/${category.slug}`}
-      className="group flex gap-4 rounded-2xl border border-[var(--border-default)] p-5 shadow-xs transition-all duration-200 hover:shadow-sm hover:border-[var(--border-hover)] hover:bg-[var(--surface-default)]"
+      href={locked ? `/pricing?upgrade=${category.access}&from=/forum/${category.slug}` : `/forum/${category.slug}`}
+      className={`group flex gap-4 rounded-2xl border border-[var(--border-default)] p-5 shadow-xs transition-all duration-200 hover:shadow-sm hover:border-[var(--border-hover)] hover:bg-[var(--surface-default)] ${locked ? "opacity-60" : ""}`}
     >
       {/* Icon + color dot */}
       <div className="flex flex-col items-center gap-1.5 pt-0.5">

@@ -625,6 +625,7 @@ export interface Database {
           is_featured: boolean;
           total_lessons: number;
           total_duration_minutes: number;
+          included_in_premium: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -642,6 +643,7 @@ export interface Database {
           is_featured?: boolean;
           total_lessons?: number;
           total_duration_minutes?: number;
+          included_in_premium?: boolean;
         };
         Update: {
           slug?: string;
@@ -655,6 +657,7 @@ export interface Database {
           is_featured?: boolean;
           total_lessons?: number;
           total_duration_minutes?: number;
+          included_in_premium?: boolean;
         };
       };
       enrollments: {
@@ -711,10 +714,38 @@ export interface Database {
           canceled_at?: string | null;
         };
       };
+      free_tier_limits: {
+        Row: {
+          id: string;
+          user_id: string;
+          period_start: string;
+          threads_created: number;
+        };
+        Insert: {
+          user_id: string;
+          period_start?: string;
+          threads_created?: number;
+        };
+        Update: {
+          threads_created?: number;
+        };
+      };
     };
     Functions: {
       user_has_access: {
         Args: { required_access: string };
+        Returns: boolean;
+      };
+      role_rank: {
+        Args: { user_role: string };
+        Returns: number;
+      };
+      user_has_course_access: {
+        Args: { course_uuid: string };
+        Returns: boolean;
+      };
+      user_can_create_thread: {
+        Args: Record<string, never>;
         Returns: boolean;
       };
     };

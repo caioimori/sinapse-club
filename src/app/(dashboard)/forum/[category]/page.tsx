@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SubcategoryCard } from "@/components/forum/subcategory-card";
 import { ThreadList } from "@/components/forum/thread-list";
+import { hasAccess } from "@/lib/access";
 import type { ThreadData } from "@/components/forum/thread-list-item";
 import type { Database, ProfessionalCluster } from "@/types/database";
 
@@ -28,6 +29,22 @@ export default async function ForumCategoryPage({
   }
 
   const typedCategory = category as ForumCategory;
+
+  // Check if user has access to this category's tier
+  const { data: { user } } = await supabase.auth.getUser();
+  let userRole = "free";
+  if (user) {
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    userRole = (profile as any)?.role ?? "free";
+  }
+
+  if (!hasAccess(userRole, typedCategory.access)) {
+    redirect(`/pricing?upgrade=${typedCategory.access}&from=/forum/${categorySlug}`);
+  }
 
   // Fetch subcategories and threads in parallel
   const [subcategoriesRes, threadsRes] = await Promise.all([
