@@ -1,0 +1,16 @@
+# Code Owners — sinapse-plataform
+# All PRs require approval from an owner before merge.
+
+# Default: all files require owner review
+* @caioimori @Matheus-soier
+
+# Critical paths (framework, config, CI/CD)
+.sinapse-ai/   @caioimori
+.claude/        @caioimori
+.github/        @caioimori
+package.json    @caioimori
+
+# Security-sensitive
+.env*           @caioimori
+*.config.js     @caioimori
+*.config.ts     @caioimori
