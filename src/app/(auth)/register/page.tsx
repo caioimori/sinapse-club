@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AuthSideVisual } from "@/components/auth/auth-side-visual";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -54,8 +55,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center ">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-dvh">
+      <div className="flex items-center justify-center p-6 lg:p-0">
+        <div className="w-full max-w-sm space-y-6 rounded-xl border border-border bg-card p-8 lg:border-0 lg:bg-transparent lg:rounded-none lg:p-12">
         <div className="text-center">
           <Link href="/" className="text-2xl font-bold text-gradient">sinapse.club</Link>
           <p className="mt-2 text-sm text-muted-foreground">Crie sua conta gratis</p>
@@ -133,7 +135,9 @@ export default function RegisterPage() {
             Entrar
           </Link>
         </p>
+        </div>
       </div>
+      <AuthSideVisual />
     </div>
   );
 }
