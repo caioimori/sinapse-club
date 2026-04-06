@@ -56,10 +56,10 @@ export function ForumComposer({
       content: text,
       content_plain: text,
       type: "thread" as const,
-      tags: [],
+      tags: [] as string[],
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("posts")
       .insert(payload)
       .select("id")
