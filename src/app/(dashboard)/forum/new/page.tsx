@@ -1,53 +1,7 @@
-import { Suspense } from "react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, MessageSquare, AlertCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { ThreadCreateForm } from "@/components/forum/thread-create-form";
-import type { Database } from "@/types/database";
-
-export const metadata = {
-  title: "Novo Thread",
-};
-
-type ProfileRole = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
-type FreeTierLimit = Pick<Database["public"]["Tables"]["free_tier_limits"]["Row"], "threads_created">;
 
 export default async function ForumNewThreadPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login?redirect=/forum/new");
-  }
-
-  const monthStart = new Date();
-  monthStart.setUTCDate(1);
-  monthStart.setUTCHours(0, 0, 0, 0);
-  const monthStartKey = monthStart.toISOString().slice(0, 10);
-
-  const [{ data: canCreate }, { data: profile }, { data: limits }] = await Promise.all([
-    supabase.rpc("user_can_create_thread"),
-    supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("free_tier_limits")
-      .select("threads_created")
-      .eq("user_id", user.id)
-      .eq("period_start", monthStartKey)
-      .maybeSingle(),
-  ]);
-
-  const threadLimitReached = canCreate === false;
-  const userRole = (profile as ProfileRole | null)?.role ?? "free";
-  const threadsCreatedThisMonth = (limits as FreeTierLimit | null)?.threads_created ?? 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
+  redirect("/forum");
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <MessageSquare className="h-4 w-4 flex-shrink-0" />
         <Link
