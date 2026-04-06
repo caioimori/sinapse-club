@@ -4,10 +4,14 @@ import { redirect } from "next/navigation";
 import { ChevronRight, MessageSquare, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ThreadCreateForm } from "@/components/forum/thread-create-form";
+import type { Database } from "@/types/database";
 
 export const metadata = {
   title: "Novo Thread",
 };
+
+type ProfileRole = Pick<Database["public"]["Tables"]["profiles"]["Row"], "role">;
+type FreeTierLimit = Pick<Database["public"]["Tables"]["free_tier_limits"]["Row"], "threads_created">;
 
 export default async function ForumNewThreadPage() {
   const supabase = await createClient();
@@ -17,9 +21,30 @@ export default async function ForumNewThreadPage() {
     redirect("/login?redirect=/forum/new");
   }
 
-  // Check if user can create a thread (free tier: 3/month limit)
-  const { data: canCreate } = await supabase.rpc("user_can_create_thread");
+  const monthStart = new Date();
+  monthStart.setUTCDate(1);
+  monthStart.setUTCHours(0, 0, 0, 0);
+  const monthStartKey = monthStart.toISOString().slice(0, 10);
+
+  const [{ data: canCreate }, { data: profile }, { data: limits }] = await Promise.all([
+    supabase.rpc("user_can_create_thread"),
+    supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("free_tier_limits")
+      .select("threads_created")
+      .eq("user_id", user.id)
+      .eq("period_start", monthStartKey)
+      .maybeSingle(),
+  ]);
+
   const threadLimitReached = canCreate === false;
+  const userRole = (profile as ProfileRole | null)?.role ?? "free";
+  const threadsCreatedThisMonth = (limits as FreeTierLimit | null)?.threads_created ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
@@ -66,7 +91,10 @@ export default async function ForumNewThreadPage() {
       {!threadLimitReached && (
         <div className="rounded-lg border border-border bg-card p-5">
           <Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">Carregando...</div>}>
-            <ThreadCreateForm />
+            <ThreadCreateForm
+              userRole={userRole}
+              threadsCreatedThisMonth={threadsCreatedThisMonth}
+            />
           </Suspense>
         </div>
       )}

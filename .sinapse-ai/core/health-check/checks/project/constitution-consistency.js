@@ -27,6 +27,8 @@ const EXPECTED_ARTICLES = [
   { number: 'VI', title: 'Absolute Imports', severity: 'SHOULD' },
   { number: 'VII', title: 'Ecosystem Metrics Accuracy', severity: 'NON-NEGOTIABLE' },
   { number: 'VIII', title: 'Mandatory Delegation', severity: 'NON-NEGOTIABLE' },
+  { number: 'IX', title: 'Safe Collaboration', severity: 'NON-NEGOTIABLE' },
+  { number: 'X', title: 'Security & Data Protection', severity: 'NON-NEGOTIABLE' },
 ];
 
 /**

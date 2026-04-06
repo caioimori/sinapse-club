@@ -1,41 +1,74 @@
 import { createServerClient } from "@supabase/ssr";
+import type { SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRoleRank } from "@/lib/access";
+import {
+  getSupabaseServerConfig,
+  hasSupabaseServerConfig,
+} from "@/lib/supabase/server-config";
+
+function serviceUnavailable() {
+  return new NextResponse(
+    "Supabase configuration is missing for authenticated routes.",
+    {
+      status: 503,
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+      },
+    },
+  );
+}
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const requiresSupabase = pathname.startsWith("/forum")
+    || pathname.startsWith("/feed")
+    || pathname.startsWith("/courses")
+    || pathname.startsWith("/calendar")
+    || pathname.startsWith("/profile")
+    || pathname.startsWith("/settings")
+    || pathname.startsWith("/spaces")
+    || pathname.startsWith("/posts")
+    || pathname.startsWith("/marketplace")
+    || pathname.startsWith("/benefits")
+    || pathname.startsWith("/tools")
+    || pathname.startsWith("/admin")
+    || pathname.startsWith("/login")
+    || pathname.startsWith("/register")
+    || pathname.startsWith("/onboarding")
+    || pathname.startsWith("/auth/callback");
 
-  // Skip auth entirely for public/static routes
-  const isPublicRoute = pathname === "/" ||
-    pathname.startsWith("/demo") ||
-    pathname.startsWith("/pricing") ||
-    pathname.startsWith("/about") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/auth/callback");
+  if (!hasSupabaseServerConfig()) {
+    if (requiresSupabase) {
+      return serviceUnavailable();
+    }
+
+    return NextResponse.next({ request });
+  }
+
+  const isPublicRoute = pathname === "/"
+    || pathname.startsWith("/demo")
+    || pathname.startsWith("/pricing")
+    || pathname.startsWith("/about")
+    || pathname.startsWith("/api")
+    || pathname.startsWith("/login")
+    || pathname.startsWith("/register")
+    || pathname.startsWith("/onboarding")
+    || pathname.startsWith("/auth/callback");
 
   if (isPublicRoute) {
     return NextResponse.next({ request });
   }
 
   let supabaseResponse = NextResponse.next({ request });
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  // Skip auth if Supabase isn't configured (dev with placeholder keys)
-  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("placeholder")) {
-    return supabaseResponse;
-  }
+  const { url: supabaseUrl, anonKey: supabaseKey } = getSupabaseServerConfig();
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: Parameters<SetAllCookies>[0]) {
         cookiesToSet.forEach(({ name, value }) =>
           request.cookies.set(name, value)
         );
@@ -47,24 +80,22 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Refresh session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes — redirect to login if not authenticated
-  const isDashboardRoute = pathname.startsWith("/forum") ||
-    pathname.startsWith("/feed") ||
-    pathname.startsWith("/courses") ||
-    pathname.startsWith("/calendar") ||
-    pathname.startsWith("/profile") ||
-    pathname.startsWith("/settings") ||
-    pathname.startsWith("/spaces") ||
-    pathname.startsWith("/posts") ||
-    pathname.startsWith("/marketplace") ||
-    pathname.startsWith("/benefits") ||
-    pathname.startsWith("/tools") ||
-    pathname.startsWith("/admin");
+  const isDashboardRoute = pathname.startsWith("/forum")
+    || pathname.startsWith("/feed")
+    || pathname.startsWith("/courses")
+    || pathname.startsWith("/calendar")
+    || pathname.startsWith("/profile")
+    || pathname.startsWith("/settings")
+    || pathname.startsWith("/spaces")
+    || pathname.startsWith("/posts")
+    || pathname.startsWith("/marketplace")
+    || pathname.startsWith("/benefits")
+    || pathname.startsWith("/tools")
+    || pathname.startsWith("/admin");
 
   if (!user && isDashboardRoute) {
     const url = request.nextUrl.clone();
@@ -73,7 +104,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Onboarding gate — force unboarded users to complete onboarding
   if (user && isDashboardRoute && !pathname.startsWith("/onboarding")) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -87,14 +117,12 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Admin-only routes
     if (pathname.startsWith("/admin") && profile?.role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/forum";
       return NextResponse.redirect(url);
     }
 
-    // Pro-gated routes — require pro tier or above
     const proGatedRoutes = ["/marketplace", "/benefits", "/tools"];
     const isProGated = proGatedRoutes.some((route) => pathname.startsWith(route));
 
@@ -110,8 +138,8 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const isAuthRoute = pathname.startsWith("/login") ||
-    pathname.startsWith("/register");
+  const isAuthRoute = pathname.startsWith("/login")
+    || pathname.startsWith("/register");
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();

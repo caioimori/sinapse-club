@@ -1,5 +1,5 @@
-version: 7.5.1
-installed_at: '2026-03-31T13:12:09.219Z'
+version: 7.7.9
+installed_at: '2026-04-03T03:14:23.686Z'
 install_type: full
 files:
   - core\code-intel-client.js
@@ -625,7 +625,6 @@ files:
   - development\template-template.md
   - development\tool-template.js
   - development\workflow-template.yaml
-  - development\.gitignore
   - development\example-agent.yaml
   - development\LICENSE
   - development\package.json
@@ -812,6 +811,7 @@ files:
   - infrastructure\clickup-helpers.js
   - infrastructure\code-quality-improver.js
   - infrastructure\codebase-mapper.js
+  - infrastructure\catalog.js
   - infrastructure\index.js
   - infrastructure\validate.js
   - infrastructure\collect-tool-usage.js
@@ -892,6 +892,7 @@ files:
   - infrastructure\story-worktree-hooks.js
   - infrastructure\stuck-detector.js
   - infrastructure\subtask-verifier.js
+  - infrastructure\sync-codex-local-first.js
   - infrastructure\template-engine.js
   - infrastructure\template-validator.js
   - infrastructure\test-discovery.js
@@ -904,7 +905,10 @@ files:
   - infrastructure\usage-analytics.js
   - infrastructure\validate-agents.js
   - infrastructure\validate-claude-integration.js
+  - infrastructure\validate-codex-command-registry.js
+  - infrastructure\validate-codex-delegation.js
   - infrastructure\validate-codex-integration.js
+  - infrastructure\validate-codex-sync.js
   - infrastructure\validate-output-pattern.js
   - infrastructure\validate-parity.js
   - infrastructure\validate-paths.js
@@ -926,6 +930,12 @@ files:
   - infrastructure\coding-standards-tmpl.md
   - infrastructure\source-tree-tmpl.md
   - infrastructure\tech-stack-tmpl.md
+  - infrastructure\apply.sh
+  - infrastructure\CODEOWNERS.template
+  - infrastructure\parallel-workflow-guide.md
+  - infrastructure\pull_request_template.md
+  - infrastructure\README.md
+  - infrastructure\safe-collaboration-rule.md
   - infrastructure\sinapse-sync.yaml.template
   - infrastructure\project-status-loader.test.js
   - infrastructure\regression-suite-v2.md
@@ -946,6 +956,50 @@ files:
   - infrastructure\n8n.yaml
   - infrastructure\supabase.yaml
   - infrastructure\README.md
+  - cli\index.js
+  - cli\index.js
+  - cli\index.js
+  - cli\index.js
+  - cli\regenerate.js
+  - cli\validate.js
+  - cli\add.js
+  - cli\index.js
+  - cli\link.js
+  - cli\setup.js
+  - cli\status.js
+  - cli\cleanup.js
+  - cli\index.js
+  - cli\record.js
+  - cli\seed.js
+  - cli\show.js
+  - cli\analyze.js
+  - cli\backup.js
+  - cli\execute.js
+  - cli\index.js
+  - cli\rollback.js
+  - cli\update-imports.js
+  - cli\validate.js
+  - cli\index.js
+  - cli\index.js
+  - cli\index.js
+  - cli\run.js
+  - cli\status.js
+  - cli\index.js
+  - cli\index.js
+  - cli\info-formatter.js
+  - cli\list-table.js
+  - cli\list-tree.js
+  - cli\index.js
+  - cli\info.js
+  - cli\list.js
+  - cli\search-filters.js
+  - cli\search-keyword.js
+  - cli\search-semantic.js
+  - cli\search.js
+  - cli\pagination.js
+  - cli\index.js
+  - cli\output-formatter-cli.js
+  - cli\score-calculator.js
   - data\agent-config-requirements.yaml
   - data\capability-detection.js
   - data\entity-registry.yaml
@@ -969,27 +1023,21 @@ files:
   - data\workflow-chains.yaml
   - data\workflow-patterns.yaml
   - data\workflow-state-schema.yaml
-  - docs\AGENT-PERSONALIZATION-STANDARD-V1.md
-  - docs\EXECUTOR-DECISION-TREE.md
-  - docs\OPEN-SOURCE-VS-SERVICE-DIFFERENCES.md
-  - docs\QUALITY-GATES-SPECIFICATION.md
-  - docs\SINAPSE-COLOR-PALETTE-QUICK-REFERENCE.md
-  - docs\SINAPSE-COLOR-PALETTE-V2.1.md
-  - docs\SINAPSE-LIVRO-DE-OURO-V2.1-COMPLETE.md
-  - docs\SINAPSE-LIVRO-DE-OURO-V2.2-SUMMARY.md
-  - docs\STANDARDS-INDEX.md
-  - docs\STORY-TEMPLATE-V2-SPECIFICATION.md
-  - docs\TASK-FORMAT-SPECIFICATION-V1.md
   - elicitation\agent-elicitation.js
   - elicitation\task-elicitation.js
   - elicitation\workflow-elicitation.js
+  - schemas\agent-v3-schema.json
+  - schemas\README.md
+  - schemas\squad-design-schema.json
+  - schemas\squad-schema.json
+  - schemas\task-v3-schema.json
+  - schemas\validate-v3-schema.js
   - scripts\batch-migrate-phase1.ps1
   - scripts\batch-migrate-phase2.ps1
   - scripts\batch-migrate-phase3.ps1
   - scripts\command-execution-hook.js
   - scripts\diagnose-installation.js
   - scripts\diagnose-npx-issue.ps1
-  - scripts\.gitignore
   - scripts\index.html
   - scripts\package-lock.json
   - scripts\package.json
@@ -1039,54 +1087,13 @@ files:
   - scripts\update-sinapse.sh
   - scripts\validate-phase1.ps1
   - scripts\workflow-management.md
-  - cli\index.js
-  - cli\index.js
-  - cli\index.js
-  - cli\regenerate.js
-  - cli\validate.js
-  - cli\add.js
-  - cli\index.js
-  - cli\link.js
-  - cli\setup.js
-  - cli\status.js
-  - cli\cleanup.js
-  - cli\index.js
-  - cli\record.js
-  - cli\seed.js
-  - cli\show.js
-  - cli\analyze.js
-  - cli\backup.js
-  - cli\execute.js
-  - cli\index.js
-  - cli\rollback.js
-  - cli\update-imports.js
-  - cli\validate.js
-  - cli\index.js
-  - cli\index.js
-  - cli\run.js
-  - cli\status.js
-  - cli\index.js
-  - cli\info-formatter.js
-  - cli\list-table.js
-  - cli\list-tree.js
-  - cli\index.js
-  - cli\info.js
-  - cli\list.js
-  - cli\search-filters.js
-  - cli\search-keyword.js
-  - cli\search-semantic.js
-  - cli\search.js
-  - cli\pagination.js
-  - cli\index.js
-  - cli\output-formatter-cli.js
-  - cli\score-calculator.js
-  - manifests\manifest-schema.json
-  - schemas\agent-v3-schema.json
-  - schemas\README.md
-  - schemas\squad-design-schema.json
-  - schemas\squad-schema.json
-  - schemas\task-v3-schema.json
-  - schemas\validate-v3-schema.js
+  - utils\constants.js
+  - utils\content-filter.js
+  - utils\field-filter.js
+  - utils\index.js
+  - utils\schema-filter.js
+  - utils\format-duration.js
+  - utils\sinapse-validator.js
   - workflow-intelligence\confidence-scorer.js
   - workflow-intelligence\output-formatter.js
   - workflow-intelligence\suggestion-engine.js
@@ -1106,17 +1113,6 @@ files:
   - workflow-intelligence\suggestion-engine.test.js
   - workflow-intelligence\wave-analyzer.test.js
   - workflow-intelligence\workflow-registry.test.js
-  - monitor\enrich.py
-  - monitor\send_event.py
-  - monitor\__init__.py
-  - monitor\notification.py
-  - monitor\post_tool_use.py
-  - monitor\pre_compact.py
-  - monitor\pre_tool_use.py
-  - monitor\stop.py
-  - monitor\subagent_stop.py
-  - monitor\user_prompt_submit.py
-  - presets\README.md
   - index.js
   - index.esm.js
   - core-config.yaml

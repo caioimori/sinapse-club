@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import {
   Search,
   Settings,
@@ -12,6 +13,7 @@ import {
   BookOpen,
   ShoppingBag,
   Calendar,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,6 +51,10 @@ interface SidebarProps {
 
 export function Sidebar({ profile, categories, professionalRole, className }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+
+  const activeCategory = searchParams.get("categoria");
 
   return (
     <aside
@@ -80,26 +86,45 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
       </div>
 
       <ScrollArea className="flex-1">
-        {/* Forum Categories */}
+        {/* Forum Categories Dropdown */}
         <div className="px-3 pt-2">
-          <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Forum
-          </p>
-          <nav className="space-y-0.5">
-            {categories.map((category) => {
-              const isActive = pathname === `/forum/${category.slug}` || pathname.startsWith(`/forum/${category.slug}/`);
-              return (
+          <button
+            onClick={() => setCategoriesOpen(!categoriesOpen)}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground hover:bg-sidebar-accent transition-colors"
+          >
+            <span>Temas</span>
+            <ChevronDown className={cn(
+              "h-4 w-4 transition-transform ml-auto",
+              categoriesOpen && "rotate-180"
+            )} />
+          </button>
+
+          {categoriesOpen && (
+            <nav className="mt-1 space-y-0.5 pl-1">
+              <Link
+                href="/forum"
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm",
+                  !activeCategory
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <span>📌 Para você</span>
+              </Link>
+
+              {categories.map((category) => (
                 <Link
                   key={category.id}
-                  href={`/forum/${category.slug}`}
+                  href={`/forum?categoria=${category.slug}`}
                   className={cn(
                     "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm group",
-                    isActive
+                    activeCategory === category.slug
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
-                  {/* Color dot -- the ONLY color exception in B&W design */}
+                  {/* Color dot */}
                   <span
                     className="h-[6px] w-[6px] rounded-full flex-shrink-0"
                     style={{ backgroundColor: category.color || "#71717A" }}
@@ -120,9 +145,9 @@ export function Sidebar({ profile, categories, professionalRole, className }: Si
                     </span>
                   ) : null}
                 </Link>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
+          )}
         </div>
 
         <Separator className="my-3 mx-3" />

@@ -75,7 +75,7 @@ Redesign the authentication pages (login and register) from single-column center
 - [x] Ready
 - [x] InProgress
 - [ ] InReview
-- [ ] Done
+- [x] Done
 
 ## Change Log
 - **2026-04-05**: Story created for auth UI redesign (50/50 split layout with visual hero)
