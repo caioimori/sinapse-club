@@ -3,7 +3,9 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   MessageSquare,
-  Eye,
+  Heart,
+  Share,
+  Repeat2,
   Pin,
   CheckCircle2,
 } from "lucide-react";
@@ -62,121 +64,140 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   const authorInitial = authorName[0]?.toUpperCase() || "?";
 
   return (
-    <Link
-      href={`/forum/thread/${thread.id}`}
-      className="group flex items-start gap-3 border-b border-[var(--border-subtle)] px-3 py-3 transition-colors duration-200 hover:bg-[var(--surface-default)]"
-    >
-      {/* Avatar */}
-      <Avatar size="default" className="mt-0.5 flex-shrink-0">
-        {thread.author.avatar_url ? (
-          <AvatarImage
-            src={thread.author.avatar_url}
-            alt={authorName}
-          />
-        ) : null}
-        <AvatarFallback>{authorInitial}</AvatarFallback>
-      </Avatar>
+    <div className="group border-b border-[var(--border-subtle)] transition-colors duration-200 hover:bg-[var(--surface-default)]">
+      <Link
+        href={`/forum/thread/${thread.id}`}
+        className="flex items-start gap-3 px-4 py-3"
+      >
+        {/* Avatar */}
+        <Avatar size="default" className="mt-0.5 flex-shrink-0 h-12 w-12">
+          {thread.author.avatar_url ? (
+            <AvatarImage
+              src={thread.author.avatar_url}
+              alt={authorName}
+            />
+          ) : null}
+          <AvatarFallback>{authorInitial}</AvatarFallback>
+        </Avatar>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {/* Title row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {thread.is_sticky && (
-            <span
-              className="inline-flex items-center gap-0.5 bg-muted px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
-              style={{ borderRadius: "var(--radius-badge)" }}
-            >
-              <Pin className="h-2.5 w-2.5" />
-              FIXADO
-            </span>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {/* Header: Author info */}
+          <div className="flex items-center gap-1.5 text-sm">
+            <span className="font-bold text-foreground hover:underline">{authorName}</span>
+            {thread.author.professional_role && (
+              <CargoBadge
+                cluster={thread.author.professional_role.cluster}
+                roleName={thread.author.professional_role.name}
+                size="sm"
+              />
+            )}
+            <span className="text-muted-foreground">@{thread.author.username}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-muted-foreground text-xs">{timeAgo}</span>
+          </div>
+
+          {/* Badges */}
+          {(thread.is_sticky || thread.is_solved) && (
+            <div className="mt-1 flex items-center gap-1.5">
+              {thread.is_sticky && (
+                <span
+                  className="inline-flex items-center gap-0.5 bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  style={{ borderRadius: "var(--radius-badge)" }}
+                >
+                  <Pin className="h-2.5 w-2.5" />
+                  FIXADO
+                </span>
+              )}
+              {thread.is_solved && (
+                <span
+                  className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
+                  style={{ borderRadius: "var(--radius-badge)" }}
+                >
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  RESOLVIDO
+                </span>
+              )}
+            </div>
           )}
-          {thread.is_solved && (
-            <span
-              className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-1.5 py-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
-              style={{ borderRadius: "var(--radius-badge)" }}
-            >
-              <CheckCircle2 className="h-2.5 w-2.5" />
-              RESOLVIDO
-            </span>
-          )}
-          <h3
-            className="font-semibold text-sm text-foreground group-hover:text-foreground/80 truncate"
-            style={{ letterSpacing: "var(--tracking-heading)" }}
-          >
+
+          {/* Thread title */}
+          <h3 className="mt-2 text-base text-foreground font-medium leading-normal">
             {thread.title || "Sem titulo"}
           </h3>
-        </div>
 
-        {/* Meta row */}
-        <div className="mt-1 flex items-center gap-1.5 flex-wrap text-xs" style={{ color: "var(--text-secondary)" }}>
-          <span className="font-medium" style={{ color: "var(--text-secondary)" }}>
-            {authorName}
-          </span>
-          {thread.author.professional_role && (
-            <CargoBadge
-              cluster={thread.author.professional_role.cluster}
-              roleName={thread.author.professional_role.name}
-              size="sm"
-            />
-          )}
-          <span style={{ color: "var(--text-tertiary)" }}>·</span>
-          <span style={{ color: "var(--text-tertiary)" }}>{timeAgo}</span>
-
-          {/* Subcategory */}
-          {thread.subcategory && (
-            <>
-              <span style={{ color: "var(--text-tertiary)" }}>·</span>
-              <span style={{ color: "var(--text-tertiary)" }}>{thread.subcategory.name}</span>
-            </>
-          )}
-
-          {/* Category (on home page) */}
+          {/* Category badge */}
           {showCategory && thread.category && (
-            <>
-              <span style={{ color: "var(--text-tertiary)" }}>·</span>
-              <span className="inline-flex items-center gap-1">
-                <span
-                  className="h-1.5 w-1.5 rounded-full inline-block"
-                  style={{ backgroundColor: thread.category.color || "#71717A" }}
-                />
-                <span style={{ color: "var(--text-tertiary)" }}>{thread.category.name}</span>
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* Tags */}
-        {thread.tags.length > 0 && (
-          <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-            {thread.tags.slice(0, 3).map((tag) => (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--border-subtle)]">
               <span
-                key={tag}
-                className="bg-muted px-2 py-0 text-[10px] font-medium text-muted-foreground"
-                style={{ borderRadius: "var(--radius-badge)" }}
-              >
-                {tag}
-              </span>
-            ))}
-            {thread.tags.length > 3 && (
-              <span className="text-[10px] text-muted-foreground">
-                +{thread.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+                className="h-2 w-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: thread.category.color || "#71717A" }}
+              />
+              <span className="text-xs text-muted-foreground">{thread.category.name}</span>
+            </div>
+          )}
 
-      {/* Stats (right side) */}
-      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-xs pt-0.5" style={{ color: "var(--text-tertiary)" }}>
-        <span className="flex items-center gap-1">
-          <MessageSquare className="h-3 w-3" />
-          <span className="tabular-nums">{thread.replies_count}</span>
-        </span>
-        <span className="flex items-center gap-1">
-          <Eye className="h-3 w-3" />
-          <span className="tabular-nums">{thread.views_count}</span>
-        </span>
-      </div>
-    </Link>
+          {/* Tags */}
+          {thread.tags.length > 0 && (
+            <div className="mt-2 flex items-center gap-1 flex-wrap">
+              {thread.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+              {thread.tags.length > 3 && (
+                <span className="text-[11px] text-muted-foreground">
+                  +{thread.tags.length - 3} mais
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-3 flex justify-between max-w-xs text-muted-foreground">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="group/action flex items-center gap-2 text-xs hover:text-blue-500 transition-colors"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="group-hover/action:opacity-100 opacity-0 text-xs">{thread.replies_count}</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="group/action flex items-center gap-2 text-xs hover:text-green-500 transition-colors"
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="group/action flex items-center gap-2 text-xs hover:text-red-500 transition-colors"
+            >
+              <Heart className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="group/action flex items-center gap-2 text-xs hover:text-blue-500 transition-colors"
+            >
+              <Share className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </Link>
+    </div>
   );
 }

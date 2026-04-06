@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Image as ImageIcon, Link as LinkIcon, Send, ChevronDown } from "lucide-react";
+import { Image as ImageIcon, Link as LinkIcon, Smile, ChevronDown } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -78,53 +78,67 @@ export function ForumComposer({
   }
 
   return (
-    <div className="border-b border-[var(--border-subtle)] bg-background/50 backdrop-blur-xs sticky top-0 z-40">
+    <div className="border-b border-[var(--border-subtle)] sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
       <div className="px-4 py-3">
-        {/* Composer Header */}
+        {/* Main composer */}
         <div className="flex gap-4">
           {/* Avatar */}
           <Avatar className="h-12 w-12 flex-shrink-0">
             {userAvatar ? <AvatarImage src={userAvatar} alt={userName} /> : null}
-            <AvatarFallback>{userName[0]?.toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{userName?.[0]?.toUpperCase() || "?"}</AvatarFallback>
           </Avatar>
 
           {/* Input Area */}
           <div className="flex-1">
-            {/* Text Input */}
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onFocus={() => setIsExpanded(true)}
-              placeholder="O que você está pensando?"
-              className="w-full bg-transparent text-xl placeholder-muted-foreground resize-none outline-none"
-              rows={isExpanded ? 4 : 1}
-            />
+            {!isExpanded ? (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="w-full text-left px-4 py-3 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted transition-colors text-base"
+              >
+                O que está acontecendo!?
+              </button>
+            ) : (
+              <div className="space-y-4">
+                {/* Title input (optional) */}
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Título (opcional)"
+                  className="w-full bg-transparent text-lg font-semibold text-foreground placeholder-muted-foreground outline-none"
+                />
 
-            {/* Expanded State */}
-            {isExpanded && (
-              <div className="mt-4 space-y-3">
-                {/* Category Picker */}
-                <div className="relative">
+                {/* Text area */}
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="O que está acontecendo!?"
+                  className="w-full bg-transparent text-xl text-foreground placeholder-muted-foreground resize-none outline-none leading-normal"
+                  rows={4}
+                />
+
+                {/* Category selector */}
+                <div className="relative inline-block">
                   <button
                     onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-border hover:bg-muted transition-colors text-sm"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-subtle)] hover:bg-muted transition-colors text-sm font-medium"
                   >
                     {selectedCategoryData ? (
                       <>
-                        <span>{selectedCategoryData.icon}</span>
+                        <span className="text-lg">{selectedCategoryData.icon}</span>
                         <span>{selectedCategoryData.name}</span>
                       </>
                     ) : (
                       <>
-                        <span>🏷</span>
-                        <span>Selecionar tema</span>
+                        <span>🏷️</span>
+                        <span>Tema</span>
                       </>
                     )}
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
 
                   {showCategoryPicker && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-background border border-[var(--border-subtle)] rounded-2xl shadow-xl z-50 overflow-hidden">
                       {categories.map((category) => (
                         <button
                           key={category.id}
@@ -132,26 +146,34 @@ export function ForumComposer({
                             setSelectedCategory(category.id);
                             setShowCategoryPicker(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 ${
+                          className={`w-full text-left px-4 py-3 text-sm hover:bg-muted transition-colors flex items-center gap-3 border-b border-[var(--border-subtle)] last:border-b-0 ${
                             selectedCategory === category.id ? "bg-muted" : ""
                           }`}
                         >
-                          <span>{category.icon}</span>
-                          <span>{category.name}</span>
+                          <span className="text-lg">{category.icon}</span>
+                          <div className="flex-1">
+                            <div className="font-medium text-foreground">{category.name}</div>
+                            {category.description && (
+                              <div className="text-xs text-muted-foreground">{category.description}</div>
+                            )}
+                          </div>
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <button className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-                      <ImageIcon className="h-4 w-4" />
+                {/* Bottom toolbar */}
+                <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)]">
+                  <div className="flex gap-1">
+                    <button className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-full transition-colors">
+                      <ImageIcon className="h-5 w-5" />
                     </button>
-                    <button className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-                      <LinkIcon className="h-4 w-4" />
+                    <button className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-full transition-colors">
+                      <LinkIcon className="h-5 w-5" />
+                    </button>
+                    <button className="p-2 hover:bg-blue-500/10 text-blue-500 rounded-full transition-colors">
+                      <Smile className="h-5 w-5" />
                     </button>
                   </div>
 
@@ -162,8 +184,10 @@ export function ForumComposer({
                       onClick={() => {
                         setIsExpanded(false);
                         setText("");
+                        setTitle("");
                         setSelectedCategory("");
                       }}
+                      className="text-foreground hover:bg-muted"
                     >
                       Cancelar
                     </Button>
@@ -171,9 +195,8 @@ export function ForumComposer({
                       size="sm"
                       onClick={handlePublish}
                       disabled={!text.trim() || !selectedCategory || loading}
-                      className="bg-foreground text-background hover:bg-foreground/90"
+                      className="px-6 bg-blue-500 text-white hover:bg-blue-600 font-bold rounded-full"
                     >
-                      <Send className="h-4 w-4 mr-1" />
                       {loading ? "Publicando..." : "Publicar"}
                     </Button>
                   </div>
@@ -182,18 +205,6 @@ export function ForumComposer({
             )}
           </div>
         </div>
-
-        {/* Collapsed State Footer */}
-        {!isExpanded && (
-          <div className="flex gap-2 ml-16 mt-2 text-muted-foreground">
-            <button className="p-2 rounded-full hover:bg-muted transition-colors hover:text-foreground">
-              <ImageIcon className="h-4 w-4" />
-            </button>
-            <button className="p-2 rounded-full hover:bg-muted transition-colors hover:text-foreground">
-              <LinkIcon className="h-4 w-4" />
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
