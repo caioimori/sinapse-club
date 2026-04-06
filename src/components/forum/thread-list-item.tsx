@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -10,6 +11,7 @@ import {
   Repeat2,
   Pin,
   CheckCircle2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
@@ -56,6 +58,8 @@ interface ThreadListItemProps {
 }
 
 export function ThreadListItem({ thread, showCategory = false }: ThreadListItemProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const timeRef = thread.last_reply_at || thread.created_at;
   const timeAgo = formatDistanceToNow(new Date(timeRef), {
     addSuffix: true,
@@ -64,6 +68,12 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
   const authorName = thread.author.display_name || thread.author.username;
   const authorInitial = authorName[0]?.toUpperCase() || "?";
+
+  // Truncate content to ~280 chars (Twitter limit for preview)
+  const MAX_PREVIEW = 280;
+  const contentText = thread.title || "";
+  const isLongContent = contentText.length > MAX_PREVIEW;
+  const displayContent = isExpanded ? contentText : contentText.substring(0, MAX_PREVIEW);
 
   return (
     <div className="group border-b border-[var(--border-subtle)] transition-colors duration-200 hover:bg-[var(--surface-default)]">
@@ -123,14 +133,35 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </div>
           )}
 
-          {/* Thread title */}
-          <h3 className="mt-2 text-base text-foreground font-medium leading-normal">
-            {thread.title || "Sem titulo"}
-          </h3>
+          {/* Thread content */}
+          <div className="mt-3">
+            <p className="text-base text-foreground leading-normal whitespace-pre-wrap break-words">
+              {displayContent}
+              {!isExpanded && isLongContent && "..."}
+            </p>
+            {isLongContent && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                className="text-blue-500 hover:text-blue-600 font-medium text-sm mt-2 transition-colors"
+              >
+                {isExpanded ? "Mostrar menos" : "Ler mais"}
+              </button>
+            )}
+          </div>
+
+          {/* Image placeholder (for future implementation) */}
+          <div className="mt-3 rounded-2xl border border-[var(--border-subtle)] bg-muted/30 p-4 flex flex-col items-center justify-center aspect-video max-w-sm text-muted-foreground">
+            <ImageIcon className="h-8 w-8 mb-2" />
+            <span className="text-xs">Imagem será exibida aqui</span>
+          </div>
 
           {/* Category badge */}
           {showCategory && thread.category && (
-            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--border-subtle)]">
+            <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--border-subtle)]">
               <span
                 className="h-2 w-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: thread.category.color || "#71717A" }}

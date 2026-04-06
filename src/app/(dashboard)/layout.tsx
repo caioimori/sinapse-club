@@ -60,7 +60,7 @@ export default async function DashboardLayout({
         <Topbar profile={profile} />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-4 py-6">
+          <div className="mx-auto max-w-7xl px-4 py-6">
             {children}
           </div>
         </main>

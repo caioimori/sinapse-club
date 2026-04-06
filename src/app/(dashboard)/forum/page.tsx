@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ForumComposer } from "@/components/forum/forum-composer";
 import { ThreadList } from "@/components/forum/thread-list";
 import { ThreadListItem, type ThreadData } from "@/components/forum/thread-list-item";
+import { TrendingUsers } from "@/components/forum/trending-users";
 import type { Database, ProfessionalCluster } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -27,6 +28,44 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
     userProfile = profile;
     userRole = (profile as any)?.role ?? "free";
   }
+
+  // Fetch trending users (top 5 by engagement this week)
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const { data: trendingData } = await supabase
+    .from("posts")
+    .select(
+      "author_id, profiles!author_id(id, username, display_name, avatar_url)",
+      { count: "exact" }
+    )
+    .gte("created_at", oneWeekAgo.toISOString())
+    .eq("type", "thread")
+    .limit(100) as any;
+
+  // Group by author and count posts
+  const authorEngagement: Record<string, { count: number; profile: any }> = {};
+  if (trendingData) {
+    trendingData.forEach((post: any) => {
+      const authorId = post.author_id;
+      const profile = post.profiles;
+      if (!authorEngagement[authorId]) {
+        authorEngagement[authorId] = { count: 0, profile };
+      }
+      authorEngagement[authorId].count += 1;
+    });
+  }
+
+  const trendingUsers = Object.entries(authorEngagement)
+    .sort(([, a], [, b]) => b.count - a.count)
+    .slice(0, 5)
+    .map(([authorId, data]) => ({
+      id: authorId,
+      username: data.profile.username,
+      display_name: data.profile.display_name,
+      avatar_url: data.profile.avatar_url,
+      engagement_score: data.count,
+    }));
 
   // Fetch categories and threads in parallel
   const [categoriesRes, threadsRes] = await Promise.all([
@@ -123,32 +162,40 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
   });
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Composer */}
-      <ForumComposer
-        userAvatar={userProfile?.avatar_url}
-        userName={userProfile?.display_name || userProfile?.username}
-        categories={categories}
-        userRole={userRole}
-      />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+      {/* Main feed (center column) */}
+      <div className="lg:col-span-2">
+        {/* Composer */}
+        <ForumComposer
+          userAvatar={userProfile?.avatar_url}
+          userName={userProfile?.display_name || userProfile?.username}
+          categories={categories}
+          userRole={userRole}
+        />
 
-      {/* Feed */}
-      <div className="border-l border-r border-[var(--border-subtle)]">
-        {threads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-            <p className="text-muted-foreground">Nenhuma publicação ainda. Seja o primeiro!</p>
-          </div>
-        ) : (
-          <div>
-            {threads.map((thread) => (
-              <ThreadListItem
-                key={thread.id}
-                thread={thread}
-                showCategory={!categorySlug}
-              />
-            ))}
-          </div>
-        )}
+        {/* Feed */}
+        <div className="border-l border-r border-[var(--border-subtle)]">
+          {threads.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+              <p className="text-muted-foreground">Nenhuma publicação ainda. Seja o primeiro!</p>
+            </div>
+          ) : (
+            <div>
+              {threads.map((thread) => (
+                <ThreadListItem
+                  key={thread.id}
+                  thread={thread}
+                  showCategory={!categorySlug}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Trending users widget (right sidebar) */}
+      <div className="hidden lg:block">
+        <TrendingUsers users={trendingUsers} />
       </div>
     </div>
   );
