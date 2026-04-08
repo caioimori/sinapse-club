@@ -8,7 +8,7 @@ import { GitHubRepos } from "@/components/profile/github-repos";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { CalendarDays, MapPin, LinkIcon, GitFork } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 
@@ -41,6 +41,20 @@ export default async function ProfilePage() {
     .eq("author_id", user.id)
     .order("created_at", { ascending: false })
     .limit(30) as any);
+
+  // Get user replies (from comments table)
+  const { data: repliesData } = await supabase
+    .from("comments")
+    .select(`
+      id,
+      content,
+      created_at,
+      post_id,
+      posts!post_id(id, title, content_plain)
+    `)
+    .eq("author_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(20) as any;
 
   // Get liked posts
   const { data: likedReactions } = await (supabase as any)
@@ -198,13 +212,28 @@ export default async function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="replies" className="mt-0">
-          {posts?.filter((p: any) => p.type === "reply").length > 0 ? (
-            posts.filter((p: any) => p.type === "reply").map((post: any) => (
-              <PostCard key={post.id} {...post} author={post.author} space={post.space} />
-            ))
-          ) : (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>Nenhuma resposta ainda</p>
+          {(repliesData ?? []).map((reply: any) => (
+            <Link
+              key={reply.id}
+              href={`/forum/thread/${reply.post_id}`}
+              className="block px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-accent/30 transition-colors"
+            >
+              {reply.posts?.title && (
+                <p className="text-xs text-muted-foreground mb-1">
+                  Em resposta a: <span className="font-medium">{reply.posts.title}</span>
+                </p>
+              )}
+              <p className="text-[15px] text-foreground leading-relaxed">
+                {reply.content?.substring(0, 200)}{(reply.content?.length ?? 0) > 200 ? "…" : ""}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true, locale: ptBR })}
+              </p>
+            </Link>
+          ))}
+          {(repliesData ?? []).length === 0 && (
+            <div className="py-12 text-center text-muted-foreground">
+              Nenhuma resposta ainda
             </div>
           )}
         </TabsContent>

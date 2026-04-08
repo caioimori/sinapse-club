@@ -48,6 +48,9 @@ export default async function ForumThreadPage({
 
   if (!thread) notFound();
 
+  // Increment view count (fire and forget — don't await, don't block render)
+  (supabase as any).rpc("increment_post_views", { post_id: id }).then(() => {});
+
   // Fetch comments/replies with author info
   const { data: rawComments } = (await supabase
     .from("comments")
@@ -192,6 +195,20 @@ export default async function ForumThreadPage({
     isSaved = (reactions || []).some((r: any) => r.type === "save");
   }
 
+  // User reactions on comments
+  let likedCommentIds: string[] = [];
+  if (user && (rawComments || []).length > 0) {
+    const commentIds = (rawComments as any[]).map((c: any) => c.id);
+    const { data: commentReactions } = await supabase
+      .from("reactions")
+      .select("target_id")
+      .eq("user_id", user.id)
+      .eq("target_type", "comment")
+      .eq("type", "like")
+      .in("target_id", commentIds);
+    likedCommentIds = (commentReactions ?? []).map((r: any) => r.target_id);
+  }
+
   // Breadcrumb data
   const categorySlug = threadData.category?.slug;
   const categoryName = threadData.category?.name;
@@ -259,6 +276,7 @@ export default async function ForumThreadPage({
                 threadAuthorId={threadAuthor.id}
                 currentUserId={user?.id}
                 isSolved={threadData.is_solved}
+                likedCommentIds={likedCommentIds}
               />
             ))}
           </div>

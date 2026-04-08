@@ -12,10 +12,10 @@ import type { Database, ProfessionalCluster } from "@/types/database";
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
 interface ForumPageProps {
-  searchParams: Promise<{ categoria?: string }>;
+  searchParams: Promise<{ categoria?: string; tab?: string }>;
 }
 
-async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
+async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: string }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -30,6 +30,16 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
       .single();
     userProfile = profile;
     userRole = (profile as any)?.role ?? "free";
+  }
+
+  // Fetch who the current user follows (for "Seguindo" tab)
+  let followingIds: string[] = [];
+  if (tab === "following" && user) {
+    const { data: followsData } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id);
+    followingIds = (followsData ?? []).map((f: any) => f.following_id);
   }
 
   // Fetch trending users (top 5 by engagement this week)
@@ -70,6 +80,26 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
       engagement_score: data.count,
     }));
 
+  // Build threads query — filter by followed authors when on "Seguindo" tab
+  let threadsQuery = supabase
+    .from("posts")
+    .select(
+      "id, title, content_plain, is_sticky, is_solved, replies_count, views_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+    )
+    .eq("type", "thread")
+    .order("is_sticky", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (tab === "following") {
+    if (followingIds.length > 0) {
+      threadsQuery = threadsQuery.in("author_id", followingIds);
+    } else {
+      // User follows nobody — guarantee empty result
+      threadsQuery = threadsQuery.eq("author_id", "00000000-0000-0000-0000-000000000000");
+    }
+  }
+
   // Fetch categories, threads, trending topics, and suggested users in parallel
   const [categoriesRes, threadsRes, trendingTopicsRes, suggestionsRes] = await Promise.all([
     supabase
@@ -77,15 +107,7 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
       .select("*")
       .eq("is_active", true)
       .order("sort_order"),
-    supabase
-      .from("posts")
-      .select(
-        "id, title, content_plain, is_sticky, is_solved, replies_count, views_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
-      )
-      .eq("type", "thread")
-      .order("is_sticky", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(50),
+    threadsQuery,
     supabase
       .from("posts")
       .select(
@@ -235,7 +257,12 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
 
         {/* Feed */}
         <div>
-          {threads.length === 0 ? (
+          {threads.length === 0 && tab === "following" ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-4 gap-3">
+              <p className="font-semibold text-foreground">Ainda não segue ninguém</p>
+              <p className="text-sm text-muted-foreground">Siga pessoas para ver o conteúdo delas aqui</p>
+            </div>
+          ) : threads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center px-4">
               <p className="text-muted-foreground">Nenhuma publicação ainda. Seja o primeiro!</p>
             </div>
@@ -264,11 +291,11 @@ async function ForumFeed({ categorySlug }: { categorySlug?: string }) {
 }
 
 export default async function ForumPage({ searchParams }: ForumPageProps) {
-  const { categoria } = await searchParams;
+  const { categoria, tab } = await searchParams;
 
   return (
     <Suspense fallback={<div className="h-96" />}>
-      <ForumFeed categorySlug={categoria} />
+      <ForumFeed categorySlug={categoria} tab={tab} />
     </Suspense>
   );
 }

@@ -13,7 +13,10 @@ import {
   Pin,
   CheckCircle2,
   BarChart2,
+  Link2,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import type { ProfessionalCluster } from "@/types/database";
@@ -77,6 +80,7 @@ export interface ThreadData {
   is_solved: boolean;
   replies_count: number;
   views_count: number;
+  likes_count?: number;
   tags: string[];
   created_at: string;
   last_reply_at: string | null;
@@ -104,12 +108,46 @@ function formatCount(n: number): string {
 
 export function ThreadListItem({ thread, showCategory = false }: ThreadListItemProps) {
   const router = useRouter();
+  const supabase = createClient();
   const [expanded, setExpanded] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(thread.likes_count ?? 0);
+  const [copied, setCopied] = useState(false);
 
   const handleExpand = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setExpanded(true);
   }, []);
+
+  async function handleLike(e: React.MouseEvent) {
+    e.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (liked) {
+      setLiked(false);
+      setLikesCount(c => Math.max(0, c - 1));
+      await supabase.from("reactions").delete()
+        .eq("user_id", user.id).eq("target_id", thread.id).eq("target_type", "post").eq("type", "like");
+    } else {
+      setLiked(true);
+      setLikesCount(c => c + 1);
+      await (supabase as any).from("reactions").insert({
+        user_id: user.id,
+        target_id: thread.id,
+        target_type: "post",
+        type: "like",
+      });
+    }
+  }
+
+  async function handleShare(e: React.MouseEvent) {
+    e.stopPropagation();
+    const url = `${window.location.origin}/forum/thread/${thread.id}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const timeRef = thread.last_reply_at || thread.created_at;
   const timeAgo = formatDistanceToNow(new Date(timeRef), {
@@ -266,10 +304,14 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </button>
 
             {/* Like */}
-            <button className="group flex items-center gap-1.5 text-[13px] hover:text-rose-500 transition-colors">
-              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-rose-500/10 transition-colors">
-                <Heart className="h-[18px] w-[18px]" />
+            <button
+              onClick={handleLike}
+              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", liked ? "text-rose-500" : "hover:text-rose-500")}
+            >
+              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", liked ? "bg-rose-500/10" : "group-hover:bg-rose-500/10")}>
+                <Heart className={cn("h-[18px] w-[18px]", liked && "fill-rose-500")} />
               </span>
+              {likesCount > 0 && <span>{formatCount(likesCount)}</span>}
             </button>
 
             {/* Views */}
@@ -283,9 +325,12 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </button>
 
             {/* Share */}
-            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+            <button
+              onClick={handleShare}
+              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", copied ? "text-foreground" : "hover:text-foreground")}
+            >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
-                <Share className="h-[18px] w-[18px]" />
+                {copied ? <Link2 className="h-[18px] w-[18px]" /> : <Share className="h-[18px] w-[18px]" />}
               </span>
             </button>
           </div>

@@ -44,6 +44,7 @@ interface ThreadReplyProps {
   currentUserId?: string;
   isSolved: boolean;
   depth?: number;
+  likedCommentIds?: string[];
 }
 
 export function ThreadReply({
@@ -53,8 +54,9 @@ export function ThreadReply({
   currentUserId,
   isSolved,
   depth = 0,
+  likedCommentIds = [],
 }: ThreadReplyProps) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(() => likedCommentIds.includes(reply.id));
   const [likes, setLikes] = useState(reply.likes_count);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -265,6 +267,7 @@ export function ThreadReply({
           currentUserId={currentUserId}
           isSolved={isSolved}
           depth={depth + 1}
+          likedCommentIds={likedCommentIds}
         />
       ))}
     </div>

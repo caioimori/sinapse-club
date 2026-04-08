@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, MessageSquare, UserPlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface TrendingUser {
   id: string;
@@ -43,10 +45,53 @@ const TOPICS_INITIAL = 3;
 const SUGGESTIONS_INITIAL = 3;
 
 export function TrendingUsers({ users, topics = [], suggestions = [] }: TrendingUsersProps) {
+  const supabase = createClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [rankingExpanded, setRankingExpanded] = useState(false);
   const [topicsExpanded, setTopicsExpanded] = useState(false);
   const [suggestionsExpanded, setSuggestionsExpanded] = useState(false);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    async function loadFollows() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await (supabase as any)
+        .from("follows")
+        .select("following_id")
+        .eq("follower_id", user.id);
+      if (data) {
+        setFollowingIds(new Set(data.map((f: any) => f.following_id)));
+      }
+    }
+    loadFollows();
+  }, []);
+
+  async function handleFollow(userId: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.id === userId) return;
+
+    setFollowLoading(prev => new Set(prev).add(userId));
+
+    const isFollowing = followingIds.has(userId);
+
+    if (isFollowing) {
+      setFollowingIds(prev => { const s = new Set(prev); s.delete(userId); return s; });
+      await supabase.from("follows")
+        .delete()
+        .eq("follower_id", user.id)
+        .eq("following_id", userId);
+    } else {
+      setFollowingIds(prev => new Set(prev).add(userId));
+      await (supabase as any).from("follows").insert({
+        follower_id: user.id,
+        following_id: userId,
+      });
+    }
+
+    setFollowLoading(prev => { const s = new Set(prev); s.delete(userId); return s; });
+  }
 
   const visibleRanking = rankingExpanded ? users : users.slice(0, RANKING_INITIAL);
   const visibleTopics = topicsExpanded ? topics : topics.slice(0, TOPICS_INITIAL);
@@ -202,8 +247,17 @@ export function TrendingUsers({ users, topics = [], suggestions = [] }: Trending
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{user.headline}</p>
                   )}
                 </div>
-                <button className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-xs font-bold hover:bg-foreground/85 transition-colors">
-                  Seguir
+                <button
+                  onClick={() => handleFollow(user.id)}
+                  disabled={followLoading.has(user.id)}
+                  className={cn(
+                    "flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors",
+                    followingIds.has(user.id)
+                      ? "bg-muted text-foreground border border-[var(--border-default)] hover:border-destructive hover:text-destructive"
+                      : "bg-foreground text-background hover:bg-foreground/85"
+                  )}
+                >
+                  {followingIds.has(user.id) ? "Seguindo" : "Seguir"}
                 </button>
               </div>
             ))}

@@ -30,7 +30,7 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
 
   const isHome = pathname === "/forum" || pathname === "/";
   const isForum = pathname.startsWith("/forum");
-  const isNotifications = pathname.startsWith("/notifications");
+  const isNotifications = pathname.startsWith("/notificacoes") || pathname.startsWith("/notifications");
   const isProfile = pathname.startsWith("/profile");
 
   return (
@@ -80,7 +80,7 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
 
         {/* Notifications */}
         <Link
-          href="/notifications"
+          href="/notificacoes"
           className={cn(
             "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors relative",
             isNotifications ? "text-foreground" : "text-muted-foreground"
