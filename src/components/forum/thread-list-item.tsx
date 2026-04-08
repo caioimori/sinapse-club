@@ -81,6 +81,13 @@ export interface ThreadData {
   replies_count: number;
   views_count: number;
   likes_count?: number;
+  reposts_count?: number;
+  is_reposted?: boolean;
+  repost_of?: string | null;
+  repost_author?: {
+    username: string;
+    display_name: string | null;
+  } | null;
   tags: string[];
   created_at: string;
   last_reply_at: string | null;
@@ -112,6 +119,8 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   const [expanded, setExpanded] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(thread.likes_count ?? 0);
+  const [reposted, setReposted] = useState(thread.is_reposted ?? false);
+  const [repostsCount, setRepostsCount] = useState(thread.reposts_count ?? 0);
   const [copied, setCopied] = useState(false);
 
   const handleExpand = useCallback((e: React.MouseEvent) => {
@@ -138,6 +147,37 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
         target_type: "post",
         type: "like",
       });
+    }
+  }
+
+  async function handleRepost(e: React.MouseEvent) {
+    e.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (reposted) {
+      setReposted(false);
+      setRepostsCount(c => Math.max(0, c - 1));
+      await (supabase as any)
+        .from("posts")
+        .delete()
+        .eq("author_id", user.id)
+        .eq("repost_of", thread.id)
+        .eq("type", "thread");
+    } else {
+      setReposted(true);
+      setRepostsCount(c => c + 1);
+      await (supabase as any)
+        .from("posts")
+        .insert({
+          author_id: user.id,
+          type: "thread",
+          repost_of: thread.id,
+          content: "",
+          content_plain: "",
+          title: null,
+          tags: [],
+        });
     }
   }
 
@@ -173,6 +213,12 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
       onClick={() => router.push(`/forum/thread/${thread.id}`)}
       className="border-b border-[var(--border-subtle)] hover:bg-accent/30 transition-colors duration-150 cursor-pointer"
     >
+      {thread.repost_of && (
+        <div className="flex items-center gap-1.5 px-4 pt-2 text-xs text-muted-foreground">
+          <Repeat2 className="h-3 w-3" />
+          <span>{thread.repost_author?.display_name || thread.repost_author?.username || "Alguém"} repostou</span>
+        </div>
+      )}
       <div className="flex items-start gap-3 px-4 py-3">
         {/* Avatar */}
         <Link
@@ -297,10 +343,14 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </button>
 
             {/* Repost */}
-            <button className="group flex items-center gap-1.5 text-[13px] hover:text-emerald-500 transition-colors">
-              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+            <button
+              onClick={handleRepost}
+              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", reposted ? "text-emerald-500" : "hover:text-emerald-500")}
+            >
+              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", reposted ? "bg-emerald-500/10" : "group-hover:bg-emerald-500/10")}>
                 <Repeat2 className="h-[18px] w-[18px]" />
               </span>
+              {repostsCount > 0 && <span>{formatCount(repostsCount)}</span>}
             </button>
 
             {/* Like */}

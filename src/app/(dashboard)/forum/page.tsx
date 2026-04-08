@@ -84,7 +84,7 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
   let threadsQuery = supabase
     .from("posts")
     .select(
-      "id, title, content_plain, is_sticky, is_solved, replies_count, views_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+      "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
     )
     .eq("type", "thread")
     .order("is_sticky", { ascending: false })
@@ -151,8 +151,25 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     };
   });
 
+  // Check which threads the current user has reposted
+  let userRepostIds = new Set<string>();
+  const threads_data = threadsRes.data ?? [];
+  if (user && threads_data.length > 0) {
+    const threadIds = threads_data.map((t: any) => t.id);
+    const { data: userReposts } = await (supabase as any)
+      .from("posts")
+      .select("repost_of")
+      .eq("author_id", user.id)
+      .eq("type", "thread")
+      .not("repost_of", "is", null)
+      .in("repost_of", threadIds);
+    if (userReposts) {
+      userRepostIds = new Set(userReposts.map((r: any) => r.repost_of));
+    }
+  }
+
   // Filter by category if specified
-  let rawThreads = threadsRes.data ?? [];
+  let rawThreads = threads_data;
   if (categorySlug) {
     const selectedCategory = categories.find((c) => c.slug === categorySlug);
     if (selectedCategory) {
@@ -196,6 +213,10 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
       id: t.id as string,
       title: t.title as string | null,
       content_plain: t.content_plain as string | null,
+      repost_of: t.repost_of as string | null,
+      reposts_count: (t.reposts_count as number) ?? 0,
+      is_reposted: userRepostIds.has(t.id as string),
+      repost_author: null,
       is_sticky: t.is_sticky as boolean,
       is_solved: t.is_solved as boolean,
       replies_count: t.replies_count as number,

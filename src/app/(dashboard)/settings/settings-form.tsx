@@ -9,6 +9,7 @@ export function SettingsForm({ profile }: { profile: any }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncLoading, setSyncLoading] = useState(false);
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [headline, setHeadline] = useState(profile?.headline ?? "");
@@ -46,6 +47,38 @@ export function SettingsForm({ profile }: { profile: any }) {
     } else {
       setSuccess(true);
       router.refresh();
+      if (githubUsername.trim() && githubUsername.trim() !== profile?.github_username) {
+        // Fire and forget — don't block the UX
+        fetch("/api/github/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ github_username: githubUsername.trim() }),
+        }).then(res => res.json()).then(data => {
+          if (data.repos) {
+            router.refresh();
+          }
+        }).catch(() => {
+          // Ignore sync errors silently
+        });
+      }
+    }
+  }
+
+  async function handleGitHubSync() {
+    if (!githubUsername.trim()) return;
+    setSyncLoading(true);
+    try {
+      const res = await fetch("/api/github/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ github_username: githubUsername.trim() }),
+      });
+      if (res.ok) {
+        setSuccess(true);
+        router.refresh();
+      }
+    } finally {
+      setSyncLoading(false);
     }
   }
 
@@ -160,6 +193,9 @@ export function SettingsForm({ profile }: { profile: any }) {
             className="flex-1 px-3 py-2 rounded-lg border border-[var(--border-default)] bg-background text-[15px] outline-none focus:border-foreground transition-colors"
           />
         </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          Seus repositórios serão sincronizados automaticamente ao salvar.
+        </p>
       </div>
 
       {/* Feedback */}
@@ -174,6 +210,21 @@ export function SettingsForm({ profile }: { profile: any }) {
       >
         {loading ? "Salvando..." : "Salvar alteracoes"}
       </button>
+
+      {/* Manual GitHub sync */}
+      {profile?.github_username && (
+        <div className="pt-4 border-t border-[var(--border-subtle)]">
+          <p className="text-sm font-medium mb-2">GitHub conectado: <span className="text-muted-foreground">@{githubUsername}</span></p>
+          <button
+            type="button"
+            onClick={handleGitHubSync}
+            disabled={syncLoading}
+            className="px-4 py-1.5 rounded-full border border-[var(--border-default)] text-sm hover:bg-muted/50 transition-colors disabled:opacity-40"
+          >
+            {syncLoading ? "Sincronizando..." : "Sincronizar repositórios"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
