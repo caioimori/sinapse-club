@@ -84,7 +84,7 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
   let threadsQuery = supabase
     .from("posts")
     .select(
-      "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+      "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
     )
     .eq("type", "thread")
     .order("is_sticky", { ascending: false })
@@ -100,8 +100,8 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     }
   }
 
-  // Fetch categories, threads, trending topics, and suggested users in parallel
-  const [categoriesRes, threadsRes, trendingTopicsRes, suggestionsRes] = await Promise.all([
+  // Fetch categories, threads, trending topics, suggested users, and user reposts all in parallel
+  const [categoriesRes, threadsRes, trendingTopicsRes, suggestionsRes, userRepostsRes] = await Promise.all([
     supabase
       .from("forum_categories")
       .select("*")
@@ -125,6 +125,16 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
       .neq("username", "sinapse-bot")
       .order("level", { ascending: false })
       .limit(6),
+    // User reposts — fetched upfront (no thread IDs needed) for O(1) set lookup
+    user
+      ? (supabase as any)
+          .from("posts")
+          .select("repost_of")
+          .eq("author_id", user.id)
+          .eq("type", "thread")
+          .not("repost_of", "is", null)
+          .limit(200)
+      : Promise.resolve({ data: [] }),
   ]);
 
   const categories = (categoriesRes.data ?? []) as ForumCategory[];
@@ -151,24 +161,13 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     };
   });
 
-  // Check which threads the current user has reposted
-  let userRepostIds = new Set<string>();
-  const threads_data = threadsRes.data ?? [];
-  if (user && threads_data.length > 0) {
-    const threadIds = threads_data.map((t: any) => t.id);
-    const { data: userReposts } = await (supabase as any)
-      .from("posts")
-      .select("repost_of")
-      .eq("author_id", user.id)
-      .eq("type", "thread")
-      .not("repost_of", "is", null)
-      .in("repost_of", threadIds);
-    if (userReposts) {
-      userRepostIds = new Set(userReposts.map((r: any) => r.repost_of));
-    }
-  }
+  // Build repost set from parallel fetch (no sequential query needed)
+  const userRepostIds = new Set<string>(
+    ((userRepostsRes as any).data ?? []).map((r: any) => r.repost_of as string)
+  );
 
   // Filter by category if specified
+  const threads_data = threadsRes.data ?? [];
   let rawThreads = threads_data;
   if (categorySlug) {
     const selectedCategory = categories.find((c) => c.slug === categorySlug);
@@ -177,37 +176,11 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     }
   }
 
-  // Fetch professional roles for thread authors
-  const roleIds = [
-    ...new Set(
-      rawThreads
-        .map((t: Record<string, unknown>) => {
-          const profile = t.profiles as Record<string, unknown> | null;
-          return profile?.professional_role_id as string | null;
-        })
-        .filter(Boolean)
-    ),
-  ] as string[];
-
-  let rolesMap: Record<string, { name: string; cluster: ProfessionalCluster }> = {};
-  if (roleIds.length > 0) {
-    const { data: roles } = await supabase
-      .from("professional_roles")
-      .select("id, name, cluster")
-      .in("id", roleIds) as { data: { id: string; name: string; cluster: string }[] | null };
-    if (roles) {
-      rolesMap = Object.fromEntries(
-        roles.map((r) => [r.id, { name: r.name, cluster: r.cluster as ProfessionalCluster }])
-      );
-    }
-  }
-
-  // Transform threads into ThreadData format
+  // Transform threads into ThreadData format — professional_role comes from the joined select
   const threads: ThreadData[] = rawThreads.map((t: Record<string, unknown>) => {
     const profile = t.profiles as Record<string, unknown> | null;
     const cat = t.forum_categories as Record<string, unknown> | null;
     const sub = t.forum_subcategories as Record<string, unknown> | null;
-    const roleId = profile?.professional_role_id as string | null;
 
     return {
       id: t.id as string,
@@ -228,7 +201,7 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
         username: (profile?.username as string) ?? "anon",
         display_name: (profile?.display_name as string | null) ?? null,
         avatar_url: (profile?.avatar_url as string | null) ?? null,
-        professional_role: roleId ? rolesMap[roleId] ?? null : null,
+        professional_role: (profile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
       },
       category: cat
         ? {

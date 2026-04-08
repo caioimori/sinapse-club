@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, Clock, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ export function CourseCard({
         {/* Thumbnail */}
         <div className="relative aspect-video bg-muted">
           {thumbnail_url ? (
-            <img src={thumbnail_url} alt={title} className="h-full w-full object-cover" />
+            <Image src={thumbnail_url} alt={title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-600">
               <BookOpen className="h-12 w-12 text-muted-foreground" />

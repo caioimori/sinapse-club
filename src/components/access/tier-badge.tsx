@@ -7,16 +7,16 @@ const TIER_STYLES: Record<string, { border: string; text: string }> = {
     text: "text-zinc-500 dark:text-zinc-400",
   },
   pro: {
-    border: "border-amber-500/60",
-    text: "text-amber-600 dark:text-amber-400",
-  },
-  premium: {
-    border: "border-violet-500/60",
-    text: "text-violet-600 dark:text-violet-400",
-  },
-  instructor: {
     border: "border-blue-500/60",
     text: "text-blue-600 dark:text-blue-400",
+  },
+  premium: {
+    border: "border-green-500/60",
+    text: "text-green-600 dark:text-green-400",
+  },
+  instructor: {
+    border: "border-amber-500/60",
+    text: "text-amber-600 dark:text-amber-400",
   },
   admin: {
     border: "border-red-500/60",
@@ -26,9 +26,9 @@ const TIER_STYLES: Record<string, { border: string; text: string }> = {
 
 const TIER_LABELS: Record<string, string> = {
   free: "FREE",
-  pro: "PRO",
-  premium: "PREMIUM",
-  instructor: "INSTRUCTOR",
+  pro: "MEMBRO",
+  premium: "ALUNO",
+  instructor: "MENTORADO",
   admin: "ADMIN",
 };
 
