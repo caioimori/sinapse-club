@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -304,12 +305,13 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
           {/* Image */}
           {thread.image_url && (
-            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)] relative aspect-video">
+              <Image
                 src={thread.image_url}
                 alt="Imagem do post"
-                className="w-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 600px"
               />
             </div>
           )}

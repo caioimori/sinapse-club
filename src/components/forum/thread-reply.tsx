@@ -175,7 +175,7 @@ export function ThreadReply({
           {reply.is_solution && (
             <div className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-3 w-3" />
-              Solucao aceita
+              Solução aceita
             </div>
           )}
 
@@ -217,7 +217,7 @@ export function ThreadReply({
                 disabled={markingAsSolution}
               >
                 <CheckCircle2 className="h-3 w-3" />
-                {markingAsSolution ? "..." : "Marcar como solucao"}
+                {markingAsSolution ? "..." : "Marcar como solução"}
               </Button>
             )}
           </div>

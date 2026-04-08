@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CalendarDays, MapPin, LinkIcon, GitFork } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import Image from "next/image";
 import Link from "next/link";
 
 export async function generateMetadata({
@@ -62,109 +63,53 @@ export default async function PublicProfilePage({
     redirect("/profile");
   }
 
-  // Get user threads (forum posts)
-  const { data: threadsData } = (await supabase
-    .from("posts")
-    .select(
-      `
-      id,
-      title,
-      content_plain,
-      image_url,
-      is_sticky,
-      is_solved,
-      replies_count,
-      views_count,
-      likes_count,
-      tags,
-      created_at,
-      last_reply_at,
-      author:profiles!posts_author_id_fkey(
-        username,
-        display_name,
-        avatar_url,
-        professional_role:professional_roles(name, cluster)
-      ),
-      subcategory:forum_subcategories(slug, name),
-      category:forum_categories(slug, name, icon, color)
-    `
-    )
-    .eq("author_id", profile.id)
-    .is("parent_id", null)
-    .order("created_at", { ascending: false })
-    .limit(30)) as any;
+  const postSelect = `
+    id,
+    title,
+    content_plain,
+    image_url,
+    is_sticky,
+    is_solved,
+    replies_count,
+    views_count,
+    likes_count,
+    tags,
+    created_at,
+    last_reply_at,
+    author:profiles!posts_author_id_fkey(
+      username,
+      display_name,
+      avatar_url,
+      professional_role:professional_roles(name, cluster)
+    ),
+    subcategory:forum_subcategories(slug, name),
+    category:forum_categories(slug, name, icon, color)
+  `;
 
-  // Get user replies
-  const { data: repliesData } = (await supabase
-    .from("comments")
-    .select(
-      `
-      id,
-      content,
-      created_at,
-      post_id,
-      posts!post_id(id, title, content_plain)
-    `
-    )
-    .eq("author_id", profile.id)
-    .order("created_at", { ascending: false })
-    .limit(20)) as any;
+  // Run threads, replies, liked reactions and follow check in parallel
+  const [threadsRes, repliesRes, likedReactionsRes, followRes] = await Promise.all([
+    (supabase.from("posts").select(postSelect).eq("author_id", profile.id).is("parent_id", null).order("created_at", { ascending: false }).limit(30)) as any,
+    (supabase.from("comments").select("id, content, created_at, post_id, posts!post_id(id, title, content_plain)").eq("author_id", profile.id).order("created_at", { ascending: false }).limit(20)) as any,
+    (supabase as any).from("reactions").select("target_id").eq("user_id", profile.id).eq("target_type", "post").eq("type", "like").limit(30),
+    user
+      ? (supabase as any).from("follows").select("id").eq("follower_id", user.id).eq("following_id", profile.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  // Get liked threads
-  const { data: likedReactions } = await (supabase as any)
-    .from("reactions")
-    .select("target_id")
-    .eq("user_id", profile.id)
-    .eq("target_type", "post")
-    .eq("type", "like")
-    .limit(30);
+  const threadsData = threadsRes.data;
+  const repliesData = repliesRes.data;
+  const likedReactions = likedReactionsRes.data;
+  const isFollowing = !!followRes.data;
 
+  // Fetch liked posts only if there are reactions (1 conditional round-trip)
   let likedThreads: any[] = [];
   if (likedReactions?.length) {
-    const { data: lt } = (await supabase
+    const { data: lt } = await (supabase
       .from("posts")
-      .select(
-        `
-        id,
-        title,
-        content_plain,
-        image_url,
-        is_sticky,
-        is_solved,
-        replies_count,
-        views_count,
-        likes_count,
-        tags,
-        created_at,
-        last_reply_at,
-        author:profiles!posts_author_id_fkey(
-          username,
-          display_name,
-          avatar_url,
-          professional_role:professional_roles(name, cluster)
-        ),
-        subcategory:forum_subcategories(slug, name),
-        category:forum_categories(slug, name, icon, color)
-      `
-      )
-      .in(
-        "id",
-        likedReactions.map((r: any) => r.target_id)
-      )
+      .select(postSelect)
+      .in("id", likedReactions.map((r: any) => r.target_id))
       .order("created_at", { ascending: false })) as any;
     likedThreads = lt || [];
-  }
-
-  // Check if current user follows this profile
-  let isFollowing = false;
-  if (user) {
-    const { data } = await (supabase as any)
-      .from("follows")
-      .select("id")
-      .eq("follower_id", user.id)
-      .eq("following_id", profile.id)
-      .maybeSingle();
-    isFollowing = !!data;
   }
 
   const { tab: rawTab } = await searchParams;
@@ -187,15 +132,16 @@ export default async function PublicProfilePage({
   const baseHref = `/profile/${username}`;
 
   return (
-    <div className="max-w-[600px] mx-auto">
+    <div className="w-full">
       {/* Banner */}
       <div className="relative h-48 bg-muted overflow-hidden">
         {profile.header_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={profile.header_url}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
             alt=""
+            sizes="100vw"
           />
         ) : (
           <div className="w-full h-full bg-foreground/10" />

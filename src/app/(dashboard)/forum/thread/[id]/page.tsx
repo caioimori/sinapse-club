@@ -36,67 +36,34 @@ export default async function ForumThreadPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch thread with author, category, subcategory
-  const { data: thread } = (await supabase
-    .from("posts")
-    .select(
-      "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, level, headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
-    )
-    .eq("id", id)
-    .eq("type", "thread")
-    .single()) as any;
+  // Fetch thread and comments in parallel — professional_roles embedded in joins
+  const [threadRes, commentsRes] = await Promise.all([
+    (supabase
+      .from("posts")
+      .select(
+        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level, headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+      )
+      .eq("id", id)
+      .eq("type", "thread")
+      .single()) as any,
+    (supabase
+      .from("comments")
+      .select(
+        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level)"
+      )
+      .eq("post_id", id)
+      .order("created_at", { ascending: true })) as any,
+  ]);
+
+  const thread = threadRes.data;
+  const rawComments = commentsRes.data;
 
   if (!thread) notFound();
 
-  // Increment view count (fire and forget — don't await, don't block render)
-  (supabase as any).rpc("increment_post_views", { post_id: id }).then(() => {});
+  // Increment view count (fire and forget — non-blocking)
+  void (supabase as any).rpc("increment_post_views", { post_id: id });
 
-  // Fetch comments/replies with author info
-  const { data: rawComments } = (await supabase
-    .from("comments")
-    .select(
-      "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, level)"
-    )
-    .eq("post_id", id)
-    .order("created_at", { ascending: true })) as any;
-
-  // Collect professional_role_ids from thread author + all comment authors
-  const allProfiles = [
-    thread.profiles,
-    ...((rawComments || []).map((c: any) => c.profiles) as any[]),
-  ].filter(Boolean);
-
-  const roleIds = [
-    ...new Set(
-      allProfiles
-        .map((p: any) => p.professional_role_id as string | null)
-        .filter(Boolean)
-    ),
-  ] as string[];
-
-  // Fetch professional roles in one query
-  let rolesMap: Record<
-    string,
-    { name: string; cluster: ProfessionalCluster }
-  > = {};
-  if (roleIds.length > 0) {
-    const { data: roles } = (await supabase
-      .from("professional_roles")
-      .select("id, name, cluster")
-      .in("id", roleIds)) as {
-      data: { id: string; name: string; cluster: string }[] | null;
-    };
-    if (roles) {
-      rolesMap = Object.fromEntries(
-        roles.map((r) => [
-          r.id,
-          { name: r.name, cluster: r.cluster as ProfessionalCluster },
-        ])
-      );
-    }
-  }
-
-  // Build thread author object
+  // Build thread author object — professional_role comes from the join
   const threadProfile = thread.profiles as any;
   const threadAuthor: ThreadDetailAuthor = {
     id: threadProfile?.id ?? "",
@@ -106,9 +73,7 @@ export default async function ForumThreadPage({
     level: threadProfile?.level ?? 0,
     headline: threadProfile?.headline ?? null,
     company: threadProfile?.company ?? null,
-    professional_role: threadProfile?.professional_role_id
-      ? rolesMap[threadProfile.professional_role_id] ?? null
-      : null,
+    professional_role: (threadProfile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
   };
 
   // Build category / subcategory
@@ -155,9 +120,7 @@ export default async function ForumThreadPage({
       display_name: profile?.display_name ?? null,
       avatar_url: profile?.avatar_url ?? null,
       level: profile?.level ?? 0,
-      professional_role: profile?.professional_role_id
-        ? rolesMap[profile.professional_role_id] ?? null
-        : null,
+      professional_role: (profile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
     };
 
     const replyData: ReplyData = {
@@ -181,33 +144,21 @@ export default async function ForumThreadPage({
     }
   });
 
-  // User reactions on thread
-  let isLiked = false;
-  let isSaved = false;
-  if (user) {
-    const { data: reactions } = await supabase
-      .from("reactions")
-      .select("type")
-      .eq("user_id", user.id)
-      .eq("target_type", "post")
-      .eq("target_id", id);
-    isLiked = (reactions || []).some((r: any) => r.type === "like");
-    isSaved = (reactions || []).some((r: any) => r.type === "save");
-  }
+  // Fetch thread reactions and comment reactions in parallel
+  const commentIds = (rawComments ?? []).map((c: any) => c.id as string);
+  const [postReactionsRes, commentReactionsRes] = await Promise.all([
+    user
+      ? supabase.from("reactions").select("type").eq("user_id", user.id).eq("target_type", "post").eq("target_id", id)
+      : Promise.resolve({ data: [] as { type: string }[] }),
+    user && commentIds.length > 0
+      ? supabase.from("reactions").select("target_id").eq("user_id", user.id).eq("target_type", "comment").eq("type", "like").in("target_id", commentIds)
+      : Promise.resolve({ data: [] as { target_id: string }[] }),
+  ]);
 
-  // User reactions on comments
-  let likedCommentIds: string[] = [];
-  if (user && (rawComments || []).length > 0) {
-    const commentIds = (rawComments as any[]).map((c: any) => c.id);
-    const { data: commentReactions } = await supabase
-      .from("reactions")
-      .select("target_id")
-      .eq("user_id", user.id)
-      .eq("target_type", "comment")
-      .eq("type", "like")
-      .in("target_id", commentIds);
-    likedCommentIds = (commentReactions ?? []).map((r: any) => r.target_id);
-  }
+  const postReactions = (postReactionsRes as any).data ?? [];
+  const isLiked = postReactions.some((r: any) => r.type === "like");
+  const isSaved = postReactions.some((r: any) => r.type === "save");
+  const likedCommentIds = ((commentReactionsRes as any).data ?? []).map((r: any) => r.target_id as string);
 
   // Breadcrumb data
   const categorySlug = threadData.category?.slug;

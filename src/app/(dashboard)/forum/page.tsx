@@ -189,7 +189,9 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
       repost_of: t.repost_of as string | null,
       reposts_count: (t.reposts_count as number) ?? 0,
       is_reposted: userRepostIds.has(t.id as string),
-      repost_author: null,
+      repost_author: t.repost_of
+        ? { username: (profile?.username as string) ?? "anon", display_name: (profile?.display_name as string | null) ?? null }
+        : null,
       is_sticky: t.is_sticky as boolean,
       is_solved: t.is_solved as boolean,
       replies_count: t.replies_count as number,
