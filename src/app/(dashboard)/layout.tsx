@@ -46,28 +46,27 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden">
-      {/* Desktop sidebar */}
+    <div className="flex min-h-dvh">
+      {/* Desktop sidebar — sticky, full height */}
       <Sidebar
         profile={profile}
-        categories={categories}
         professionalRole={professionalRole}
-        className="hidden lg:flex"
+        className="hidden lg:flex sticky top-0 h-dvh"
       />
 
-      {/* Main area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Main area — window/body scroll */}
+      <div className="flex flex-1 flex-col min-w-0">
         <Topbar profile={profile} />
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6">
+        <main className="flex-1">
+          <div className="w-full px-6 pt-0 pb-16 lg:pb-6">
             {children}
           </div>
         </main>
-
-        {/* Mobile bottom nav */}
-        <MobileNav categories={categories} className="lg:hidden" />
       </div>
+
+      {/* Mobile bottom nav — fixed ao viewport */}
+      <MobileNav categories={categories} className="lg:hidden fixed bottom-0 left-0 right-0 z-50" />
     </div>
   );
 }

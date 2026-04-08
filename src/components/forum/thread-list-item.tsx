@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -11,11 +12,46 @@ import {
   Repeat2,
   Pin,
   CheckCircle2,
-  Image as ImageIcon,
+  BarChart2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import type { ProfessionalCluster } from "@/types/database";
+
+const URL_REGEX = /https?:\/\/[^\s<>"']+/g;
+
+function renderTextWithLinks(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  URL_REGEX.lastIndex = 0;
+  while ((match = URL_REGEX.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const url = match[0];
+    parts.push(
+      <a
+        key={match.index}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="text-foreground underline hover:text-foreground/80 transition-colors"
+      >
+        {url}
+      </a>
+    );
+    lastIndex = match.index + url.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
+}
 
 export interface ThreadAuthor {
   username: string;
@@ -35,6 +71,8 @@ export interface ThreadSubcategory {
 export interface ThreadData {
   id: string;
   title: string | null;
+  content_plain?: string | null;
+  image_url?: string | null;
   is_sticky: boolean;
   is_solved: boolean;
   replies_count: number;
@@ -57,8 +95,21 @@ interface ThreadListItemProps {
   showCategory?: boolean;
 }
 
+const PREVIEW_LENGTH = 600;
+
+function formatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "K";
+  return n > 0 ? String(n) : "";
+}
+
 export function ThreadListItem({ thread, showCategory = false }: ThreadListItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
+
+  const handleExpand = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(true);
+  }, []);
 
   const timeRef = thread.last_reply_at || thread.created_at;
   const timeAgo = formatDistanceToNow(new Date(timeRef), {
@@ -69,63 +120,72 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   const authorName = thread.author.display_name || thread.author.username;
   const authorInitial = authorName[0]?.toUpperCase() || "?";
 
-  // Truncate content to ~280 chars (Twitter limit for preview)
-  const MAX_PREVIEW = 280;
-  const contentText = thread.title || "";
-  const isLongContent = contentText.length > MAX_PREVIEW;
-  const displayContent = isExpanded ? contentText : contentText.substring(0, MAX_PREVIEW);
+  const content = thread.content_plain || "";
+  const hasExplicitTitle =
+    thread.title &&
+    content &&
+    !content.startsWith(thread.title.substring(0, 50));
+
+  const needsExpansion = content.length > PREVIEW_LENGTH;
+  const displayContent =
+    expanded || !needsExpansion ? content : content.substring(0, PREVIEW_LENGTH);
 
   return (
-    <div className="group border-b border-[var(--border-subtle)] transition-colors duration-200 hover:bg-[var(--surface-default)]">
-      <Link
-        href={`/forum/thread/${thread.id}`}
-        className="flex items-start gap-3 px-4 py-3"
-      >
+    <article
+      onClick={() => router.push(`/forum/thread/${thread.id}`)}
+      className="border-b border-[var(--border-subtle)] hover:bg-accent/30 transition-colors duration-150 cursor-pointer"
+    >
+      <div className="flex items-start gap-3 px-4 py-3">
         {/* Avatar */}
-        <Avatar size="default" className="mt-0.5 flex-shrink-0 h-12 w-12">
-          {thread.author.avatar_url ? (
-            <AvatarImage
-              src={thread.author.avatar_url}
-              alt={authorName}
-            />
-          ) : null}
-          <AvatarFallback>{authorInitial}</AvatarFallback>
-        </Avatar>
+        <Link
+          href={`/profile/${thread.author.username}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex-shrink-0 mt-0.5"
+        >
+          <Avatar className="h-10 w-10">
+            {thread.author.avatar_url ? (
+              <AvatarImage src={thread.author.avatar_url} alt={authorName} />
+            ) : null}
+            <AvatarFallback>{authorInitial}</AvatarFallback>
+          </Avatar>
+        </Link>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          {/* Header: Author info */}
-          <div className="flex items-center gap-1.5 text-sm">
-            <span className="font-bold text-foreground hover:underline">{authorName}</span>
+          {/* Header */}
+          <div className="flex items-center gap-1.5 flex-wrap text-sm leading-snug">
+            <Link
+              href={`/profile/${thread.author.username}`}
+              onClick={(e) => e.stopPropagation()}
+              className="font-bold text-foreground hover:underline"
+            >
+              {authorName}
+            </Link>
             {thread.author.professional_role && (
-              <CargoBadge
-                cluster={thread.author.professional_role.cluster}
-                roleName={thread.author.professional_role.name}
-                size="sm"
-              />
+              <span onClick={(e) => e.stopPropagation()}>
+                <CargoBadge
+                  cluster={thread.author.professional_role.cluster}
+                  roleName={thread.author.professional_role.name}
+                  size="sm"
+                />
+              </span>
             )}
             <span className="text-muted-foreground">@{thread.author.username}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground text-xs">{timeAgo}</span>
           </div>
 
-          {/* Badges */}
+          {/* Status badges */}
           {(thread.is_sticky || thread.is_solved) && (
             <div className="mt-1 flex items-center gap-1.5">
               {thread.is_sticky && (
-                <span
-                  className="inline-flex items-center gap-0.5 bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
-                  style={{ borderRadius: "var(--radius-badge)" }}
-                >
+                <span className="inline-flex items-center gap-0.5 bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground rounded">
                   <Pin className="h-2.5 w-2.5" />
                   FIXADO
                 </span>
               )}
               {thread.is_solved && (
-                <span
-                  className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
-                  style={{ borderRadius: "var(--radius-badge)" }}
-                >
+                <span className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 rounded">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                   RESOLVIDO
                 </span>
@@ -133,104 +193,104 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </div>
           )}
 
-          {/* Thread content */}
-          <div className="mt-3">
-            <p className="text-base text-foreground leading-normal whitespace-pre-wrap break-words">
-              {displayContent}
-              {!isExpanded && isLongContent && "..."}
+          {/* Title (only if explicitly set) */}
+          {hasExplicitTitle && (
+            <p className="mt-0.5 text-base font-semibold text-foreground leading-snug">
+              {thread.title}
             </p>
-            {isLongContent && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsExpanded(!isExpanded);
-                }}
-                className="text-blue-500 hover:text-blue-600 font-medium text-sm mt-2 transition-colors"
-              >
-                {isExpanded ? "Mostrar menos" : "Ler mais"}
-              </button>
-            )}
-          </div>
-
-          {/* Image placeholder (for future implementation) */}
-          <div className="mt-3 rounded-2xl border border-[var(--border-subtle)] bg-muted/30 p-4 flex flex-col items-center justify-center aspect-video max-w-sm text-muted-foreground">
-            <ImageIcon className="h-8 w-8 mb-2" />
-            <span className="text-xs">Imagem será exibida aqui</span>
-          </div>
-
-          {/* Category badge */}
-          {showCategory && thread.category && (
-            <div className="mt-3 inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--border-subtle)]">
-              <span
-                className="h-2 w-2 rounded-full flex-shrink-0"
-                style={{ backgroundColor: thread.category.color || "#71717A" }}
-              />
-              <span className="text-xs text-muted-foreground">{thread.category.name}</span>
-            </div>
           )}
 
-          {/* Tags */}
-          {thread.tags.length > 0 && (
-            <div className="mt-2 flex items-center gap-1 flex-wrap">
-              {thread.tags.slice(0, 3).map((tag) => (
+          {/* Body */}
+          {content && (
+            <div className="mt-0.5">
+              <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap break-words">
+                {renderTextWithLinks(displayContent)}
+                {needsExpansion && !expanded && "…"}
+              </p>
+              {needsExpansion && !expanded && (
                 <span
-                  key={tag}
-                  className="bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground rounded-full"
+                  onClick={handleExpand}
+                  className="mt-0.5 inline-block text-sm text-muted-foreground hover:underline cursor-pointer transition-colors"
                 >
-                  #{tag}
-                </span>
-              ))}
-              {thread.tags.length > 3 && (
-                <span className="text-[11px] text-muted-foreground">
-                  +{thread.tags.length - 3} mais
+                  Mostrar mais
                 </span>
               )}
             </div>
           )}
 
-          {/* Actions */}
-          <div className="mt-3 flex justify-between max-w-xs text-muted-foreground">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="group/action flex items-center gap-2 text-xs hover:text-blue-500 transition-colors"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="group-hover/action:opacity-100 opacity-0 text-xs">{thread.replies_count}</span>
+          {/* Image */}
+          {thread.image_url && (
+            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={thread.image_url}
+                alt="Imagem do post"
+                className="w-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Category badge */}
+          {showCategory && thread.category && (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
+              <span
+                className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: thread.category.color || "#71717A" }}
+              />
+              <span className="text-[11px] text-muted-foreground">
+                {thread.category.icon && `${thread.category.icon} `}{thread.category.name}
+              </span>
+            </div>
+          )}
+
+          {/* Actions — Twitter style */}
+          <div
+            className="mt-3 flex items-center justify-between max-w-[340px] text-muted-foreground"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Reply */}
+            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
+                <MessageSquare className="h-[18px] w-[18px]" />
+              </span>
+              {thread.replies_count > 0 && (
+                <span>{formatCount(thread.replies_count)}</span>
+              )}
             </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="group/action flex items-center gap-2 text-xs hover:text-green-500 transition-colors"
-            >
-              <Repeat2 className="h-4 w-4" />
+
+            {/* Repost */}
+            <button className="group flex items-center gap-1.5 text-[13px] hover:text-emerald-500 transition-colors">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+                <Repeat2 className="h-[18px] w-[18px]" />
+              </span>
             </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="group/action flex items-center gap-2 text-xs hover:text-red-500 transition-colors"
-            >
-              <Heart className="h-4 w-4" />
+
+            {/* Like */}
+            <button className="group flex items-center gap-1.5 text-[13px] hover:text-rose-500 transition-colors">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-rose-500/10 transition-colors">
+                <Heart className="h-[18px] w-[18px]" />
+              </span>
             </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="group/action flex items-center gap-2 text-xs hover:text-blue-500 transition-colors"
-            >
-              <Share className="h-4 w-4" />
+
+            {/* Views */}
+            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
+                <BarChart2 className="h-[18px] w-[18px]" />
+              </span>
+              {thread.views_count > 0 && (
+                <span>{formatCount(thread.views_count)}</span>
+              )}
+            </button>
+
+            {/* Share */}
+            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
+                <Share className="h-[18px] w-[18px]" />
+              </span>
             </button>
           </div>
         </div>
-      </Link>
-    </div>
+      </div>
+    </article>
   );
 }
