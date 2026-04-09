@@ -98,6 +98,17 @@ export function SettingsForm({ profile }: { profile: any }) {
     }
   }
 
+  async function handleDeleteAccount() {
+    if (!confirm('Tem certeza? Esta ação é permanente e não pode ser desfeita.')) return;
+
+    const res = await fetch('/api/account/delete', { method: 'DELETE' });
+    if (res.ok) {
+      window.location.href = '/';
+    } else {
+      alert('Erro ao excluir conta. Tente novamente ou contate privacidade@sinapse.club');
+    }
+  }
+
   async function handleGitHubSync() {
     if (!githubUsername.trim()) return;
     setSyncLoading(true);
@@ -290,6 +301,25 @@ export function SettingsForm({ profile }: { profile: any }) {
           </button>
         </div>
       )}
+
+      {/* Danger Zone — LGPD Art. 18 */}
+      <div className="mt-12 border border-red-900/50 rounded-lg p-6">
+        <h3 className="text-red-400 font-semibold mb-2">Zona de Perigo</h3>
+        <p className="text-zinc-400 text-sm mb-4">
+          Excluir sua conta é permanente. Seus dados pessoais serão removidos em até 30 dias conforme a{' '}
+          <a href="/privacidade" className="text-zinc-300 underline hover:text-white" target="_blank" rel="noopener noreferrer">
+            LGPD
+          </a>
+          .
+        </p>
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          className="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg text-sm transition-colors"
+        >
+          Excluir minha conta
+        </button>
+      </div>
     </form>
   );
 }
