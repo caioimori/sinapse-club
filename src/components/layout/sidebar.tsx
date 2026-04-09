@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   MessageSquare,
-  Compass,
+  Search,
   Bell,
   Settings,
   Trophy,
@@ -93,7 +93,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
           {/* ── Explore ───────────────────────────────────── */}
           <Link href="/explore" className={navItemCls(pathname.startsWith("/explore"))}>
-            <Compass className="h-4 w-4 flex-shrink-0" />
+            <Search className="h-4 w-4 flex-shrink-0" />
             <span>Explore</span>
           </Link>
 
