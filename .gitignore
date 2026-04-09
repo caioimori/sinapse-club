@@ -68,3 +68,5 @@ Thumbs.db
 # SINAPSE runtime artifacts
 .sinapse-ai/.cache/
 .sinapse-ai/.tmp/
+
+.vercel

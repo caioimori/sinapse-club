@@ -1,103 +1,129 @@
 // Supabase Edge Function: publish-curated
-// Publishes translated curated content as posts in the forum feed
-// Triggered by pg_cron every 30 minutes
+// Publica conteúdo curado como posts no fórum, rotacionando entre 5 bot users
+// pg_cron: a cada 30min (:15 e :45)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const PUBLISH_BATCH = 5; // Max items to publish per run
-const MIN_RELEVANCE_SCORE = 0.5;
+const PUBLISH_BATCH = 3; // posts por run (3 runs/hora = ~70/dia)
+const MIN_SCORE = 0.5;
 
-Deno.serve(async (req) => {
+// 5 bot users (sinapse-bot + 4 novos)
+const BOT_USER_IDS = [
+  "00000000-0000-0000-0000-000000000001", // sinapse-bot (existente)
+  "00000000-0000-0000-0000-000000000002", // rafael_automacao
+  "00000000-0000-0000-0000-000000000003", // ana_ianegocios
+  "00000000-0000-0000-0000-000000000004", // lucas_growth_ai
+  "00000000-0000-0000-0000-000000000005", // carla_dados
+];
+
+// Mapeia slug da categoria → category_id do forum
+async function getCategoryMap(supabase: any): Promise<Map<string, string>> {
+  const { data } = await supabase
+    .from("forum_categories")
+    .select("id, slug")
+    .eq("is_active", true);
+  const map = new Map<string, string>();
+  (data || []).forEach((c: any) => map.set(c.slug, c.id));
+  return map;
+}
+
+// Pega o próximo bot para rotacionar
+async function getNextBotId(supabase: any): Promise<string> {
+  // Conta posts de cada bot na última hora para balancear
+  const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
+  const counts: Record<string, number> = {};
+  for (const id of BOT_USER_IDS) counts[id] = 0;
+
+  const { data } = await supabase
+    .from("posts")
+    .select("author_id")
+    .in("author_id", BOT_USER_IDS)
+    .gte("created_at", oneHourAgo);
+
+  (data || []).forEach((p: any) => {
+    if (counts[p.author_id] !== undefined) counts[p.author_id]++;
+  });
+
+  // Escolhe o que menos postou
+  return BOT_USER_IDS.reduce((a, b) => (counts[a] <= counts[b] ? a : b));
+}
+
+// Formata o conteúdo para o fórum com link da fonte
+function formatContent(text: string, sourceUrl: string, sourceAuthor?: string): { html: string; plain: string } {
+  const plain = text.slice(0, 1000);
+  const attribution = sourceAuthor ? `— ${sourceAuthor}` : "";
+  const html = `<p>${plain}</p><p><a href="${sourceUrl}" target="_blank" rel="noopener noreferrer">🔗 Ver fonte original ${attribution}</a></p>`;
+  return { html, plain };
+}
+
+// Escolhe um título mais limpo (remove sufixos de domínio, etc.)
+function cleanTitle(title: string): string {
+  return title
+    .replace(/\s*[|\-–—]\s*(TechCrunch|The Verge|VentureBeat|Wired|Ars Technica|Forbes|MIT|HBR|Reddit|Canaltech|Olhar Digital|Exame|Startups).*$/i, "")
+    .replace(/\s*::\s*.*$/, "")
+    .trim()
+    .slice(0, 200);
+}
+
+// ─── Main ───────────────────────────────────────────────────────────
+Deno.serve(async () => {
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get translated but unpublished items with good relevance
-    const { data: items, error: fetchError } = await supabase
+    // Pega itens prontos para publicar
+    // Publica: traduzidos OU conteúdo PT original (sem precisar de DeepL)
+    const { data: items, error: fetchErr } = await supabase
       .from("curated_content")
       .select("*")
-      .eq("translation_status", "translated")
       .eq("is_published", false)
-      .gte("relevance_score", MIN_RELEVANCE_SCORE)
-      .order("relevance_score", { ascending: false })
+      .gte("relevance_score", MIN_SCORE)
+      .or("translation_status.eq.translated,original_lang.eq.pt")
+      .order("created_at", { ascending: true })
       .limit(PUBLISH_BATCH);
 
-    if (fetchError) throw fetchError;
+    if (fetchErr) throw fetchErr;
     if (!items || items.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, published: 0, message: "No items to publish" }),
+        JSON.stringify({ success: true, published: 0, message: "Fila vazia" }),
         { headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Get or create the bot user for curated posts
-    // First check if system user exists
-    let botUserId: string | null = null;
-    const { data: botProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", "sinapse-bot")
-      .single();
-
-    if (botProfile) {
-      botUserId = botProfile.id;
-    }
-
-    // If no bot user, we can't publish (need admin to create one)
-    if (!botUserId) {
-      return new Response(
-        JSON.stringify({ error: "sinapse-bot user not found. Create a user with username 'sinapse-bot' first." }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Map category → space
-    const { data: spaces } = await supabase
-      .from("spaces")
-      .select("id, slug");
-
-    const spaceMap = new Map<string, string>();
-    (spaces || []).forEach((s: any) => spaceMap.set(s.slug, s.id));
-
-    // Default to ai-news space
-    const defaultSpaceId = spaceMap.get("ai-news");
-    if (!defaultSpaceId) {
-      return new Response(
-        JSON.stringify({ error: "ai-news space not found" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    const categoryMap = await getCategoryMap(supabase);
+    // Fallback: llms-agentes
+    const defaultCategoryId = categoryMap.get("llms-agentes") ?? [...categoryMap.values()][0];
 
     let published = 0;
 
     for (const item of items) {
-      const spaceId = spaceMap.get(item.category || "") || defaultSpaceId;
+      const botUserId = await getNextBotId(supabase);
+      const categoryId = categoryMap.get(item.category) ?? defaultCategoryId;
+      const text = item.translated_text || item.original_text || item.title;
+      const { html, plain } = formatContent(text, item.source_url, item.source_author);
+      const title = cleanTitle(item.title || "Sem título");
 
-      // Build rich content with source attribution
-      const content = `<p>${item.translated_text || item.original_text}</p>`;
-
-      // Create post
-      const { data: post, error: postError } = await supabase
+      const { data: post, error: postErr } = await supabase
         .from("posts")
         .insert({
           author_id: botUserId,
-          space_id: spaceId,
-          title: item.title,
-          content: content,
-          content_plain: item.translated_text || item.original_text,
-          type: "curated",
+          title,
+          content: html,
+          content_plain: plain,
+          type: "thread",
+          category_id: categoryId,
+          tags: ["curado", item.category?.split("-")[0] ?? "ia"],
         })
         .select("id")
         .single();
 
-      if (postError) {
-        console.error(`Failed to publish item ${item.id}:`, postError);
+      if (postErr) {
+        console.error(`[ERROR] post ${item.id}:`, postErr.message);
         continue;
       }
 
-      // Mark as published
       await supabase
         .from("curated_content")
         .update({
