@@ -13,10 +13,22 @@ import type { Database, ProfessionalCluster } from "@/types/database";
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
 interface ForumPageProps {
-  searchParams: Promise<{ categoria?: string; tab?: string }>;
+  searchParams: Promise<{ categoria?: string; tab?: string; sort?: string; page?: string }>;
 }
 
-async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: string }) {
+const PAGE_SIZE = 20;
+
+async function ForumFeed({
+  categorySlug,
+  tab,
+  sort = "recent",
+  page = 1,
+}: {
+  categorySlug?: string;
+  tab?: string;
+  sort?: string;
+  page?: number;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -82,6 +94,7 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     }));
 
   // Build threads query — filter by followed authors when on "Seguindo" tab
+  const offset = (page - 1) * PAGE_SIZE;
   let threadsQuery = supabase
     .from("posts")
     .select(
@@ -89,8 +102,16 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     )
     .eq("type", "thread")
     .order("is_sticky", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(50);
+    .range(offset, offset + PAGE_SIZE - 1);
+
+  // Apply sort
+  if (sort === "popular") {
+    threadsQuery = threadsQuery.order("replies_count", { ascending: false }).order("created_at", { ascending: false });
+  } else if (sort === "unanswered") {
+    threadsQuery = threadsQuery.eq("replies_count", 0).order("created_at", { ascending: false });
+  } else {
+    threadsQuery = threadsQuery.order("created_at", { ascending: false });
+  }
 
   if (tab === "following") {
     if (followingIds.length > 0) {
@@ -255,6 +276,27 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
           userRole={userRole}
         />
 
+        {/* Sort controls */}
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--border-subtle)]">
+          {(["recent", "popular", "unanswered"] as const).map((s) => {
+            const labels = { recent: "Recentes", popular: "Populares", unanswered: "Sem resposta" };
+            const isActive = sort === s;
+            return (
+              <a
+                key={s}
+                href={`?sort=${s}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                  isActive
+                    ? "bg-zinc-800 border-zinc-700 text-white"
+                    : "border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+                }`}
+              >
+                {labels[s]}
+              </a>
+            );
+          })}
+        </div>
+
         {/* Feed */}
         <div>
           {threads.length === 0 && tab === "following" ? (
@@ -278,6 +320,35 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-4 py-4 border-t border-[var(--border-subtle)]">
+          {page > 1 ? (
+            <a
+              href={`?sort=${sort}&page=${page - 1}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
+              className="px-4 py-2 text-sm rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors"
+            >
+              ← Anterior
+            </a>
+          ) : (
+            <span className="px-4 py-2 text-sm rounded-lg border border-zinc-800 opacity-30 text-zinc-300 cursor-not-allowed">
+              ← Anterior
+            </span>
+          )}
+          <span className="text-sm text-zinc-500">Página {page}</span>
+          {threads.length === PAGE_SIZE ? (
+            <a
+              href={`?sort=${sort}&page=${page + 1}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
+              className="px-4 py-2 text-sm rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors"
+            >
+              Próxima →
+            </a>
+          ) : (
+            <span className="px-4 py-2 text-sm rounded-lg border border-zinc-800 opacity-30 text-zinc-300 cursor-not-allowed">
+              Próxima →
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Sidebar — smart sticky: scrolls with feed until content end, then pins */}
@@ -291,11 +362,16 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
 }
 
 export default async function ForumPage({ searchParams }: ForumPageProps) {
-  const { categoria, tab } = await searchParams;
+  const { categoria, tab, sort, page } = await searchParams;
 
   return (
     <Suspense fallback={<div className="h-96" />}>
-      <ForumFeed categorySlug={categoria} tab={tab} />
+      <ForumFeed
+        categorySlug={categoria}
+        tab={tab}
+        sort={sort ?? "recent"}
+        page={Number(page ?? 1)}
+      />
     </Suspense>
   );
 }
