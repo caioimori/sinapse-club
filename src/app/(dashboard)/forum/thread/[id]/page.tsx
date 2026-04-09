@@ -8,6 +8,7 @@ import { ThreadReply } from "@/components/forum/thread-reply";
 import type { ReplyData, ReplyAuthor } from "@/components/forum/thread-reply";
 import { ThreadReplyComposer } from "@/components/forum/thread-reply-composer";
 import { ThreadActions } from "@/components/forum/thread-actions";
+import { ThreadHeaderMenu } from "@/components/forum/thread-header-menu";
 import type { ProfessionalCluster } from "@/types/database";
 
 export async function generateMetadata({
@@ -35,6 +36,17 @@ export default async function ForumThreadPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Fetch current user's role for moderation
+  let currentUserRole: string | undefined;
+  if (user) {
+    const { data: profileData } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    currentUserRole = profileData?.role ?? undefined;
+  }
 
   // Fetch thread and comments in parallel — professional_roles embedded in joins
   const [threadRes, commentsRes] = await Promise.all([
@@ -193,8 +205,19 @@ export default async function ForumThreadPage({
       </nav>
 
       {/* Thread content */}
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-lg border border-border bg-card p-5 relative">
         <ThreadDetail thread={threadData} />
+        {/* Edit/Delete/Report for thread */}
+        <div className="absolute top-4 right-4">
+          <ThreadHeaderMenu
+            threadId={threadData.id}
+            authorId={threadData.author.id}
+            title={threadData.title ?? ""}
+            content={threadData.content}
+            currentUserId={user?.id}
+            currentUserRole={currentUserRole}
+          />
+        </div>
       </div>
 
       {/* Actions bar */}
@@ -226,6 +249,7 @@ export default async function ForumThreadPage({
                 threadId={threadData.id}
                 threadAuthorId={threadAuthor.id}
                 currentUserId={user?.id}
+                currentUserRole={currentUserRole}
                 isSolved={threadData.is_solved}
                 likedCommentIds={likedCommentIds}
               />
