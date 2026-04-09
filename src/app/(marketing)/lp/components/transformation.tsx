@@ -23,35 +23,37 @@ const differentials = [
 
 export function Transformation() {
   return (
-    <section className="relative px-5 py-20 md:px-6 md:py-32" id="virada">
-      <div className="mx-auto max-w-3xl">
-        {/* What it is */}
-        <ScrollReveal>
-          <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-bold leading-tight text-[#F5F5F5]">
-            A SINAPSE e a comunidade onde donos de negocio aplicam IA na
-            operacao real.
-          </h2>
-        </ScrollReveal>
+    <section className="py-24" id="virada">
+      <div className="mx-auto max-w-5xl px-4">
+        <div className="mx-auto max-w-3xl">
+          {/* What it is */}
+          <ScrollReveal>
+            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight">
+              A SINAPSE e a comunidade onde donos de negocio aplicam IA na
+              operacao real.
+            </h2>
+          </ScrollReveal>
 
-        <ScrollReveal delay={0.1}>
-          <p className="mt-6 text-lg text-[#888]">
-            Nao estudam teoria, nao assistem palestra. Aplicam. Testam. Medem
-            resultado. E compartilham o que funciona.
-          </p>
-        </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="mt-6 text-lg text-muted-foreground">
+              Nao estudam teoria, nao assistem palestra. Aplicam. Testam. Medem
+              resultado. E compartilham o que funciona.
+            </p>
+          </ScrollReveal>
 
-        <ScrollReveal delay={0.15}>
-          <p className="mt-4 text-[#888]">
-            Forum ativo com empresarios de verdade. Cursos praticos de IA
-            aplicada chegando em breve. Mentoria direto com os fundadores ja
-            disponivel.
-          </p>
-        </ScrollReveal>
+          <ScrollReveal delay={0.15}>
+            <p className="mt-4 text-muted-foreground">
+              Forum ativo com empresarios de verdade. Cursos praticos de IA
+              aplicada chegando em breve. Mentoria direto com os fundadores ja
+              disponivel.
+            </p>
+          </ScrollReveal>
+        </div>
 
         {/* Central promise */}
         <ScrollReveal className="mt-16">
-          <div className="rounded-xl border border-[#222] bg-[#111] p-8 text-center">
-            <p className="text-xl font-semibold text-[#F5F5F5] md:text-2xl">
+          <div className="rounded-xl ring-1 ring-foreground/10 bg-card p-8 text-center md:p-10">
+            <p className="text-xl font-semibold text-foreground md:text-2xl">
               Reduza custos. Escale sem aumentar time. Saia da operacao e volte
               pra estrategia. Com metodo, comunidade e formacao pratica. Sem
               precisar programar uma linha de codigo.
@@ -59,13 +61,13 @@ export function Transformation() {
           </div>
         </ScrollReveal>
 
-        {/* Differentials */}
-        <StaggerContainer className="mt-16 grid gap-4 md:grid-cols-2" staggerDelay={0.1}>
+        {/* Differentials 2x2 */}
+        <StaggerContainer className="mt-16 grid gap-6 md:grid-cols-2" staggerDelay={0.1}>
           {differentials.map((diff, i) => (
             <StaggerItem key={i} animation="fade-up">
-              <div className="rounded-lg border border-[#222] bg-[#0F0F0F] p-6">
-                <h3 className="font-semibold text-[#F5F5F5]">{diff.title}</h3>
-                <p className="mt-2 text-sm text-[#888]">{diff.body}</p>
+              <div className="rounded-xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]">
+                <h3 className="font-semibold text-foreground">{diff.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{diff.body}</p>
               </div>
             </StaggerItem>
           ))}
@@ -73,7 +75,7 @@ export function Transformation() {
 
         {/* Positioning */}
         <ScrollReveal className="mt-16 text-center">
-          <p className="text-[#888]">
+          <p className="mx-auto max-w-2xl text-muted-foreground">
             A SINAPSE e a unica comunidade operacional de IA para negocios no
             Brasil. O espaco entre &quot;eu sei que IA existe&quot; e &quot;eu
             uso IA todo dia no meu negocio&quot; estava vazio. A SINAPSE ocupa

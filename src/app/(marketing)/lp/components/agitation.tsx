@@ -35,76 +35,80 @@ const pains = [
 
 export function Agitation() {
   return (
-    <section className="relative px-5 py-20 md:px-6 md:py-32" id="agitacao">
-      <div className="mx-auto max-w-3xl">
+    <section className="border-t border-border py-24" id="agitacao">
+      <div className="mx-auto max-w-5xl px-4">
         {/* Intro block */}
-        <ScrollReveal>
-          <p className="text-lg text-[#888] md:text-xl">
-            Voce ja sabe que IA vai mudar tudo. O problema e que
-            &quot;saber&quot; nao paga boleto.
-          </p>
-        </ScrollReveal>
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal>
+            <p className="text-lg text-muted-foreground md:text-xl">
+              Voce ja sabe que IA vai mudar tudo. O problema e que
+              &quot;saber&quot; nao paga boleto.
+            </p>
+          </ScrollReveal>
 
-        <ScrollReveal delay={0.1}>
-          <p className="mt-6 text-[#888]">
-            Enquanto voce assiste mais um video generico sobre ferramentas de IA,
-            seu concorrente esta automatizando o atendimento dele. Esta gerando
-            proposta em 20 minutos. Proposta que o seu time leva 4 horas. Esta
-            rodando com metade da equipe e entregando o dobro.
-          </p>
-        </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="mt-6 text-muted-foreground">
+              Enquanto voce assiste mais um video generico sobre ferramentas de IA,
+              seu concorrente esta automatizando o atendimento dele. Esta gerando
+              proposta em 20 minutos. Proposta que o seu time leva 4 horas. Esta
+              rodando com metade da equipe e entregando o dobro.
+            </p>
+          </ScrollReveal>
 
-        <ScrollReveal delay={0.15}>
-          <p className="mt-4 text-[#888]">
-            E voce? Testou 3 ferramentas, assistiu 20 tutoriais e ainda nao
-            implementou nada de verdade no seu negocio.
-          </p>
-        </ScrollReveal>
+          <ScrollReveal delay={0.15}>
+            <p className="mt-4 text-muted-foreground">
+              E voce? Testou 3 ferramentas, assistiu 20 tutoriais e ainda nao
+              implementou nada de verdade no seu negocio.
+            </p>
+          </ScrollReveal>
+        </div>
 
         {/* 6 pains */}
-        <StaggerContainer className="mt-16 space-y-6" staggerDelay={0.08}>
+        <StaggerContainer className="mt-16 grid gap-6 md:grid-cols-2" staggerDelay={0.08}>
           {pains.map((pain, i) => (
-            <StaggerItem key={i} animation="fade-left">
-              <div className="rounded-lg border border-[#222] bg-[#111]/50 p-6">
-                <h3 className="text-lg font-semibold text-[#F5F5F5]">
+            <StaggerItem key={i} animation="fade-up">
+              <div className="h-full rounded-xl border border-border bg-card p-6 transition-all hover:border-border hover:shadow-[var(--shadow-card-hover)]">
+                <h3 className="text-lg font-semibold text-foreground">
                   {pain.title}
                 </h3>
-                <p className="mt-3 leading-relaxed text-[#888]">{pain.body}</p>
+                <p className="mt-3 leading-relaxed text-muted-foreground">{pain.body}</p>
               </div>
             </StaggerItem>
           ))}
         </StaggerContainer>
 
         {/* Consequence */}
-        <ScrollReveal className="mt-16">
-          <div className="border-l-2 border-[#333] pl-6">
-            <p className="text-lg font-medium text-[#F5F5F5]">
-              Voce esta pagando mais do que devia e trabalhando mais do que
-              precisava.
-            </p>
-            <p className="mt-4 text-[#888]">
-              Cada mes que voce espera, a distancia entre voce e quem ja usa IA
-              aumenta. Nao e linear. E exponencial. O empresario que automatizou
-              o atendimento hoje esta reinvestindo esse tempo em vendas amanha. E
-              voce? Esta gastando 4 horas fazendo na mao o que ele faz em 15
-              minutos.
-            </p>
-            <p className="mt-4 text-[#888]">
-              O custo de esperar nao e zero. E o custo do funcionario que voce
-              nao precisava contratar. E o cliente que voce perdeu porque demorou
-              2 dias pra responder. E a margem que encolheu porque voce nao
-              otimizou o que podia.
-            </p>
-          </div>
-        </ScrollReveal>
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal className="mt-16">
+            <div className="rounded-xl border border-border bg-card p-8">
+              <p className="text-lg font-medium text-foreground">
+                Voce esta pagando mais do que devia e trabalhando mais do que
+                precisava.
+              </p>
+              <p className="mt-4 text-muted-foreground">
+                Cada mes que voce espera, a distancia entre voce e quem ja usa IA
+                aumenta. Nao e linear. E exponencial. O empresario que automatizou
+                o atendimento hoje esta reinvestindo esse tempo em vendas amanha. E
+                voce? Esta gastando 4 horas fazendo na mao o que ele faz em 15
+                minutos.
+              </p>
+              <p className="mt-4 text-muted-foreground">
+                O custo de esperar nao e zero. E o custo do funcionario que voce
+                nao precisava contratar. E o cliente que voce perdeu porque demorou
+                2 dias pra responder. E a margem que encolheu porque voce nao
+                otimizou o que podia.
+              </p>
+            </div>
+          </ScrollReveal>
 
-        {/* Transition */}
-        <ScrollReveal className="mt-16 text-center">
-          <p className="text-xl font-medium text-[#F5F5F5]">
-            Nao precisa ser assim. Existe um lugar onde empresarios que estavam
-            exatamente onde voce esta agora resolveram isso. Juntos.
-          </p>
-        </ScrollReveal>
+          {/* Transition */}
+          <ScrollReveal className="mt-16 text-center">
+            <p className="text-xl font-medium text-foreground">
+              Nao precisa ser assim. Existe um lugar onde empresarios que estavam
+              exatamente onde voce esta agora resolveram isso. Juntos.
+            </p>
+          </ScrollReveal>
+        </div>
       </div>
     </section>
   );

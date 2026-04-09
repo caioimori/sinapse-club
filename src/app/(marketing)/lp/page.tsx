@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Hero } from "./components/hero";
 import { Agitation } from "./components/agitation";
 import { Transformation } from "./components/transformation";
@@ -28,21 +31,26 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="dark">
-      <main className="min-h-dvh bg-[#0A0A0A] text-[#F5F5F5] antialiased">
+      <main className="min-h-dvh bg-background text-foreground antialiased">
         {/* Navbar */}
-        <nav className="fixed left-0 right-0 top-0 z-40 border-b border-[#1A1A1A] bg-[#0A0A0A]/80 backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 md:px-6">
-            <a href="/lp" className="text-lg font-bold tracking-tight text-[#F5F5F5]">
+        <header className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+            <Link href="/lp" className="text-xl font-bold text-gradient">
               SINAPSE
-            </a>
-            <a
-              href="https://forum.sinapse.club/auth"
-              className="rounded-md border border-[#333] px-4 py-2 text-sm text-[#F5F5F5] transition-colors duration-200 hover:bg-[#1A1A1A]"
-            >
-              Entrar
-            </a>
+            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="https://forum.sinapse.club/auth">
+                <Button variant="ghost" size="sm">Entrar</Button>
+              </Link>
+              <Link href="https://forum.sinapse.club/auth">
+                <Button size="sm" className="bg-foreground border-0">
+                  Comecar agora
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
-        </nav>
+        </header>
 
         {/* Sections */}
         <Hero />
@@ -60,11 +68,13 @@ export default function LandingPage() {
         <StickyCTA />
 
         {/* Footer */}
-        <footer className="border-t border-[#1A1A1A] px-5 py-8 md:px-6">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-xs text-[#555] md:flex-row">
-            <p>SINAPSE AI. Todos os direitos reservados.</p>
-            <div className="flex gap-6">
-              <span>Valores em reais (BRL). Pagamento via cartao de credito ou Pix.</span>
+        <footer className="border-t border-border py-12">
+          <div className="mx-auto max-w-5xl px-4">
+            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+              <span className="text-lg font-bold text-gradient">SINAPSE</span>
+              <p className="text-sm text-muted-foreground">
+                SINAPSE AI. Todos os direitos reservados. Valores em reais (BRL).
+              </p>
             </div>
           </div>
         </footer>

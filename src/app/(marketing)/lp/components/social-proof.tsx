@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "./motion-wrapper";
 
 const testimonials = [
@@ -57,10 +58,10 @@ const testimonials = [
 
 export function SocialProof() {
   return (
-    <section className="relative px-5 py-20 md:px-6 md:py-32" id="prova-social">
-      <div className="mx-auto max-w-5xl">
+    <section className="py-24" id="prova-social">
+      <div className="mx-auto max-w-5xl px-4">
         <ScrollReveal>
-          <p className="text-center text-[#888]">
+          <p className="mx-auto max-w-3xl text-center text-muted-foreground">
             Empresarios de agencias de marketing, e-commerces, consultorias,
             SaaS, escritorios de advocacia e franquias. Gente que fatura de
             R$30 mil a R$5 milhoes por mes. Todos aplicando IA na operacao
@@ -70,24 +71,24 @@ export function SocialProof() {
 
         {/* Testimonials grid */}
         <StaggerContainer
-          className="mt-12 grid gap-4 md:grid-cols-2"
+          className="mt-12 grid gap-6 md:grid-cols-2"
           staggerDelay={0.06}
         >
           {testimonials.map((t, i) => (
             <StaggerItem key={i} animation="fade-up">
-              <div className="flex h-full flex-col rounded-lg border border-[#222] bg-[#0F0F0F] p-6 transition-colors duration-200 hover:border-[#333]">
-                <p className="flex-1 text-sm leading-relaxed text-[#CCC]">
+              <div className="flex h-full flex-col rounded-xl border border-border bg-card p-6 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]">
+                <p className="flex-1 text-sm leading-relaxed text-foreground/80">
                   &quot;{t.text}&quot;
                 </p>
-                <div className="mt-4 flex items-center gap-3 border-t border-[#1A1A1A] pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1A1A1A] text-sm font-semibold text-[#888]">
+                <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
                     {t.name[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[#F5F5F5]">
+                    <p className="text-sm font-medium text-foreground">
                       {t.name}
                     </p>
-                    <p className="text-xs text-[#555]">{t.role}</p>
+                    <p className="text-xs text-muted-foreground/60">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -97,15 +98,14 @@ export function SocialProof() {
 
         {/* Forum as proof */}
         <ScrollReveal className="mt-16 text-center">
-          <p className="text-lg text-[#F5F5F5]">
+          <p className="text-lg text-foreground">
             Nao acredita? O forum esta la. As threads sao reais. Os membros sao
             verificados. Nao prometemos. Mostramos. Entra e ve com seus olhos.
           </p>
-          <a
-            href="#oferta"
-            className="mt-6 inline-flex items-center justify-center rounded-md bg-[#F5F5F5] px-8 py-3 font-semibold text-[#0A0A0A] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_0_20px_4px_rgba(255,255,255,0.15)]"
-          >
-            Quero entrar na SINAPSE
+          <a href="#oferta" className="mt-6 inline-block">
+            <Button size="lg" className="bg-foreground border-0 text-base px-8">
+              Quero entrar na SINAPSE
+            </Button>
           </a>
         </ScrollReveal>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "./motion-wrapper";
 
 const faqs = [
@@ -51,28 +52,18 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-[#222]">
+    <div className="border-b border-border">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between py-5 text-left transition-colors duration-200 hover:text-white"
+        className="flex w-full items-center justify-between py-5 text-left transition-colors"
         aria-expanded={open}
       >
-        <span className="pr-4 font-medium text-[#F5F5F5]">{q}</span>
-        <svg
-          className={`h-5 w-5 flex-shrink-0 text-[#555] transition-transform duration-200 ${
+        <span className="pr-4 font-medium text-foreground">{q}</span>
+        <ChevronDown
+          className={`h-5 w-5 flex-shrink-0 text-muted-foreground/60 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        />
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -83,7 +74,7 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <p className="pb-5 leading-relaxed text-[#888]">{a}</p>
+            <p className="pb-5 leading-relaxed text-muted-foreground">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -93,10 +84,10 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
 
 export function FAQ() {
   return (
-    <section className="relative px-5 py-20 md:px-6 md:py-32" id="faq">
-      <div className="mx-auto max-w-3xl">
+    <section className="border-t border-border bg-card py-24" id="faq">
+      <div className="mx-auto max-w-3xl px-4">
         <ScrollReveal>
-          <h2 className="text-center text-[clamp(2rem,3.5vw,3rem)] font-bold text-[#F5F5F5]">
+          <h2 className="text-center text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight">
             Perguntas frequentes
           </h2>
         </ScrollReveal>

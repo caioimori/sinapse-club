@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export function StickyCTA() {
   const [visible, setVisible] = useState(false);
@@ -16,7 +17,6 @@ export function StickyCTA() {
       (entries) => {
         for (const entry of entries) {
           if (entry.target.id === "hero") {
-            // Show sticky when hero is NOT visible (scrolled past)
             if (!entry.isIntersecting) {
               setVisible(true);
             } else {
@@ -24,7 +24,6 @@ export function StickyCTA() {
             }
           }
           if (entry.target.id === "cta-final") {
-            // Hide when CTA final is visible
             if (entry.isIntersecting) {
               setVisible(false);
             }
@@ -48,22 +47,21 @@ export function StickyCTA() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#222] bg-[#0A0A0A]/95 backdrop-blur-md"
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl"
         >
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-3 md:px-6">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-[#F5F5F5]">
+              <p className="text-sm font-medium text-foreground">
                 Forum SINAPSE
               </p>
-              <p className="text-xs text-[#555]">
+              <p className="text-xs text-muted-foreground/60">
                 R$27/mes. Garantia de 7 dias.
               </p>
             </div>
-            <a
-              href="https://forum.sinapse.club/auth"
-              className="w-full rounded-md bg-[#F5F5F5] px-6 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-all duration-200 hover:bg-white sm:w-auto"
-            >
-              Quero entrar na SINAPSE
+            <a href="https://forum.sinapse.club/auth" className="w-full sm:w-auto">
+              <Button className="w-full bg-foreground border-0 sm:w-auto">
+                Quero entrar na SINAPSE
+              </Button>
             </a>
           </div>
         </motion.div>
