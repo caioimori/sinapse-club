@@ -7,6 +7,7 @@ import { ThreadListItem, type ThreadData } from "@/components/forum/thread-list-
 import { TrendingUsers } from "@/components/forum/trending-users";
 import { StickySidebar } from "@/components/forum/sticky-sidebar";
 import { ThemesBar } from "@/components/forum/themes-bar";
+import { ForumSearch } from "@/components/forum/forum-search";
 import type { Database, ProfessionalCluster } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -226,9 +227,12 @@ async function ForumFeed({ categorySlug, tab }: { categorySlug?: string; tab?: s
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
       {/* Main feed — border lateral cobre composer + lista */}
       <div className="min-w-0 border-l border-r border-[var(--border-subtle)]">
-        {/* Sticky: apenas as tabs */}
+        {/* Sticky: tabs + search */}
         <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-sm border-b border-[var(--border-subtle)]">
           <ForumTabs />
+          <div className="px-4 py-2">
+            <ForumSearch />
+          </div>
         </div>
 
         {/* Themes bar — horizontal chip row, scrolls away */}
