@@ -69,4 +69,7 @@ Thumbs.db
 .sinapse-ai/.cache/
 .sinapse-ai/.tmp/
 
+# Supabase temp files
+supabase/.temp/
+
 .vercel
