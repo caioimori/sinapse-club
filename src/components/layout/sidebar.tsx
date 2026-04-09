@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Calendar,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -148,6 +149,14 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           })}
 
           <Separator className="my-3" />
+
+          {/* ── Admin ─────────────────────────────────── */}
+          {(profile as any)?.role === "admin" && (
+            <Link href="/admin/moderation" className={navItemCls(pathname.startsWith("/admin"))}>
+              <Shield className="h-4 w-4 flex-shrink-0 text-amber-500" />
+              <span>Moderação</span>
+            </Link>
+          )}
 
           {/* ── Settings + Sair ──────────────────────────── */}
           <Link href="/settings" className={navItemCls(pathname.startsWith("/settings"))}>
