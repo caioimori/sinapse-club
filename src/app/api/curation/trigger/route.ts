@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 // Manual trigger for curation pipeline (admin only)
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,6 +20,23 @@ export async function POST(request: Request) {
 
   if (profile?.role !== "admin") {
     return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  }
+
+  // Rate limit: 20 admin trigger requests per minute per user
+  const rateLimitResult = await checkRateLimit(rateLimiters.admin, user.id);
+  if (rateLimitResult && !rateLimitResult.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rateLimitResult.limit),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          "X-RateLimit-Reset": String(rateLimitResult.reset),
+          "Retry-After": String(Math.ceil((rateLimitResult.reset - Date.now()) / 1000)),
+        },
+      }
+    );
   }
 
   const { step } = await request.json().catch(() => ({ step: "all" }));

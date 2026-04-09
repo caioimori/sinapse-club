@@ -1,8 +1,9 @@
 import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminConfig } from "@/lib/supabase/admin-config";
 import type { Database } from "@/types/database";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -388,7 +389,25 @@ async function processCancellationEvent(
   log("info", `User ${maskId(userId)} downgraded to free`, { billingId });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit: 100 webhook requests per minute per IP (burst-tolerant for payment provider)
+  const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
+  const rateLimitResult = await checkRateLimit(rateLimiters.webhook, ip);
+  if (rateLimitResult && !rateLimitResult.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rateLimitResult.limit),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          "X-RateLimit-Reset": String(rateLimitResult.reset),
+          "Retry-After": String(Math.ceil((rateLimitResult.reset - Date.now()) / 1000)),
+        },
+      }
+    );
+  }
+
   let webhookConfig: ReturnType<typeof getWebhookConfig>;
   try {
     webhookConfig = getWebhookConfig();
