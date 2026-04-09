@@ -17,16 +17,10 @@ export function StickyCTA() {
       (entries) => {
         for (const entry of entries) {
           if (entry.target.id === "hero") {
-            if (!entry.isIntersecting) {
-              setVisible(true);
-            } else {
-              setVisible(false);
-            }
+            setVisible(!entry.isIntersecting);
           }
-          if (entry.target.id === "cta-final") {
-            if (entry.isIntersecting) {
-              setVisible(false);
-            }
+          if (entry.target.id === "cta-final" && entry.isIntersecting) {
+            setVisible(false);
           }
         }
       },
@@ -49,17 +43,17 @@ export function StickyCTA() {
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-xl"
         >
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 Forum SINAPSE
               </p>
               <p className="text-xs text-muted-foreground/60">
-                R$27/mes. Garantia de 7 dias.
+                R$27/mes · Garantia de 7 dias
               </p>
             </div>
             <a href="https://forum.sinapse.club/auth" className="w-full sm:w-auto">
-              <Button className="w-full bg-foreground border-0 sm:w-auto">
+              <Button className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d] w-full sm:w-auto">
                 Quero entrar na SINAPSE
               </Button>
             </a>

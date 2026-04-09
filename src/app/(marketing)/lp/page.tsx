@@ -43,7 +43,7 @@ export default function LandingPage() {
                 <Button variant="ghost" size="sm">Entrar</Button>
               </Link>
               <Link href="https://forum.sinapse.club/auth">
-                <Button size="sm" className="bg-foreground border-0">
+                <Button size="sm" className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d]">
                   Comecar agora
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>

@@ -1,164 +1,179 @@
 "use client";
 
-import { MessageSquare, BookOpen, Users, FileText, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "./motion-wrapper";
-import type { LucideIcon } from "lucide-react";
-
-interface Benefit {
-  icon: LucideIcon;
-  color: "blue" | "green" | "amber";
-  badge: string;
-  title: string;
-  feature: string;
-  benefit: string;
-  impact: string;
-  note?: string;
-}
-
-const benefits: Benefit[] = [
-  {
-    icon: MessageSquare,
-    color: "blue",
-    badge: "R$27/mes",
-    title: "Forum SINAPSE",
-    feature:
-      "Forum ativo com categorias de alto valor, threads diarias, ranking de membros, networking com empresarios verificados.",
-    benefit:
-      "Voce nao precisa descobrir nada sozinho. Toda duvida que voce tem, alguem ja resolveu. Toda ferramenta que voce quer testar, alguem ja testou. Toda dor que voce sente, alguem ja passou.",
-    impact:
-      "Em vez de perder 6 horas pesquisando no Google, voce faz uma pergunta no forum e em 30 minutos tem a resposta de quem ja fez. Isso e 5 horas e meia da sua semana de volta. Por R$27/mes.",
-  },
-  {
-    icon: BookOpen,
-    color: "green",
-    badge: "Em breve",
-    title: "Cursos Praticos de IA Aplicada",
-    feature:
-      "Cursos praticos de IA aplicada a negocios. O primeiro curso esta chegando.",
-    benefit:
-      "Formacao pratica, modular, que voce consome no seu ritmo. Feito por quem opera IA no dia a dia, nao por quem leu sobre.",
-    impact:
-      "Voce aprende a montar seu stack de IA, o conjunto de ferramentas e automacoes customizado pro seu negocio. Em semanas, nao em anos.",
-    note: "Cursos sao adquiridos separadamente do forum. O primeiro curso de IA aplicada chega em breve.",
-  },
-  {
-    icon: Users,
-    color: "amber",
-    badge: "Vagas limitadas",
-    title: "Mentoria com os Fundadores",
-    feature:
-      'Acesso direto a Caio e Matheus. Mentoria em grupo e individual. Nao a "mentores certificados". Aos fundadores.',
-    benefit:
-      '"faz isso, ignora aquilo, automatiza por aqui." Nao e conselho generico. E implementacao guiada.',
-    impact:
-      "O empresario que trabalha sozinho erra 10 vezes antes de acertar. Com mentoria, voce pula direto pro que funciona. Economia de meses de tentativa e erro.",
-    note: "A mentoria tem vagas limitadas e venda consultiva. Agende uma conversa pra saber se faz sentido pro seu momento.",
-  },
-  {
-    icon: FileText,
-    color: "blue",
-    badge: "Incluso no forum",
-    title: "Conteudo de Trincheira",
-    feature:
-      "Conteudo criado por quem opera IA no dia a dia. Reviews honestos de ferramentas, tutoriais praticos, cases reais de membros.",
-    benefit:
-      "Zero teoria academica. Tudo que voce le aqui ja foi testado em negocio real. Se nao funciona, a gente fala. Honestidade brutal como principio.",
-    impact:
-      "Voce para de gastar R$200/mes em ferramenta que nao serve e comeca a investir no que realmente move o ponteiro.",
-  },
-  {
-    icon: Zap,
-    color: "blue",
-    badge: "Incluso no forum",
-    title: "Networking com Empresarios que Usam IA",
-    feature:
-      "Rede de empresarios de diferentes setores, todos usando IA na operacao.",
-    benefit:
-      "Validacao, troca real, parcerias. Voce conversa com gente que entende a pressao de ter negocio e a oportunidade da IA ao mesmo tempo.",
-    impact:
-      "O dono de agencia que automatizou propostas compartilha o passo a passo. O dono de e-commerce que cortou posicoes mostra como. Voce nao precisa inventar. Precisa copiar o que funciona.",
-  },
-];
-
-const colorMap = {
-  blue: {
-    badge: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-    icon: "text-blue-400",
-  },
-  green: {
-    badge: "bg-green-500/10 text-green-400 border border-green-500/20",
-    icon: "text-green-400",
-  },
-  amber: {
-    badge: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-    icon: "text-amber-400",
-  },
-};
 
 export function Benefits() {
   return (
     <section className="border-t border-border bg-card py-24" id="beneficios">
       <div className="mx-auto max-w-5xl px-4">
         <ScrollReveal>
-          <h2 className="text-center text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight">
-            O que voce recebe
-          </h2>
+          <div className="text-center">
+            <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight">
+              O que voce recebe
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Forum. Cursos. Mentoria. Cada passo no seu ritmo.
+            </p>
+          </div>
         </ScrollReveal>
 
-        {/* Benefit cards */}
-        <StaggerContainer className="mt-16 space-y-6" staggerDelay={0.12}>
-          {benefits.map((b, i) => {
-            const colors = colorMap[b.color];
-            const Icon = b.icon;
-            return (
-              <StaggerItem key={i} animation="fade-up">
-                <div className="rounded-xl border border-border bg-background p-6 transition-all hover:shadow-[var(--shadow-card-hover)] md:p-8">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 rounded-xl border border-border bg-card p-3">
-                      <Icon className={`h-6 w-6 ${colors.icon}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          {b.title}
-                        </h3>
-                        <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-mono uppercase tracking-widest ${colors.badge}`}
-                        >
-                          {b.badge}
-                        </span>
-                      </div>
-                      <p className="mt-3 text-sm text-muted-foreground">{b.feature}</p>
-                      <p className="mt-3 text-foreground/80">{b.benefit}</p>
-                      <p className="mt-3 text-sm text-muted-foreground">{b.impact}</p>
-                      {b.note && (
-                        <p className="mt-3 text-xs italic text-muted-foreground/60">
-                          {b.note}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </StaggerItem>
-            );
-          })}
-        </StaggerContainer>
+        {/* Bento grid */}
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
 
-        {/* Ecosystem block */}
-        <ScrollReveal className="mt-16">
-          <div className="rounded-xl ring-1 ring-foreground/10 bg-background p-8 text-center md:p-10">
-            <h3 className="text-xl font-semibold text-foreground">
-              Forum. Cursos. Mentoria. Cada passo no seu ritmo.
-            </h3>
-            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-              Entra pelo forum a R$27/mes. Se quiser ir mais fundo, cursos
-              praticos de IA aplicada estao chegando. Se quiser alguem olhando
-              especificamente pro seu negocio, a mentoria com os fundadores ja
-              esta disponivel. Voce decide ate onde quer ir.
+          {/* Card 1 — Forum (grande, 2 cols) */}
+          <StaggerItem animation="fade-up">
+            <ScrollReveal className="md:col-span-2">
+              <div className="h-full rounded-2xl border border-border bg-background p-7 transition-all hover:border-border/60 hover:shadow-[var(--shadow-md)]">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="rounded-full px-3 py-1 text-xs font-semibold"
+                    style={{
+                      background: "rgba(32,189,90,0.12)",
+                      color: "#20BD5A",
+                      border: "1px solid rgba(32,189,90,0.25)",
+                    }}
+                  >
+                    R$27/mes
+                  </span>
+                  <span
+                    className="inline-block h-2 w-2 animate-pulse rounded-full"
+                    style={{ background: "#20BD5A" }}
+                  />
+                </div>
+                <h3 className="mt-4 text-xl font-bold text-foreground">
+                  Forum SINAPSE
+                </h3>
+                <p className="mt-2 text-muted-foreground leading-relaxed">
+                  Forum ativo com empresarios de verdade. Threads diarias, categorias de alto
+                  valor, busca, ranking de contribuicao. Voce para de pesquisar sozinho e
+                  comeca a trocar com gente que ja resolveu o que voce esta tentando resolver.
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  {["Categorias de alto valor", "Conteudo de trincheira", "Networking verificado", "Cases reais semanais"].map((f) => (
+                    <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span style={{ color: "#20BD5A" }}>✓</span>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground/60">
+                  Incluso no forum. Acesso imediato ao assinar.
+                </p>
+              </div>
+            </ScrollReveal>
+          </StaggerItem>
+
+          {/* Card 2 — Cursos */}
+          <StaggerItem animation="fade-up">
+            <ScrollReveal delay={0.06}>
+              <div className="h-full rounded-2xl border border-border bg-background p-7 transition-all hover:border-border/60 hover:shadow-[var(--shadow-md)]">
+                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+                  Em breve
+                </span>
+                <h3 className="mt-4 text-lg font-bold text-foreground">
+                  Cursos Praticos de IA
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Formacao modular de IA aplicada a negocios. Feito por quem opera,
+                  nao por quem leu sobre. Membros do forum sao os primeiros a saber.
+                </p>
+                <p className="mt-4 text-xs italic text-muted-foreground/50">
+                  Adquirido separadamente do forum.
+                </p>
+              </div>
+            </ScrollReveal>
+          </StaggerItem>
+
+          {/* Card 3 — Conteudo de trincheira */}
+          <StaggerItem animation="fade-up">
+            <ScrollReveal delay={0.08}>
+              <div className="h-full rounded-2xl border border-border bg-background p-7 transition-all hover:border-border/60">
+                <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  Incluso
+                </span>
+                <h3 className="mt-4 text-lg font-bold text-foreground">
+                  Conteudo de Trincheira
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Reviews honestos, tutoriais praticos, cases reais. Zero teoria.
+                  Tudo testado em negocio de verdade. Se nao funciona, a gente fala.
+                </p>
+              </div>
+            </ScrollReveal>
+          </StaggerItem>
+
+          {/* Card 4 — Networking */}
+          <StaggerItem animation="fade-up">
+            <ScrollReveal delay={0.1}>
+              <div className="h-full rounded-2xl border border-border bg-background p-7 transition-all hover:border-border/60">
+                <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  Incluso
+                </span>
+                <h3 className="mt-4 text-lg font-bold text-foreground">
+                  Networking Verificado
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Empresarios de diferentes setores usando IA na operacao. Voce
+                  conversa com quem entende a pressao e a oportunidade ao mesmo tempo.
+                </p>
+              </div>
+            </ScrollReveal>
+          </StaggerItem>
+
+          {/* Card 5 — Mentoria (grande, 1 col mas destaque) */}
+          <StaggerItem animation="fade-up">
+            <ScrollReveal delay={0.12}>
+              <div
+                className="h-full rounded-2xl p-7 transition-all hover:shadow-[var(--shadow-md)]"
+                style={{
+                  background: "rgba(245, 158, 11, 0.05)",
+                  border: "1px solid rgba(245, 158, 11, 0.2)",
+                }}
+              >
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{
+                    background: "rgba(245, 158, 11, 0.12)",
+                    color: "#f59e0b",
+                    border: "1px solid rgba(245, 158, 11, 0.25)",
+                  }}
+                >
+                  Vagas limitadas
+                </span>
+                <h3 className="mt-4 text-lg font-bold text-foreground">
+                  Mentoria com os Fundadores
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  Alguem olhando pro SEU negocio. Caio e Matheus. Nao mentores
+                  certificados. Os fundadores, na trincheira, implementando com voce.
+                </p>
+                <a href="#oferta" className="mt-5 inline-block">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    Agendar conversa
+                  </Button>
+                </a>
+              </div>
+            </ScrollReveal>
+          </StaggerItem>
+        </div>
+
+        {/* Ecosystem CTA */}
+        <ScrollReveal className="mt-10">
+          <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-background p-8 text-center">
+            <p className="font-semibold text-foreground">
+              Entra pelo forum por R$27/mes.
             </p>
-            <a href="#oferta" className="mt-6 inline-block">
-              <Button size="lg" className="bg-foreground border-0 text-base px-8">
+            <p className="mt-2 text-muted-foreground text-sm">
+              Se quiser ir mais fundo, os cursos chegam em breve. Se quiser acompanhamento
+              personalizado, a mentoria ja esta disponivel. Voce decide ate onde quer ir.
+            </p>
+            <a href="https://forum.sinapse.club/auth" className="mt-6 inline-block">
+              <Button size="lg" className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d] px-8 text-base">
                 Entrar no forum por R$27/mes
               </Button>
             </a>

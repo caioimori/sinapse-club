@@ -1,179 +1,195 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "./motion-wrapper";
 
+const comparisons = [
+  {
+    label: "1 funcionario junior",
+    price: "R$3.000-5.000/mes",
+    problems: "CLT, gestao, ferias, pode pedir demissao",
+    highlight: false,
+  },
+  {
+    label: "Mastermind de negocios",
+    price: "R$5.000-15.000/mes",
+    problems: "Bom networking, nao ensina IA aplicada",
+    highlight: false,
+  },
+  {
+    label: "Aprender sozinho",
+    price: '"Gratis"',
+    problems: "6-12 meses de tentativa e erro. Quanto vale 1 ano?",
+    highlight: false,
+  },
+];
+
 export function Offer() {
   return (
-    <section className="py-24" id="oferta">
+    <section className="py-24 border-t border-border" id="oferta">
       <div className="mx-auto max-w-5xl px-4">
-        <div className="mx-auto max-w-3xl">
-          {/* Anchoring */}
-          <ScrollReveal>
-            <h2 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold tracking-tight">
-              Vamos fazer uma conta rapida.
+        {/* Anchoring */}
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight">
+              Quanto custa resolver isso sem a SINAPSE?
             </h2>
-          </ScrollReveal>
-
-          <div className="mt-8 space-y-4">
-            <ScrollReveal delay={0.05}>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <p className="font-medium text-foreground">
-                  1 funcionario junior
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  R$3.000 a R$5.000 por mes com encargos. Precisa de treinamento,
-                  gestao, ferias e pode pedir demissao.
-                </p>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.1}>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <p className="font-medium text-foreground">
-                  1 mastermind de negocios
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  R$5.000 a R$15.000 por mes. Bom networking, mas nao ensina IA. E voce paga todo mes.
-                </p>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.15}>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <p className="font-medium text-foreground">Aprender sozinho</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  &quot;Gratis&quot;. Mas custa 6 a 12 meses de tentativa e erro,
-                  ferramentas erradas e tempo que nao volta. Quanto vale 1 ano da
-                  sua vida?
-                </p>
-              </div>
-            </ScrollReveal>
           </div>
+        </ScrollReveal>
 
-          <ScrollReveal className="mt-8">
-            <p className="text-xl font-semibold text-foreground">
-              Agora veja o que a SINAPSE entrega por R$27 por mes.
-            </p>
-          </ScrollReveal>
+        {/* Comparison cards */}
+        <div className="mx-auto mt-10 max-w-3xl space-y-3">
+          {comparisons.map((c, i) => (
+            <ScrollReveal key={i} delay={i * 0.05}>
+              <div className="flex flex-col gap-1 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium text-foreground">{c.label}</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">{c.problems}</p>
+                </div>
+                <span className="shrink-0 text-sm font-semibold text-muted-foreground">
+                  {c.price}
+                </span>
+              </div>
+            </ScrollReveal>
+          ))}
         </div>
 
-        {/* Forum pricing card — highlighted */}
-        <ScrollReveal className="mt-12">
-          <div className="mx-auto max-w-3xl rounded-2xl border-2 border-foreground bg-background p-8 shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] md:p-10">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-blue-400">
-                R$27/mes
-              </span>
-              <h3 className="text-xl font-bold text-foreground">
-                Forum SINAPSE
-              </h3>
+        {/* Bridge */}
+        <ScrollReveal className="mt-8">
+          <p className="mx-auto max-w-3xl text-center text-lg font-semibold text-foreground">
+            Agora veja o que a SINAPSE entrega por R$27/mes.
+          </p>
+        </ScrollReveal>
+
+        {/* Main pricing card */}
+        <ScrollReveal className="mt-8">
+          <div
+            className="mx-auto max-w-lg rounded-2xl p-8 md:p-10 text-center shadow-[0_0_60px_-20px_rgba(32,189,90,0.25)]"
+            style={{
+              background: "#0f1a13",
+              border: "2px solid rgba(32,189,90,0.25)",
+            }}
+          >
+            <span
+              className="inline-block rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
+              style={{
+                background: "rgba(32,189,90,0.12)",
+                color: "#20BD5A",
+                border: "1px solid rgba(32,189,90,0.25)",
+              }}
+            >
+              Forum SINAPSE
+            </span>
+
+            <div className="mt-6 flex items-end justify-center gap-1">
+              <span className="text-5xl font-bold text-foreground">R$27</span>
+              <span className="mb-1.5 text-muted-foreground">/mes</span>
             </div>
 
-            <p className="mt-4 text-lg text-foreground/80">
-              Acesso completo ao forum. Todas as discussoes. Todos os membros.
-              Todas as categorias.
+            <p className="mt-1 text-xs text-muted-foreground/60">
+              Cobranca mensal. Cancele quando quiser. Sem multa.
             </p>
 
-            <p className="mt-4 text-muted-foreground">
-              Pra quem quer parar de pesquisar sozinho e comecar a trocar com
-              empresarios que ja usam IA na operacao real. Threads diarias.
-              Ranking de contribuicao. Networking com empresarios verificados.
-            </p>
-
-            <p className="mt-3 text-muted-foreground">
-              Conteudo de trincheira: reviews honestos, tutoriais praticos, cases
-              reais. Tudo testado em negocio de verdade.
-            </p>
-
-            <div className="mt-6 flex items-end gap-2">
-              <span className="text-4xl font-bold text-foreground">R$27</span>
-              <span className="mb-1 text-muted-foreground/60">/mes</span>
+            <div className="mt-6 space-y-2 text-sm text-left">
+              {[
+                "Acesso completo ao forum",
+                "Todas as categorias e threads",
+                "Networking com empresarios verificados",
+                "Conteudo de trincheira atualizado",
+                "Ranking e historico completo",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-muted-foreground">
+                  <span style={{ color: "#20BD5A" }}>✓</span>
+                  {item}
+                </div>
+              ))}
             </div>
 
-            <p className="mt-2 text-xs text-muted-foreground/60">
-              Cobranca mensal. Cancele quando quiser. Sem multa, sem burocracia.
-            </p>
-
-            <a href="https://forum.sinapse.club/auth" className="mt-6 block">
-              <Button size="lg" className="w-full bg-foreground border-0 text-base">
+            <a href="https://forum.sinapse.club/auth" className="mt-8 block">
+              <Button size="lg" className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d] w-full text-base">
                 Entrar no forum por R$27/mes
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </a>
-
-            <p className="mt-3 text-center text-xs text-muted-foreground/60">
-              7 dias de garantia. Se nao fizer sentido, devolucao total.
-            </p>
           </div>
         </ScrollReveal>
 
         {/* Ecosystem steps */}
-        <div className="mx-auto mt-12 grid max-w-3xl gap-6 md:grid-cols-2">
-          {/* Courses */}
+        <div className="mx-auto mt-6 grid max-w-3xl gap-4 md:grid-cols-2">
           <ScrollReveal delay={0.05}>
-            <div className="h-full rounded-xl border border-green-500/20 bg-card p-6">
-              <span className="rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-green-400">
+            <div className="h-full rounded-xl border border-emerald-500/15 bg-card p-6">
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
                 Em breve
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Cursos Praticos de IA Aplicada
+              <h3 className="mt-4 font-semibold text-foreground">
+                Cursos Praticos de IA
               </h3>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Se voce quiser ir mais fundo, cursos praticos de IA aplicada
-                estao chegando. Formacao modular, feita pra quem quer resultado,
-                nao certificado. Adquiridos separadamente do forum. Membros do
-                forum serao os primeiros a saber.
+              <p className="mt-2 text-sm text-muted-foreground">
+                Formacao modular de IA aplicada a negocios. Membros do forum serao
+                os primeiros a saber.
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Mentoria */}
           <ScrollReveal delay={0.1}>
-            <div className="h-full rounded-xl border border-amber-500/20 bg-card p-6">
-              <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-amber-400">
+            <div
+              className="h-full rounded-xl p-6"
+              style={{
+                background: "rgba(245, 158, 11, 0.04)",
+                border: "1px solid rgba(245, 158, 11, 0.18)",
+              }}
+            >
+              <span
+                className="rounded-full px-3 py-1 text-xs font-semibold"
+                style={{
+                  background: "rgba(245, 158, 11, 0.12)",
+                  color: "#f59e0b",
+                  border: "1px solid rgba(245, 158, 11, 0.25)",
+                }}
+              >
                 Vagas limitadas
               </span>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
+              <h3 className="mt-4 font-semibold text-foreground">
                 Mentoria com os Fundadores
               </h3>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Se voce quer alguem olhando especificamente pro seu negocio, com
-                estrategia personalizada e acompanhamento de implementacao, a
-                mentoria com Caio e Matheus ja esta disponivel. Vagas limitadas
-                de verdade, porque mentoria de verdade exige tempo e atencao.
+              <p className="mt-2 text-sm text-muted-foreground">
+                Estrategia personalizada. Caio e Matheus, olhando pro seu negocio.
               </p>
-              <a href="#contato-mentoria">
-                <Button variant="outline" size="sm" className="mt-4 border-amber-500/30 text-amber-400 hover:bg-amber-500/10">
-                  Agendar uma conversa
+              <a href="#contato-mentoria" className="mt-4 inline-block">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                >
+                  Agendar conversa
                 </Button>
               </a>
-              <p className="mt-2 text-xs text-muted-foreground/60">
-                Sem compromisso. A gente conversa, entende seu momento e ve se
-                faz sentido.
-              </p>
             </div>
           </ScrollReveal>
         </div>
 
         {/* Guarantee */}
-        <ScrollReveal className="mt-12">
-          <div className="mx-auto max-w-3xl rounded-xl ring-1 ring-foreground/10 bg-card p-8 text-center md:p-10">
-            <h3 className="text-xl font-semibold text-foreground">
-              7 dias de garantia incondicional.
-            </h3>
-            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Entra. Explora. Participa. Se em 7 dias voce achar que a SINAPSE
-              nao valeu o investimento, devolvemos 100% do valor. Sem pergunta.
-              Sem formulario de 15 campos. Sem &quot;convencimento pra
-              ficar.&quot;
+        <ScrollReveal className="mt-8">
+          <div
+            className="mx-auto max-w-3xl rounded-xl p-7 text-center"
+            style={{
+              background: "var(--surface-default, #111)",
+              border: "1px solid var(--border-default)",
+            }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Shield className="h-5 w-5" style={{ color: "#20BD5A" }} />
+              <h3 className="font-semibold text-foreground">
+                7 dias de garantia incondicional.
+              </h3>
+            </div>
+            <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+              Entra. Explora. Participa. Se em 7 dias nao valeu, devolvemos 100%.
+              Sem pergunta. Sem formulario. Sem convencimento pra ficar.
             </p>
-            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
-              A gente so pede uma coisa: que voce entre de verdade. Abra o
-              forum, leia as threads, faca perguntas. Se depois de usar de
-              verdade voce ainda achar que nao vale, devolucao total. Porque
-              confianca se constroi com experiencia, nao com promessa.
+            <p className="mt-2 text-xs text-muted-foreground/50">
+              O risco real e NAO entrar e perder mais 6 meses tentando sozinho.
             </p>
           </div>
         </ScrollReveal>

@@ -87,7 +87,7 @@ export function FAQ() {
     <section className="border-t border-border bg-card py-24" id="faq">
       <div className="mx-auto max-w-3xl px-4">
         <ScrollReveal>
-          <h2 className="text-center text-[clamp(2rem,3.5vw,3rem)] font-bold tracking-tight">
+          <h2 className="text-center text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight">
             Perguntas frequentes
           </h2>
         </ScrollReveal>

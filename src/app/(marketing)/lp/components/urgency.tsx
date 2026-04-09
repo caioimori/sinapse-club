@@ -2,67 +2,125 @@
 
 import { ScrollReveal } from "./motion-wrapper";
 
+const timeline = [
+  { year: "2024", status: "curiosidade", past: true },
+  { year: "2025", status: "ferramenta", past: true },
+  { year: "2026", status: "vantagem competitiva", past: false, current: true },
+  { year: "2027", status: "obrigacao", past: false },
+];
+
 export function Urgency() {
   return (
-    <section className="py-24" id="urgencia">
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal>
-            <h2 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold leading-tight tracking-tight">
-              A janela de vantagem esta aberta agora.
-            </h2>
-          </ScrollReveal>
+    <section className="py-24 border-t border-border" id="urgencia">
+      <div className="mx-auto max-w-3xl px-4">
+        <ScrollReveal>
+          <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold leading-tight tracking-tight text-center">
+            A janela de vantagem esta aberta{" "}
+            <span style={{ color: "#20BD5A" }}>agora.</span>
+          </h2>
+        </ScrollReveal>
 
-          <ScrollReveal delay={0.1}>
-            <p className="mt-6 text-muted-foreground">
-              Em 2024, IA era curiosidade. Em 2025, virou ferramenta. Em 2026,
-              quem nao usa perde competitividade.
+        {/* Timeline visual */}
+        <ScrollReveal delay={0.1} className="mt-10">
+          <div className="flex items-center justify-center gap-0">
+            {timeline.map((t, i) => (
+              <div key={t.year} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold"
+                    style={
+                      t.current
+                        ? {
+                            background: "#20BD5A",
+                            color: "#fff",
+                            boxShadow: "0 0 20px rgba(32,189,90,0.2)",
+                          }
+                        : t.past
+                        ? {
+                            background: "var(--surface-raised, #1a1a1a)",
+                            color: "var(--text-secondary)",
+                            border: "1px solid var(--border-default)",
+                          }
+                        : {
+                            background: "transparent",
+                            color: "var(--text-tertiary)",
+                            border: "1px solid var(--border-subtle)",
+                          }
+                    }
+                  >
+                    {t.year.slice(2)}
+                  </div>
+                  <p
+                    className="mt-2 text-center text-xs max-w-[72px]"
+                    style={
+                      t.current
+                        ? { color: "#20BD5A", fontWeight: 600 }
+                        : { color: "var(--text-tertiary)" }
+                    }
+                  >
+                    {t.status}
+                  </p>
+                </div>
+                {i < timeline.length - 1 && (
+                  <div
+                    className="h-px w-10 mx-2"
+                    style={{
+                      background: i < 2 ? "var(--border-strong)" : "var(--border-subtle)",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+
+        {/* Content */}
+        <ScrollReveal delay={0.15} className="mt-10">
+          <p className="text-center text-muted-foreground">
+            Quem monta seu stack de IA hoje opera a uma fracao do custo de quem
+            comeca amanha. Essa vantagem se acumula. Cada mes na frente e um mes
+            de otimizacao que o concorrente nao tem.
+          </p>
+        </ScrollReveal>
+
+        {/* Cost of inaction */}
+        <ScrollReveal className="mt-8">
+          <div
+            className="rounded-xl p-6 md:p-8"
+            style={{
+              background: "var(--surface-default, #111)",
+              border: "1px solid var(--border-default)",
+            }}
+          >
+            <p className="font-semibold text-foreground">
+              O custo da SINAPSE e R$27/mes. Visivel. O custo de NAO estar la e
+              invisivel. Mas real. E cresce todo mes.
             </p>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.15}>
-            <p className="mt-4 text-muted-foreground">
-              A janela de vantagem esta aberta agora. Esse e o periodo em que
-              empresarios que implementam IA constroem diferencial real sobre quem
-              espera. Quem monta seu stack de IA hoje opera a uma fracao do custo
-              de quem vai comecar amanha. E essa vantagem se acumula. Cada mes na
-              frente e um mes de otimizacao que o concorrente nao tem.
-            </p>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.2}>
-            <p className="mt-4 text-muted-foreground">
-              A SINAPSE ja esta ativa. O forum esta rodando. Empresarios ja estao
-              trocando. Quanto mais voce espera, mais conteudo, mais conexoes e
-              mais oportunidades passam sem voce.
-            </p>
-          </ScrollReveal>
-
-          {/* Cost of inaction */}
-          <ScrollReveal className="mt-12">
-            <div className="rounded-xl ring-1 ring-foreground/10 bg-card p-8">
-              <p className="text-lg font-medium text-foreground">
-                Voce esta pagando mais do que devia e trabalhando mais do que
-                precisava.
-              </p>
-              <p className="mt-4 text-muted-foreground">
-                Cada mes sem IA e o salario de um funcionario que voce nao
-                precisava contratar. E a proposta que seu concorrente entregou em
-                20 minutos enquanto voce levou 4 horas. E a margem que encolheu
-                porque voce nao otimizou o que podia ser automatizado.
-              </p>
-              <p className="mt-4 text-muted-foreground">
-                O custo da SINAPSE e R$27/mes. Visivel, claro, sem surpresa. O
-                custo de NAO estar na SINAPSE e invisivel. Mas real. E cresce todo
-                mes.
-              </p>
-              <p className="mt-4 font-medium text-foreground">
-                Voce pode aprender sozinho em 2 anos. Ou com a gente em 2 meses. O
-                mercado nao vai esperar voce se sentir pronto.
-              </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Funcionario que voce nao precisava", value: "R$3-5k/mes" },
+                { label: "Proposta que demorou 4h pra fazer", value: "Tempo x custo" },
+                { label: "Margem que encolheu sem automacao", value: "Todo mes" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg p-3"
+                  style={{
+                    background: "rgba(220, 38, 38, 0.06)",
+                    border: "1px solid rgba(220, 38, 38, 0.15)",
+                  }}
+                >
+                  <p className="text-xs font-semibold text-red-400">{item.value}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground/70">{item.label}</p>
+                </div>
+              ))}
             </div>
-          </ScrollReveal>
-        </div>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              Voce pode aprender sozinho em 2 anos. Ou com a gente em 2 meses.
+              O mercado nao vai esperar voce se sentir pronto.
+            </p>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
