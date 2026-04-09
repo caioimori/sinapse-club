@@ -8,6 +8,8 @@ import { redirect } from "next/navigation";
 import { ExploreSearch } from "@/components/forum/explore-search";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ExploreFollowButton } from "@/components/forum/explore-follow-button";
+import { StickySidebar } from "@/components/forum/sticky-sidebar";
+import { TrendingUsers } from "@/components/forum/trending-users";
 
 export const metadata = { title: "Explore — Sinapse" };
 
@@ -227,30 +229,104 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
-  return (
-    <div className="max-w-2xl mx-auto border-l border-r border-[var(--border-subtle)] min-h-screen">
-      <Suspense fallback={null}>
-        <ExploreSearch initialQuery={query} />
-      </Suspense>
+  // Fetch sidebar data (parallel)
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-      <Suspense
-        fallback={
-          <div className="flex flex-col gap-4 px-4 py-8">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex gap-3 animate-pulse">
-                <div className="h-10 w-10 rounded-full bg-muted flex-shrink-0" />
-                <div className="flex-1 space-y-2 pt-1">
-                  <div className="h-3 bg-muted rounded w-1/3" />
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-1/2" />
+  const [trendingDataRes, trendingTopicsRes, suggestionsRes] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("author_id, profiles!author_id(id, username, display_name, avatar_url)")
+      .gte("created_at", oneWeekAgo.toISOString())
+      .eq("type", "thread")
+      .limit(100),
+    supabase
+      .from("posts")
+      .select("id, title, replies_count, forum_categories!category_id(icon, name, color)")
+      .eq("type", "thread")
+      .gte("created_at", oneWeekAgo.toISOString())
+      .order("replies_count", { ascending: false })
+      .limit(8),
+    supabase
+      .from("profiles")
+      .select("id, username, display_name, avatar_url, headline")
+      .neq("id", user.id)
+      .neq("username", "sinapse-bot")
+      .order("level", { ascending: false })
+      .limit(6),
+  ]);
+
+  // Build trending users
+  const authorEngagement: Record<string, { count: number; profile: any }> = {};
+  (trendingDataRes.data ?? []).forEach((post: any) => {
+    const authorId = post.author_id;
+    const profile = post.profiles;
+    if (!authorEngagement[authorId]) authorEngagement[authorId] = { count: 0, profile };
+    authorEngagement[authorId].count += 1;
+  });
+  const trendingUsers = Object.entries(authorEngagement)
+    .sort(([, a], [, b]) => b.count - a.count)
+    .slice(0, 10)
+    .map(([authorId, data]) => ({
+      id: authorId,
+      username: data.profile.username,
+      display_name: data.profile.display_name,
+      avatar_url: data.profile.avatar_url,
+      engagement_score: data.count,
+    }));
+
+  const trendingTopics = (trendingTopicsRes.data ?? []).map((t: any) => {
+    const cat = t.forum_categories as any;
+    return {
+      id: t.id as string,
+      title: t.title as string | null,
+      replies_count: t.replies_count as number,
+      category: cat ? { icon: cat.icon as string | null, name: cat.name as string, color: cat.color as string | null } : null,
+    };
+  });
+
+  const suggestions = (suggestionsRes.data ?? []).map((p: any) => ({
+    id: p.id as string,
+    username: p.username as string,
+    display_name: p.display_name as string | null,
+    avatar_url: p.avatar_url as string | null,
+    headline: p.headline as string | null,
+  }));
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
+      {/* Main column */}
+      <div className="min-w-0 border-l border-r border-[var(--border-subtle)] min-h-screen">
+        <Suspense fallback={null}>
+          <ExploreSearch initialQuery={query} />
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-4 px-4 py-8">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-3 animate-pulse">
+                  <div className="h-10 w-10 rounded-full bg-muted flex-shrink-0" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-3 bg-muted rounded w-1/3" />
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        }
-      >
-        {query ? <SearchResults query={query} /> : <TrendingSection />}
-      </Suspense>
+              ))}
+            </div>
+          }
+        >
+          {query ? <SearchResults query={query} /> : <TrendingSection />}
+        </Suspense>
+      </div>
+
+      {/* Right sidebar — same as feed */}
+      <div className="hidden lg:block">
+        <StickySidebar topbarHeight={56}>
+          <TrendingUsers users={trendingUsers} topics={trendingTopics} suggestions={suggestions} />
+        </StickySidebar>
+      </div>
     </div>
   );
 }

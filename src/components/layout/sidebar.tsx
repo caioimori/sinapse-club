@@ -105,13 +105,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
           {/* ── Botão Publicar — Twitter-style ────────────── */}
           <button
-            onClick={() => {
-              router.push("/forum");
-              setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                window.dispatchEvent(new CustomEvent("open-composer"));
-              }, 150);
-            }}
+            onClick={() => window.dispatchEvent(new CustomEvent("open-compose-modal"))}
             className="mt-2 w-full flex items-center justify-center rounded-full bg-foreground text-background py-2.5 px-4 text-sm font-bold hover:bg-foreground/85 transition-colors"
           >
             Post

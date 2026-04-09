@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { ComposeModal } from "@/components/forum/compose-modal";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -46,27 +47,32 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-dvh">
-      {/* Desktop sidebar — sticky, full height */}
-      <Sidebar
-        profile={profile}
-        professionalRole={professionalRole}
-        className="hidden lg:flex sticky top-0 h-dvh"
-      />
+    <>
+      <div className="flex min-h-dvh">
+        {/* Desktop sidebar — sticky, full height */}
+        <Sidebar
+          profile={profile}
+          professionalRole={professionalRole}
+          className="hidden lg:flex sticky top-0 h-dvh"
+        />
 
-      {/* Main area — window/body scroll */}
-      <div className="flex flex-1 flex-col min-w-0">
-        <Topbar profile={profile} />
+        {/* Main area — window/body scroll */}
+        <div className="flex flex-1 flex-col min-w-0">
+          <Topbar profile={profile} />
 
-        <main className="flex-1">
-          <div className="w-full px-6 pt-0 pb-16 lg:pb-6">
-            {children}
-          </div>
-        </main>
+          <main className="flex-1">
+            <div className="w-full px-6 pt-0 pb-16 lg:pb-6">
+              {children}
+            </div>
+          </main>
+        </div>
+
+        {/* Mobile bottom nav — fixed ao viewport */}
+        <MobileNav categories={categories} className="lg:hidden fixed bottom-0 left-0 right-0 z-50" />
       </div>
 
-      {/* Mobile bottom nav — fixed ao viewport */}
-      <MobileNav categories={categories} className="lg:hidden fixed bottom-0 left-0 right-0 z-50" />
-    </div>
+      {/* Global compose modal — available from any page at any scroll position */}
+      <ComposeModal />
+    </>
   );
 }

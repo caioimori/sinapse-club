@@ -72,7 +72,7 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
         {/* New Thread FAB */}
         <button
           type="button"
-          onClick={() => setNewThreadOpen(true)}
+          onClick={() => window.dispatchEvent(new CustomEvent("open-compose-modal"))}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background -mt-3 shadow-md transition-transform active:scale-95"
         >
           <Plus className="h-5 w-5" />
