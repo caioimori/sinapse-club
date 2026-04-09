@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { ComposerEmojiPicker } from "@/components/forum/composer-emoji-picker";
 import { ComposerPoll, type PollData } from "@/components/forum/composer-poll";
+import { MarkdownContent } from "@/components/forum/markdown-content";
 import type { Database } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -43,6 +44,7 @@ export function ForumComposer({
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [composerTab, setComposerTab] = useState<'write' | 'preview'>('write');
 
   // Media
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -207,15 +209,40 @@ export function ForumComposer({
                 maxLength={200}
                 className="w-full bg-transparent text-[15px] font-semibold placeholder:text-muted-foreground/50 outline-none"
               />
-              <textarea
-                ref={textareaRef}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="O que está acontecendo?"
-                maxLength={CHAR_LIMIT}
-                className="w-full bg-transparent text-[15px] placeholder:text-muted-foreground/50 resize-none outline-none leading-relaxed min-h-[80px]"
-                rows={3}
-              />
+              {/* Write / Preview tabs */}
+              <div className="flex border-b border-[var(--border-subtle)] mb-2">
+                <button
+                  onClick={() => setComposerTab('write')}
+                  className={`px-3 py-1.5 text-sm transition-colors ${composerTab === 'write' ? 'text-foreground border-b-2 border-foreground -mb-px' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  Escrever
+                </button>
+                <button
+                  onClick={() => setComposerTab('preview')}
+                  className={`px-3 py-1.5 text-sm transition-colors ${composerTab === 'preview' ? 'text-foreground border-b-2 border-foreground -mb-px' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  Preview
+                </button>
+              </div>
+              {composerTab === 'write' ? (
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="O que está acontecendo? (suporta Markdown)"
+                  maxLength={CHAR_LIMIT}
+                  className="w-full bg-transparent text-[15px] placeholder:text-muted-foreground/50 resize-none outline-none leading-relaxed min-h-[80px]"
+                  rows={3}
+                />
+              ) : (
+                <div className="min-h-[80px] py-1">
+                  {text.trim() ? (
+                    <MarkdownContent content={text} />
+                  ) : (
+                    <p className="text-muted-foreground/50 text-[15px]">Nada para pré-visualizar</p>
+                  )}
+                </div>
+              )}
 
               {/* Image preview */}
               {imagePreview && (
