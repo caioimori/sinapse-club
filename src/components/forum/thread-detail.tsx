@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import type { ProfessionalCluster } from "@/types/database";
 import { sanitizeHtml } from "@/lib/sanitize";
 
@@ -15,7 +16,8 @@ export interface ThreadDetailAuthor {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
-  level: number;
+  reputation?: number;
+  role?: string;
   headline: string | null;
   company: string | null;
   professional_role?: {
@@ -111,14 +113,12 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
             {thread.author.headline && (
               <span>{thread.author.headline}</span>
             )}
-            {thread.author.headline && thread.author.level > 0 && (
-              <span>·</span>
-            )}
-            {thread.author.level > 0 && (
-              <span className="font-mono">
-                Level {thread.author.level}
-              </span>
-            )}
+            {thread.author.headline && <span>·</span>}
+            <UserRankBadge
+              reputation={thread.author.reputation ?? 0}
+              role={thread.author.role ?? "free"}
+              showRep
+            />
           </div>
         </div>
       </div>

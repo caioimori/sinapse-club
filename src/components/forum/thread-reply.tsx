@@ -8,6 +8,7 @@ import { Heart, Reply, CheckCircle2, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +21,8 @@ export interface ReplyAuthor {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
-  level: number;
+  reputation?: number;
+  role?: string;
   professional_role?: {
     name: string;
     cluster: ProfessionalCluster;
@@ -217,11 +219,11 @@ export function ThreadReply({
                   size="sm"
                 />
               )}
-              {reply.author.level > 0 && (
-                <span className="text-[10px] font-mono text-muted-foreground">
-                  Lv.{reply.author.level}
-                </span>
-              )}
+              <UserRankBadge
+                reputation={reply.author.reputation ?? 0}
+                role={reply.author.role ?? "free"}
+                showRep={false}
+              />
               <span className="text-xs text-muted-foreground">{timeAgo}</span>
             </div>
             {/* Kebab menu — show for owner or admin */}

@@ -98,7 +98,7 @@ async function ForumFeed({
   let threadsQuery = supabase
     .from("posts")
     .select(
-      "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+      "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
     )
     .eq("type", "thread")
     .order("is_sticky", { ascending: false })
@@ -225,6 +225,8 @@ async function ForumFeed({
         username: (profile?.username as string) ?? "anon",
         display_name: (profile?.display_name as string | null) ?? null,
         avatar_url: (profile?.avatar_url as string | null) ?? null,
+        reputation: (profile?.reputation as number) ?? 0,
+        role: (profile?.role as string) ?? "free",
         professional_role: (profile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
       },
       category: cat

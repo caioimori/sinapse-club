@@ -53,7 +53,7 @@ export default async function ForumThreadPage({
     (supabase
       .from("posts")
       .select(
-        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level, headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+        "*, profiles!author_id(id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster), headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
       )
       .eq("id", id)
       .eq("type", "thread")
@@ -61,7 +61,7 @@ export default async function ForumThreadPage({
     (supabase
       .from("comments")
       .select(
-        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level)"
+        "*, profiles!author_id(id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster))"
       )
       .eq("post_id", id)
       .order("created_at", { ascending: true })) as any,
@@ -82,7 +82,8 @@ export default async function ForumThreadPage({
     username: threadProfile?.username ?? "anon",
     display_name: threadProfile?.display_name ?? null,
     avatar_url: threadProfile?.avatar_url ?? null,
-    level: threadProfile?.level ?? 0,
+    reputation: threadProfile?.reputation ?? 0,
+    role: threadProfile?.role ?? "free",
     headline: threadProfile?.headline ?? null,
     company: threadProfile?.company ?? null,
     professional_role: (threadProfile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
@@ -131,7 +132,8 @@ export default async function ForumThreadPage({
       username: profile?.username ?? "anon",
       display_name: profile?.display_name ?? null,
       avatar_url: profile?.avatar_url ?? null,
-      level: profile?.level ?? 0,
+      reputation: profile?.reputation ?? 0,
+      role: profile?.role ?? "free",
       professional_role: (profile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
     };
 
