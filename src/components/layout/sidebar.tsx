@@ -7,42 +7,22 @@ import {
   Search,
   Bell,
   Settings,
-  Trophy,
-  Wrench,
-  Gift,
-  Lock,
-  BookOpen,
-  ShoppingBag,
-  Calendar,
   LogOut,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { UserRankBadge } from "@/components/user-rank-badge";
-import { hasAccess } from "@/lib/access";
+// import { hasAccess } from "@/lib/access"; // Re-enable when platform sections launch
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfessionalRole = Database["public"]["Tables"]["professional_roles"]["Row"];
-
-const platformItems = [
-  { href: "/courses",     name: "Cursos",        icon: BookOpen,    requiredTier: null },
-  { href: "/marketplace", name: "Marketplace",   icon: ShoppingBag, requiredTier: "pro" as const },
-  { href: "/calendar",    name: "Calendário",    icon: Calendar,    requiredTier: null },
-];
-
-const extraItems = [
-  { href: "/leaderboard", name: "Leaderboard",    icon: Trophy, requiredTier: null },
-  { href: "/tools",       name: "Ferramentas AI", icon: Wrench, requiredTier: "pro" as const },
-  { href: "/benefits",    name: "Benefícios",     icon: Gift,   requiredTier: "pro" as const },
-];
 
 const navItemCls = (active: boolean) =>
   cn(
@@ -111,44 +91,6 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           >
             Post
           </button>
-
-          <Separator className="my-3" />
-
-          {/* ── Plataforma ────────────────────────────────── */}
-          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Plataforma
-          </p>
-          {platformItems.map((item) => {
-            const active = pathname.startsWith(item.href);
-            const locked = item.requiredTier && profile && !hasAccess(profile.role, item.requiredTier);
-            return (
-              <Link key={item.href} href={item.href} className={navItemCls(active)}>
-                <item.icon className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1">{item.name}</span>
-                {locked && <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />}
-              </Link>
-            );
-          })}
-
-          <Separator className="my-3" />
-
-          {/* ── Extras ───────────────────────────────────── */}
-          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Extras
-          </p>
-          {extraItems.map((item) => {
-            const active = pathname.startsWith(item.href);
-            const locked = item.requiredTier && profile && !hasAccess(profile.role, item.requiredTier);
-            return (
-              <Link key={item.href} href={item.href} className={navItemCls(active)}>
-                <item.icon className="h-4 w-4 flex-shrink-0" />
-                <span className="flex-1">{item.name}</span>
-                {locked && <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />}
-              </Link>
-            );
-          })}
-
-          <Separator className="my-3" />
 
           {/* ── Admin ─────────────────────────────────── */}
           {(profile as any)?.role === "admin" && (
