@@ -20,10 +20,10 @@ import {
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import { hasAccess } from "@/lib/access";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -202,11 +202,11 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
                 ) : (
                   <span className="text-[11px] text-muted-foreground">@{profile.username}</span>
                 )}
-                {profile.level > 0 && (
-                  <Badge variant="secondary" className="h-4 px-1 text-[10px] font-mono">
-                    Lv.{profile.level}
-                  </Badge>
-                )}
+                <UserRankBadge
+                  reputation={profile.reputation ?? 0}
+                  role={profile.role}
+                  showRep
+                />
               </div>
             </div>
           </Link>
