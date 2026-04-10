@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-import crypto from "crypto";
 
 function buildCsp(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
@@ -28,7 +27,7 @@ function buildCsp(nonce: string): string {
 }
 
 export async function middleware(request: NextRequest) {
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const nonce = Buffer.from(globalThis.crypto.randomUUID()).toString("base64");
   const csp = buildCsp(nonce);
 
   // Inject nonce into request headers so Server Components (layout.tsx) can read it.
