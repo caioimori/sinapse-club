@@ -8,6 +8,7 @@ import { ThreadReply } from "@/components/forum/thread-reply";
 import type { ReplyData, ReplyAuthor } from "@/components/forum/thread-reply";
 import { ThreadReplyComposer } from "@/components/forum/thread-reply-composer";
 import { ThreadActions } from "@/components/forum/thread-actions";
+import { ThreadHeaderMenu } from "@/components/forum/thread-header-menu";
 import type { ProfessionalCluster } from "@/types/database";
 
 export async function generateMetadata({
@@ -36,12 +37,23 @@ export default async function ForumThreadPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Fetch current user's role for moderation
+  let currentUserRole: string | undefined;
+  if (user) {
+    const { data: profileData } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    currentUserRole = profileData?.role ?? undefined;
+  }
+
   // Fetch thread and comments in parallel — professional_roles embedded in joins
   const [threadRes, commentsRes] = await Promise.all([
     (supabase
       .from("posts")
       .select(
-        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level, headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
+        "*, profiles!author_id(id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster), headline, company), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
       )
       .eq("id", id)
       .eq("type", "thread")
@@ -49,7 +61,7 @@ export default async function ForumThreadPage({
     (supabase
       .from("comments")
       .select(
-        "*, profiles!author_id(id, username, display_name, avatar_url, professional_role_id, professional_role:professional_roles(name, cluster), level)"
+        "*, profiles!author_id(id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster))"
       )
       .eq("post_id", id)
       .order("created_at", { ascending: true })) as any,
@@ -70,7 +82,8 @@ export default async function ForumThreadPage({
     username: threadProfile?.username ?? "anon",
     display_name: threadProfile?.display_name ?? null,
     avatar_url: threadProfile?.avatar_url ?? null,
-    level: threadProfile?.level ?? 0,
+    reputation: threadProfile?.reputation ?? 0,
+    role: threadProfile?.role ?? "free",
     headline: threadProfile?.headline ?? null,
     company: threadProfile?.company ?? null,
     professional_role: (threadProfile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
@@ -119,7 +132,8 @@ export default async function ForumThreadPage({
       username: profile?.username ?? "anon",
       display_name: profile?.display_name ?? null,
       avatar_url: profile?.avatar_url ?? null,
-      level: profile?.level ?? 0,
+      reputation: profile?.reputation ?? 0,
+      role: profile?.role ?? "free",
       professional_role: (profile?.professional_role as { name: string; cluster: ProfessionalCluster } | null) ?? null,
     };
 
@@ -193,8 +207,19 @@ export default async function ForumThreadPage({
       </nav>
 
       {/* Thread content */}
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-lg border border-border bg-card p-5 relative">
         <ThreadDetail thread={threadData} />
+        {/* Edit/Delete/Report for thread */}
+        <div className="absolute top-4 right-4">
+          <ThreadHeaderMenu
+            threadId={threadData.id}
+            authorId={threadData.author.id}
+            title={threadData.title ?? ""}
+            content={threadData.content}
+            currentUserId={user?.id}
+            currentUserRole={currentUserRole}
+          />
+        </div>
       </div>
 
       {/* Actions bar */}
@@ -226,6 +251,7 @@ export default async function ForumThreadPage({
                 threadId={threadData.id}
                 threadAuthorId={threadAuthor.id}
                 currentUserId={user?.id}
+                currentUserRole={currentUserRole}
                 isSolved={threadData.is_solved}
                 likedCommentIds={likedCommentIds}
               />

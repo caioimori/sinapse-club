@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   MessageSquare,
-  Compass,
+  Search,
   Bell,
   Settings,
   Trophy,
@@ -15,14 +15,15 @@ import {
   ShoppingBag,
   Calendar,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import { hasAccess } from "@/lib/access";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -93,7 +94,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
           {/* ── Explore ───────────────────────────────────── */}
           <Link href="/explore" className={navItemCls(pathname.startsWith("/explore"))}>
-            <Compass className="h-4 w-4 flex-shrink-0" />
+            <Search className="h-4 w-4 flex-shrink-0" />
             <span>Explore</span>
           </Link>
 
@@ -105,13 +106,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
           {/* ── Botão Publicar — Twitter-style ────────────── */}
           <button
-            onClick={() => {
-              router.push("/forum");
-              setTimeout(() => {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                window.dispatchEvent(new CustomEvent("open-composer"));
-              }, 150);
-            }}
+            onClick={() => window.dispatchEvent(new CustomEvent("open-compose-modal"))}
             className="mt-2 w-full flex items-center justify-center rounded-full bg-foreground text-background py-2.5 px-4 text-sm font-bold hover:bg-foreground/85 transition-colors"
           >
             Post
@@ -154,6 +149,14 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           })}
 
           <Separator className="my-3" />
+
+          {/* ── Admin ─────────────────────────────────── */}
+          {(profile as any)?.role === "admin" && (
+            <Link href="/admin/moderation" className={navItemCls(pathname.startsWith("/admin"))}>
+              <Shield className="h-4 w-4 flex-shrink-0 text-amber-500" />
+              <span>Moderação</span>
+            </Link>
+          )}
 
           {/* ── Settings + Sair ──────────────────────────── */}
           <Link href="/settings" className={navItemCls(pathname.startsWith("/settings"))}>
@@ -199,11 +202,11 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
                 ) : (
                   <span className="text-[11px] text-muted-foreground">@{profile.username}</span>
                 )}
-                {profile.level > 0 && (
-                  <Badge variant="secondary" className="h-4 px-1 text-[10px] font-mono">
-                    Lv.{profile.level}
-                  </Badge>
-                )}
+                <UserRankBadge
+                  reputation={profile.reputation ?? 0}
+                  role={profile.role}
+                  showRep
+                />
               </div>
             </div>
           </Link>

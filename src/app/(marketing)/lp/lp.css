@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════════════════════
+   LP SINAPSE — Design system clonado de sinapse.club
+   Brand green: #20BD5A | Background: #0A0A0A | Cards: #111111
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Brand green override ── */
+:root {
+  --lp-green: #20BD5A;
+  --lp-green-hover: #1aa04d;
+  --lp-green-dim: rgba(32, 189, 90, 0.12);
+  --lp-green-border: rgba(32, 189, 90, 0.25);
+  --lp-green-glow: rgba(32, 189, 90, 0.2);
+}
+
+/* ── CTA button — verde brand sinapse.club ── */
+.lp-cta {
+  background: var(--lp-green) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 600;
+  transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.1s ease;
+}
+
+.lp-cta:hover {
+  background: var(--lp-green-hover) !important;
+  box-shadow: 0 0 24px 4px var(--lp-green-glow);
+}
+
+.lp-cta:active {
+  transform: scale(0.98);
+}
+
+/* ── Hero background — dark stone estilo sinapse.club ── */
+.hero-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(32, 189, 90, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(32, 189, 90, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, #111111 0%, #0A0A0A 100%);
+}
+
+/* ── Shimmer highlight (loading/accent state) ── */
+.lp-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 55%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  animation: lp-shimmer 2.5s infinite;
+}
+
+@keyframes lp-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── CTA pulse glow (green version) ── */
+.cta-glow {
+  animation: cta-pulse-green 3s ease-in-out infinite;
+}
+
+@keyframes cta-pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(32, 189, 90, 0); }
+  50%       { box-shadow: 0 0 28px 4px rgba(32, 189, 90, 0.18); }
+}
+
+/* ── Green accent divider ── */
+.lp-divider-green {
+  width: 40px;
+  height: 2px;
+  background: var(--lp-green);
+  border-radius: 2px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg {
+    animation: none;
+  }
+  .cta-glow {
+    animation: none;
+  }
+  .lp-shimmer {
+    animation: none;
+  }
+}

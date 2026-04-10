@@ -1,13 +1,20 @@
 import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminConfig } from "@/lib/supabase/admin-config";
 import type { Database } from "@/types/database";
+import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
-const DEFAULT_ABACATEPAY_WEBHOOK_PUBLIC_KEY =
-  "t9dXRhHHo3yDEj5pVDYz0frf7q6bMKyMRmxxCPIPp3RCplBfXRxqlC6ZpiWmOqj4L63qEaeUOtrCI8P0VMUgo6iIga2ri9ogaHFs0WIIywSMg0q7RmBfybe1E5XJcfC4IW3alNqym0tXoAKkzvfEjZxV6bE0oG2zJrNNYmUCKZyV0KZ3JS8Votf9EAWWYdiDkMkpbMdPggfh1EqHlVkMiTady6jOR3hyzGEHrIz2Ret0xHKMbiqkr9HS1JhNHDX9";
+function maskEmail(email: string): string {
+  const [local, domain] = email.split('@');
+  if (!domain) return '***';
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+function maskId(id: string): string {
+  return `${id.slice(0, 8)}...`;
+}
 
 type JsonRecord = Record<string, unknown>;
 type Plan = "pro" | "premium";
@@ -99,14 +106,10 @@ function verifyWebhookSignature(rawBody: string, signature: string, publicKey: s
 
 function getWebhookConfig() {
   const webhookSecret = process.env.ABACATEPAY_WEBHOOK_SECRET?.trim();
-  const publicKey =
-    process.env.ABACATEPAY_WEBHOOK_PUBLIC_KEY?.trim()
-    || DEFAULT_ABACATEPAY_WEBHOOK_PUBLIC_KEY;
-
-  if (!webhookSecret) {
-    throw new Error("ABACATEPAY_WEBHOOK_SECRET is not configured.");
+  const publicKey = process.env.ABACATEPAY_WEBHOOK_PUBLIC_KEY?.trim();
+  if (!webhookSecret || !publicKey) {
+    throw new Error('[Webhook] Missing ABACATEPAY_WEBHOOK_SECRET or ABACATEPAY_WEBHOOK_PUBLIC_KEY env vars');
   }
-
   return { webhookSecret, publicKey };
 }
 
@@ -215,7 +218,7 @@ async function activatePlan(
     && typedExistingSub.status === "active"
     && typedExistingSub.stripe_subscription_id === billingId
   ) {
-    log("info", `Idempotent skip: subscription already active for user ${userId}`, {
+    log("info", `Idempotent skip: subscription already active for user ${maskId(userId)}`, {
       billingId,
       plan,
     });
@@ -243,7 +246,7 @@ async function activatePlan(
     .update({ role: plan })
     .eq("id", userId);
 
-  log("info", `Plan '${plan}' activated for user ${userId}`, { billingId });
+  log("info", `Plan '${plan}' activated for user ${maskId(userId)}`, { billingId });
 }
 
 async function activateCourse(
@@ -259,7 +262,7 @@ async function activateCourse(
     .single();
 
   if (existingEnrollment) {
-    log("info", `Idempotent skip: enrollment already exists for user ${userId}`, {
+    log("info", `Idempotent skip: enrollment already exists for user ${maskId(userId)}`, {
       courseId,
       paymentId,
     });
@@ -273,7 +276,7 @@ async function activateCourse(
     status: "active",
   });
 
-  log("info", `User ${userId} enrolled in course ${courseId}`, { paymentId });
+  log("info", `User ${maskId(userId)} enrolled in course ${courseId}`, { paymentId });
 }
 
 async function processPaidEvent(
@@ -289,7 +292,7 @@ async function processPaidEvent(
 
   const user = await findUserByEmail(supabaseAdmin, details.customerEmail);
   if (!user) {
-    log("warn", `User not found for email: ${details.customerEmail}`);
+    log("warn", `User not found for email: ${maskEmail(details.customerEmail)}`);
     return;
   }
 
@@ -367,7 +370,7 @@ async function processCancellationEvent(
   if (!userId) {
     log("warn", "Could not find user for cancellation event", {
       billingId,
-      customerEmail: details.customerEmail,
+      customerEmail: details.customerEmail ? maskEmail(details.customerEmail) : null,
     });
     return;
   }
@@ -383,10 +386,28 @@ async function processCancellationEvent(
     .update({ role: "free" })
     .eq("id", userId);
 
-  log("info", `User ${userId} downgraded to free`, { billingId });
+  log("info", `User ${maskId(userId)} downgraded to free`, { billingId });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit: 100 webhook requests per minute per IP (burst-tolerant for payment provider)
+  const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
+  const rateLimitResult = await checkRateLimit(rateLimiters.webhook, ip);
+  if (rateLimitResult && !rateLimitResult.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rateLimitResult.limit),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          "X-RateLimit-Reset": String(rateLimitResult.reset),
+          "Retry-After": String(Math.ceil((rateLimitResult.reset - Date.now()) / 1000)),
+        },
+      }
+    );
+  }
+
   let webhookConfig: ReturnType<typeof getWebhookConfig>;
   try {
     webhookConfig = getWebhookConfig();

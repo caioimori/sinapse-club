@@ -20,6 +20,7 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import type { ProfessionalCluster } from "@/types/database";
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/g;
@@ -61,6 +62,8 @@ export interface ThreadAuthor {
   username: string;
   display_name: string | null;
   avatar_url: string | null;
+  reputation?: number;
+  role?: string;
   professional_role?: {
     name: string;
     cluster: ProfessionalCluster;
@@ -255,6 +258,11 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
                 />
               </span>
             )}
+            <UserRankBadge
+              reputation={thread.author.reputation ?? 0}
+              role={thread.author.role ?? "free"}
+              showRep={false}
+            />
             <span className="text-muted-foreground">@{thread.author.username}</span>
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground text-xs">{timeAgo}</span>

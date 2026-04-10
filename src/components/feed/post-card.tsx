@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
+import { UserRankBadge } from "@/components/user-rank-badge";
 
 interface PostAuthor {
   id?: string;
@@ -37,6 +38,7 @@ interface PostAuthor {
   display_name: string | null;
   avatar_url: string | null;
   role: string;
+  reputation?: number;
 }
 
 interface QuotedPost {
@@ -260,6 +262,7 @@ export function PostCard({
                 {author.role === "admin" ? "ADMIN" : author.role === "instructor" ? "INST" : "PRO"}
               </Badge>
             )}
+            <UserRankBadge reputation={author.reputation ?? 0} role={author.role} showRep={false} />
             <span className="text-sm text-muted-foreground truncate">@{author.username}</span>
             <span className="text-muted-foreground">&middot;</span>
             <Link href={`/posts/${id}`} className="text-sm text-muted-foreground hover:underline whitespace-nowrap">

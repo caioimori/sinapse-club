@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -297,10 +298,15 @@
     transition: all var(--duration-fast) var(--ease-precise);
   }
 
-  /* Focus ring */
+  /* Focus ring — only for interactive controls, never for text inputs */
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--text-primary);
+  }
+  input:focus-visible,
+  textarea:focus-visible {
+    box-shadow: none;
+    outline: none;
   }
 
   /* Scrollbar */

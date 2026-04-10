@@ -125,6 +125,26 @@ export default function RegisterPage() {
                 required
               />
             </div>
+            {/* LGPD Consent */}
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="consent"
+                required
+                className="mt-1 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-white accent-white"
+              />
+              <label htmlFor="consent" className="text-sm text-zinc-400">
+                Li e concordo com os{' '}
+                <a href="/termos" className="text-white underline hover:text-zinc-300" target="_blank" rel="noopener noreferrer">
+                  Termos de Uso
+                </a>{' '}
+                e a{' '}
+                <a href="/privacidade" className="text-white underline hover:text-zinc-300" target="_blank" rel="noopener noreferrer">
+                  Política de Privacidade
+                </a>
+                . Autorizo o tratamento dos meus dados pessoais conforme descrito.
+              </label>
+            </div>
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
