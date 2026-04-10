@@ -25,7 +25,7 @@ const testimonials = [
   {
     name: "Thiago",
     role: "Fundador de SaaS B2B · Florianopolis",
-    text: "Gastava R$12k/mes com time de conteudo. Hoje gasto R$3k e produzo 3x mais. O stack que montei com ajuda da comunidade mudou minha estrutura de custos.",
+    text: "Gastava R$12k/mes com time de conteudo. Hoje gasto R$3k e produzo 3x mais. Stack montado com ajuda da comunidade.",
     highlight: "Custo: R$12k → R$3k/mes",
   },
   {
@@ -37,7 +37,7 @@ const testimonials = [
   {
     name: "Camila",
     role: "Agencia de servicos B2B · Goiania",
-    text: "Cancelei meu mastermind de R$5k/mes e entrei na SINAPSE por R$27. Aprendo mais aqui. Todo mundo fala de resultado, nao de mentalidade.",
+    text: "Cancelei mastermind de R$5k/mes e entrei na SINAPSE por R$27. Aprendo mais aqui. Todo mundo fala de resultado, nao de mentalidade.",
     highlight: "R$5k/mes → R$27/mes",
   },
 ];

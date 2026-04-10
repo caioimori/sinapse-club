@@ -60,9 +60,7 @@ export function CTAFinal() {
         {/* Footer note */}
         <ScrollReveal delay={0.3} className="mt-12">
           <p className="mx-auto max-w-md text-sm text-muted-foreground/50 italic">
-            A SINAPSE nao e pra todo mundo. E pra quem quer resultado, nao diploma.
-            Pra quem quer aplicar, nao estudar. Se voce e esse empresario,
-            a gente esta te esperando la dentro.
+            A SINAPSE e pra quem quer aplicar, nao estudar.
           </p>
         </ScrollReveal>
       </div>

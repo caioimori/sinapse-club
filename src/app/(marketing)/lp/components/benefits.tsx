@@ -45,9 +45,8 @@ export function Benefits() {
                   Forum SINAPSE
                 </h3>
                 <p className="mt-2 text-muted-foreground leading-relaxed">
-                  Forum ativo com empresarios de verdade. Threads diarias, categorias de alto
-                  valor, busca, ranking de contribuicao. Voce para de pesquisar sozinho e
-                  comeca a trocar com gente que ja resolveu o que voce esta tentando resolver.
+                  Threads diarias, categorias de alto valor, ranking de contribuicao.
+                  Troque com empresarios que ja resolveram o que voce esta tentando resolver.
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   {["Categorias de alto valor", "Conteudo de trincheira", "Networking verificado", "Cases reais semanais"].map((f) => (
@@ -169,8 +168,7 @@ export function Benefits() {
               Entra pelo forum por R$27/mes.
             </p>
             <p className="mt-2 text-muted-foreground text-sm">
-              Se quiser ir mais fundo, os cursos chegam em breve. Se quiser acompanhamento
-              personalizado, a mentoria ja esta disponivel. Voce decide ate onde quer ir.
+              Cursos chegam em breve. Mentoria ja disponivel. Voce decide ate onde quer ir.
             </p>
             <a href="https://forum.sinapse.club/auth" className="mt-6 inline-block">
               <Button size="lg" className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d] px-8 text-base">

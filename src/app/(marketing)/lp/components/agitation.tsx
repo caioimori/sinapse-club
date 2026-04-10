@@ -49,14 +49,9 @@ export function Agitation() {
         <ScrollReveal delay={0.1}>
           <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-border bg-card p-6 md:p-8">
             <p className="text-muted-foreground leading-relaxed">
-              Enquanto voce assiste mais um video sobre ferramentas de IA, seu concorrente
-              esta automatizando o atendimento dele. Gerando proposta em 20 minutos.
-              A proposta que o seu time leva 4 horas. Rodando com metade da equipe e
-              entregando o dobro.
-            </p>
-            <p className="mt-4 font-medium text-foreground">
-              Voce testou 3 ferramentas, assistiu 20 tutoriais e nao implementou nada
-              de verdade. Nao e falta de vontade. E falta de clareza e comunidade.
+              Seu concorrente ja automatizou atendimento, gera proposta em 20 minutos e opera
+              com metade do time. Voce testou ferramentas, assistiu tutoriais e nao implementou nada.
+              Nao e falta de vontade. E falta de metodo e comunidade.
             </p>
           </div>
         </ScrollReveal>
@@ -82,21 +77,18 @@ export function Agitation() {
         <ScrollReveal className="mt-12">
           <div className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-6 md:p-8">
             <p className="text-lg font-semibold text-foreground">
-              Voce esta pagando mais do que devia e trabalhando mais do que
-              precisava.
+              O custo de esperar nao e zero.
             </p>
             <p className="mt-3 text-muted-foreground">
-              O custo de esperar nao e zero. E o salario do funcionario que voce nao
-              precisava contratar. E o cliente perdido por demora. E a margem que
-              encolheu porque voce nao automatizou o que podia.
+              E o salario do funcionario desnecessario. O cliente perdido por demora.
+              A margem que encolheu porque voce nao automatizou.
             </p>
           </div>
         </ScrollReveal>
 
         <ScrollReveal className="mt-12 text-center">
           <p className="text-xl font-semibold text-foreground">
-            Existe um lugar onde empresarios que estavam exatamente
-            onde voce esta agora resolveram isso. Juntos.
+            Empresarios que estavam exatamente onde voce esta resolveram isso. Juntos.
           </p>
         </ScrollReveal>
       </div>

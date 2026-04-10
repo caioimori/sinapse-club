@@ -73,9 +73,8 @@ export function Transformation() {
         {/* Positioning */}
         <ScrollReveal className="mt-10 text-center">
           <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
-            A SINAPSE e a unica comunidade operacional de IA para negocios no Brasil.
-            O espaco entre &quot;eu sei que IA existe&quot; e &quot;eu uso IA todo dia&quot;
-            estava vazio. A gente ocupa esse espaco.
+            A unica comunidade operacional de IA para negocios no Brasil.
+            Entre &quot;saber que IA existe&quot; e &quot;usar IA todo dia&quot; — a SINAPSE e essa ponte.
           </p>
         </ScrollReveal>
       </div>
