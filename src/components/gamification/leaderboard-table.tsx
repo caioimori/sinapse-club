@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { CargoBadge } from "@/components/profile/cargo-badge";
+import { UserRankBadge } from "@/components/user-rank-badge";
 import { cn } from "@/lib/utils";
 import type { ProfessionalCluster } from "@/types/database";
 
@@ -13,9 +14,8 @@ export interface LeaderboardEntry {
   avatar_url: string | null;
   cluster: ProfessionalCluster;
   role_name: string;
-  level: number;
-  xp: number;
-  streak_days: number;
+  reputation: number;
+  role: string;
 }
 
 interface LeaderboardTableProps {
@@ -38,13 +38,12 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-border">
       {/* Header */}
-      <div className="grid grid-cols-[3rem_1fr_auto_auto_auto] items-center gap-4 border-b border-border bg-muted/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:grid-cols-[3rem_1fr_auto_5rem_4rem_4rem]">
+      <div className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-4 border-b border-border bg-muted/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:grid-cols-[3rem_1fr_auto_6rem_5rem]">
         <span className="text-center">#</span>
         <span>Membro</span>
         <span className="hidden sm:block">Cargo</span>
-        <span className="text-center">Level</span>
-        <span className="text-right hidden sm:block">XP</span>
-        <span className="text-right">Streak</span>
+        <span className="text-center">Rank</span>
+        <span className="text-right hidden sm:block">Rep</span>
       </div>
 
       {/* Rows */}
@@ -52,11 +51,11 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
         <div
           key={entry.rank}
           className={cn(
-            "grid grid-cols-[3rem_1fr_auto_auto_auto] items-center gap-4 border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0 sm:grid-cols-[3rem_1fr_auto_5rem_4rem_4rem]",
+            "grid grid-cols-[3rem_1fr_auto_auto] items-center gap-4 border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0 sm:grid-cols-[3rem_1fr_auto_6rem_5rem]",
             RANK_STYLES[entry.rank]
           )}
         >
-          {/* Rank */}
+          {/* Position */}
           <div className="flex justify-center">
             {entry.rank <= 3 ? (
               <span
@@ -75,7 +74,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
           </div>
 
           {/* Avatar + Name */}
-          <div className="flex items-center gap-3 min-w-0">
+          <Link href={`/profile/${entry.username}`} className="flex items-center gap-3 min-w-0">
             <Avatar size="default">
               {entry.avatar_url ? (
                 <AvatarImage src={entry.avatar_url} alt={entry.display_name} />
@@ -85,33 +84,24 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{entry.display_name}</p>
+              <p className="truncate text-sm font-medium hover:underline">{entry.display_name}</p>
               <p className="truncate text-xs text-muted-foreground">@{entry.username}</p>
             </div>
-          </div>
+          </Link>
 
           {/* Cargo Badge */}
           <div className="hidden sm:block">
             <CargoBadge cluster={entry.cluster} roleName={entry.role_name} size="sm" />
           </div>
 
-          {/* Level */}
+          {/* Rank Badge */}
           <div className="text-center">
-            <Badge variant="outline" className="font-mono text-xs">
-              Lv.{entry.level}
-            </Badge>
+            <UserRankBadge reputation={entry.reputation} role={entry.role} showRep={false} />
           </div>
 
-          {/* XP */}
+          {/* Reputation */}
           <div className="text-right hidden sm:block">
-            <span className="font-mono text-sm tabular-nums">{entry.xp.toLocaleString("pt-BR")}</span>
-          </div>
-
-          {/* Streak */}
-          <div className="text-right">
-            <span className="font-mono text-sm tabular-nums text-muted-foreground">
-              {entry.streak_days}d
-            </span>
+            <span className="font-mono text-sm tabular-nums">{entry.reputation.toLocaleString("pt-BR")}</span>
           </div>
         </div>
       ))}

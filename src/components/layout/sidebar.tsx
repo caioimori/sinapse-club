@@ -7,22 +7,36 @@ import {
   Search,
   Bell,
   Settings,
+  Trophy,
+  BookOpen,
+  ShoppingBag,
+  Calendar,
+  Wrench,
+  Gift,
   LogOut,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { UserRankBadge } from "@/components/user-rank-badge";
-// import { hasAccess } from "@/lib/access"; // Re-enable when platform sections launch
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfessionalRole = Database["public"]["Tables"]["professional_roles"]["Row"];
+
+const comingSoonItems = [
+  { name: "Cursos",        icon: BookOpen },
+  { name: "Marketplace",   icon: ShoppingBag },
+  { name: "Calendário",    icon: Calendar },
+  { name: "Ferramentas AI", icon: Wrench },
+  { name: "Benefícios",    icon: Gift },
+];
 
 const navItemCls = (active: boolean) =>
   cn(
@@ -91,6 +105,32 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           >
             Post
           </button>
+
+          <Separator className="my-3" />
+
+          {/* ── Comunidade ────────────────────────────── */}
+          <Link href="/leaderboard" className={navItemCls(pathname.startsWith("/leaderboard"))}>
+            <Trophy className="h-4 w-4 flex-shrink-0" />
+            <span>Leaderboard</span>
+          </Link>
+
+          <Separator className="my-3" />
+
+          {/* ── Em breve ──────────────────────────────── */}
+          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+            Em breve
+          </p>
+          {comingSoonItems.map((item) => (
+            <div
+              key={item.name}
+              className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground/40 cursor-default select-none"
+            >
+              <item.icon className="h-4 w-4 flex-shrink-0" />
+              <span className="flex-1">{item.name}</span>
+            </div>
+          ))}
+
+          <Separator className="my-3" />
 
           {/* ── Admin ─────────────────────────────────── */}
           {(profile as any)?.role === "admin" && (
