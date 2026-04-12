@@ -21,6 +21,39 @@ export function getRankFromRep(reputation: number): Rank {
   return RANKS[0];
 }
 
+/** Returns the next rank above the current one, or null if user is maxed out. */
+export function getNextRank(reputation: number): Rank | null {
+  const current = getRankFromRep(reputation);
+  const next = RANKS.find((r) => r.level === current.level + 1);
+  return next ?? null;
+}
+
+/**
+ * Computes progress towards the next rank.
+ * Returns 0..1 fraction plus absolute XP remaining, or null when at max rank.
+ */
+export function getRankProgress(reputation: number): {
+  current: Rank;
+  next: Rank;
+  percent: number;
+  gained: number;
+  remaining: number;
+} | null {
+  const current = getRankFromRep(reputation);
+  const next = getNextRank(reputation);
+  if (!next) return null;
+  const span = next.minRep - current.minRep;
+  const gained = Math.max(0, reputation - current.minRep);
+  const percent = span > 0 ? Math.min(1, gained / span) : 1;
+  return {
+    current,
+    next,
+    percent,
+    gained,
+    remaining: Math.max(0, next.minRep - reputation),
+  };
+}
+
 /** Color based on subscription tier (role), not reputation rank */
 export function getRoleTierColor(role: string): string {
   switch (role) {

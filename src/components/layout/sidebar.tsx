@@ -24,6 +24,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { UserRankBadge } from "@/components/user-rank-badge";
+import { StreakBadge } from "@/components/gamification/streak-badge";
+import { XpProgressBar } from "@/components/gamification/xp-progress-bar";
+import { LevelUpDetector } from "@/components/gamification/level-up-detector";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database";
@@ -212,7 +215,8 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
       {/* ── User card ─────────────────────────────────────── */}
       {profile && (
-        <div className="p-3" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+        <div className="p-3 space-y-2" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+          <LevelUpDetector reputation={profile.reputation ?? 0} />
           <Link
             href="/profile"
             className="flex items-center gap-3 rounded-xl px-2.5 py-2.5 hover:bg-sidebar-accent transition-colors"
@@ -231,6 +235,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
                   {profile.display_name || profile.username}
                 </p>
                 <TierBadge tier={profile.role} size="sm" />
+                <StreakBadge days={profile.streak_days ?? 0} compact className="ml-auto" />
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 {professionalRole ? (
@@ -246,6 +251,9 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
               </div>
             </div>
           </Link>
+          <div className="px-2.5">
+            <XpProgressBar reputation={profile.reputation ?? 0} compact />
+          </div>
         </div>
       )}
     </aside>
