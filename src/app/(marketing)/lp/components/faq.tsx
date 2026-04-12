@@ -1,50 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import { ScrollReveal, StaggerContainer, StaggerItem } from "./motion-wrapper";
 
 const faqs = [
   {
-    q: '"Mais uma comunidade de IA..."',
-    a: 'Nao somos uma comunidade DE IA. Somos uma comunidade de NEGOCIOS que usa IA como alavanca. O foco e resultado no faturamento, nao tecnologia pela tecnologia. Por R$27/mes, o risco de testar e menor que um almoco.',
+    q: "Preciso saber programar?",
+    a: "Nao. O conteudo e para donos de negocio, nao para devs. Direto, pratico, sem jargao tecnico.",
   },
   {
-    q: '"Nao tenho tempo para participar."',
-    a: 'Se voce tem 15 minutos pra abrir o Instagram, tem 15 minutos pra abrir o forum. A diferenca: no Instagram voce consome, na SINAPSE voce implementa. Conteudo digerido, pratico, aplicavel em sessoes curtas.',
+    q: "O que esta incluso nos R$27/mes?",
+    a: "Forum completo, todas as categorias, networking verificado e conteudo novo toda semana. Por menos que um almoco.",
   },
   {
-    q: '"IA nao funciona pro meu tipo de negocio."',
-    a: 'Se voce tem atendimento, propostas ou tarefas repetitivas, IA funciona. Dentro da SINAPSE tem agencias, e-commerces, SaaS e profissionais liberais que ja implementaram. A questao nao e se IA funciona. E se voce sabe COMO aplicar.',
+    q: "Posso cancelar a qualquer momento?",
+    a: "Sim. Cancelamento imediato, sem multa. Nos primeiros 7 dias, devolvemos 100% sem perguntas.",
   },
   {
-    q: '"Minha equipe nao vai usar."',
-    a: 'A SINAPSE nao e pra sua equipe. E pra voce. O dono aprende, configura e coloca pra rodar. Depois, se quiser, envolve o time.',
+    q: "Qual a diferenca de um grupo de WhatsApp?",
+    a: "Forum tem busca, historico e curadoria real. Sem ruido, sem spam, sem algoritmo. Voce acha o que precisa.",
   },
   {
-    q: '"Ja tenho ferramentas de IA, pra que pagar mais?"',
-    a: 'Ter ferramenta nao te faz usar certo. A SINAPSE ensina como aplicar no seu contexto, com casos do seu setor, com quem ja fez. A diferenca entre pagar por ferramenta e nunca usar direito — e pagar R$27/mes e economizar R$5k no primeiro mes.',
+    q: "Ja tenho ferramentas de IA, pra que pagar?",
+    a: "Ferramenta nao substitui estrategia. Aqui voce aprende como aplicar no seu contexto, com quem ja fez.",
   },
   {
-    q: '"O que esta incluso nos R$27/mes?"',
-    a: 'Acesso completo ao forum: todas as categorias, networking verificado, conteudo de trincheira semanal. Cursos praticos chegam em breve como compra separada. Mentoria com os fundadores ja disponivel como proximo passo.',
-  },
-  {
-    q: '"Vou esperar a IA amadurecer mais."',
-    a: 'Seu concorrente nao vai esperar. Empresas que adotaram IA cedo tem 30-40% mais margem operacional. Esperar nao e prudencia. E abrir vantagem pro outro lado.',
-  },
-  {
-    q: '"Nao sou tecnico, nao vou conseguir."',
-    a: 'A SINAPSE foi feita exatamente pra voce. Zero codigo. Zero jargao. Tudo explicado como CEO pra CEO. Se voce usa WhatsApp, voce usa as ferramentas que a gente compartilha.',
-  },
-  {
-    q: '"Prefiro conteudo gratuito no YouTube."',
-    a: 'YouTube e otimo pra saber que IA existe. Pessimo pra implementar. Falta curadoria, contexto brasileiro e comunidade pra quando voce empaca. A SINAPSE e o que vem depois do YouTube. Por R$27/mes.',
-  },
-  {
-    q: '"E so um forum? Pra que forum em 2026?"',
-    a: 'Forum tem busca, categorias e historico — sem algoritmo decidindo o que voce ve. Tem gente real respondendo em tempo real. E e a porta de entrada: cursos praticos e mentoria com os fundadores completam o ecossistema.',
+    q: "E so um forum?",
+    a: "Forum e a porta de entrada. Cursos e mentoria com os fundadores completam o ecossistema — opcionais.",
   },
 ];
 
@@ -52,53 +33,111 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-border">
+    <div
+      style={{
+        borderBottom: "1px solid #e5e5e5",
+      }}
+    >
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between py-5 text-left transition-colors"
+        style={{
+          display: "flex",
+          width: "100%",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: 24,
+          paddingBottom: 24,
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          gap: 16,
+        }}
         aria-expanded={open}
       >
-        <span className="pr-4 font-medium text-foreground">{q}</span>
-        <ChevronDown
-          className={`h-5 w-5 flex-shrink-0 text-muted-foreground/60 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#1a1a1a",
+            lineHeight: 1.5,
+          }}
+        >
+          {q}
+        </span>
+        <span
+          style={{
+            fontSize: 20,
+            fontWeight: 300,
+            color: "#9a9a9a",
+            flexShrink: 0,
+            display: "inline-block",
+            transform: open ? "rotate(45deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease",
+            lineHeight: 1,
+          }}
+        >
+          +
+        </span>
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="overflow-hidden"
-          >
-            <p className="pb-5 leading-relaxed text-muted-foreground">{a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+      <div
+        style={{
+          overflow: "hidden",
+          maxHeight: open ? 300 : 0,
+          transition: "max-height 0.25s ease",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: 300,
+            color: "#6e6e6e",
+            lineHeight: 1.65,
+            paddingBottom: 24,
+          }}
+        >
+          {a}
+        </p>
+      </div>
     </div>
   );
 }
 
 export function FAQ() {
   return (
-    <section className="border-t border-border bg-card py-24" id="faq">
-      <div className="mx-auto max-w-3xl px-4">
-        <ScrollReveal>
-          <h2 className="text-center text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight">
+    <section
+      id="faq"
+      style={{
+        paddingTop: 96,
+        paddingBottom: 96,
+        paddingLeft: 24,
+        paddingRight: 24,
+        backgroundColor: "#f7f7f7",
+      }}
+    >
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 56px)",
+              fontWeight: 600,
+              letterSpacing: "-1.5px",
+              color: "#1a1a1a",
+              lineHeight: 1.1,
+            }}
+          >
             Perguntas frequentes
           </h2>
-        </ScrollReveal>
+        </div>
 
-        <StaggerContainer className="mt-12" staggerDelay={0.04}>
+        {/* Accordion */}
+        <div>
           {faqs.map((faq, i) => (
-            <StaggerItem key={i} animation="fade-up">
-              <AccordionItem q={faq.q} a={faq.a} />
-            </StaggerItem>
+            <AccordionItem key={i} q={faq.q} a={faq.a} />
           ))}
-        </StaggerContainer>
+        </div>
       </div>
     </section>
   );
