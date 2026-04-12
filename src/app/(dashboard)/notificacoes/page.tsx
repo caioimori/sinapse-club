@@ -29,11 +29,11 @@ interface Notification {
 
 function NotifIcon({ type }: { type: NotifType }) {
   switch (type) {
-    case "like":    return <Heart className="h-4 w-4 text-red-500" />;
-    case "follow":  return <UserPlus className="h-4 w-4 text-blue-500" />;
-    case "reply":   return <MessageSquare className="h-4 w-4 text-green-500" />;
-    case "repost":  return <Repeat2 className="h-4 w-4 text-emerald-500" />;
-    case "mention": return <Bell className="h-4 w-4 text-yellow-500" />;
+    case "like":    return <Heart className="h-4 w-4 text-[var(--accent-like)]" />;
+    case "follow":  return <UserPlus className="h-4 w-4 text-[var(--accent-info)]" />;
+    case "reply":   return <MessageSquare className="h-4 w-4 text-[var(--accent-repost)]" />;
+    case "repost":  return <Repeat2 className="h-4 w-4 text-[var(--accent-repost)]" />;
+    case "mention": return <Bell className="h-4 w-4 text-[var(--accent-warn)]" />;
   }
 }
 
@@ -172,7 +172,7 @@ export default async function NotificacoesPage() {
       {/* Main column */}
       <div className="min-w-0 border-l border-r border-[var(--border-subtle)] min-h-screen">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-sm border-b border-[var(--border-subtle)] px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 z-40 glass-nav border-b border-[var(--border-subtle)] px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-extrabold">Notificações</h1>
           {unreadIds.length > 0 && (
             <NotificationsMarkRead unreadIds={unreadIds} />
@@ -240,7 +240,7 @@ export default async function NotificacoesPage() {
                             {notifMessage(notif.type, actorName)}
                           </span>
                           {!notif.read && (
-                            <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
+                            <span className="h-2 w-2 rounded-full bg-[var(--accent-info)] flex-shrink-0" />
                           )}
                         </div>
                         {notif.entity_title && (

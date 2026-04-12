@@ -7,7 +7,10 @@ import { ThreadListItem, type ThreadData } from "@/components/forum/thread-list-
 import { TrendingUsers } from "@/components/forum/trending-users";
 import { StickySidebar } from "@/components/forum/sticky-sidebar";
 import { ThemesBar } from "@/components/forum/themes-bar";
-import { ForumSearch } from "@/components/forum/forum-search";
+// import { ForumSearch } from "@/components/forum/forum-search";
+import { Sparkles, UserPlus } from "lucide-react";
+import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
+import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
 import type { Database, ProfessionalCluster } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -101,10 +104,9 @@ async function ForumFeed({
       "id, title, content_plain, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)"
     )
     .eq("type", "thread")
-    .order("is_sticky", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
 
-  // Apply sort
+  // Apply sort — pure chronological, no sticky pinning
   if (sort === "popular") {
     threadsQuery = threadsQuery.order("replies_count", { ascending: false }).order("created_at", { ascending: false });
   } else if (sort === "unanswered") {
@@ -250,12 +252,9 @@ async function ForumFeed({
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
       {/* Main feed — border lateral cobre composer + lista */}
       <div className="min-w-0 border-l border-r border-[var(--border-subtle)]">
-        {/* Sticky: tabs + search */}
+        {/* Sticky: tabs */}
         <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-sm border-b border-[var(--border-subtle)]">
           <ForumTabs />
-          <div className="px-4 py-2">
-            <ForumSearch />
-          </div>
         </div>
 
         {/* Themes bar — horizontal chip row, scrolls away */}
@@ -289,8 +288,8 @@ async function ForumFeed({
                 href={`?sort=${s}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
                 className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
                   isActive
-                    ? "bg-zinc-800 border-zinc-700 text-white"
-                    : "border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"
+                    ? "bg-foreground border-foreground text-background"
+                    : "border-[var(--border-default)] text-muted-foreground hover:text-foreground hover:border-[var(--border-strong)]"
                 }`}
               >
                 {labels[s]}
@@ -302,14 +301,19 @@ async function ForumFeed({
         {/* Feed */}
         <div>
           {threads.length === 0 && tab === "following" ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center px-4 gap-3">
-              <p className="font-semibold text-foreground">Ainda não segue ninguém</p>
-              <p className="text-sm text-muted-foreground">Siga pessoas para ver o conteúdo delas aqui</p>
-            </div>
+            <EmptyState
+              icon={UserPlus}
+              title="Seu feed está em branco"
+              description="Quando você seguir pessoas, os posts delas aparecem aqui antes dos outros."
+              cta={<EmptyStateLinkCta href="/explore" label="Descobrir pessoas" />}
+            />
           ) : threads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <p className="text-muted-foreground">Nenhuma publicação ainda. Seja o primeiro!</p>
-            </div>
+            <EmptyState
+              icon={Sparkles}
+              title="Aqui é onde o sinal começa"
+              description="Ninguém publicou ainda nesta categoria. Seja a primeira voz — o que você aprendeu essa semana?"
+              cta={<EmptyStateComposeCta label="Escrever o primeiro post" />}
+            />
           ) : (
             <div>
               {threads.map((thread) => (
@@ -328,25 +332,25 @@ async function ForumFeed({
           {page > 1 ? (
             <a
               href={`?sort=${sort}&page=${page - 1}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
-              className="px-4 py-2 text-sm rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors"
+              className="px-4 py-2 text-sm rounded-lg border border-[var(--border-default)] hover:bg-[var(--surface-hover)] text-foreground transition-colors"
             >
               ← Anterior
             </a>
           ) : (
-            <span className="px-4 py-2 text-sm rounded-lg border border-zinc-800 opacity-30 text-zinc-300 cursor-not-allowed">
+            <span className="px-4 py-2 text-sm rounded-lg border border-[var(--border-default)] opacity-30 text-foreground cursor-not-allowed">
               ← Anterior
             </span>
           )}
-          <span className="text-sm text-zinc-500">Página {page}</span>
+          <span className="text-sm text-muted-foreground">Página {page}</span>
           {threads.length === PAGE_SIZE ? (
             <a
               href={`?sort=${sort}&page=${page + 1}${categorySlug ? `&categoria=${categorySlug}` : ""}${tab ? `&tab=${tab}` : ""}`}
-              className="px-4 py-2 text-sm rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-300 transition-colors"
+              className="px-4 py-2 text-sm rounded-lg border border-[var(--border-default)] hover:bg-[var(--surface-hover)] text-foreground transition-colors"
             >
               Próxima →
             </a>
           ) : (
-            <span className="px-4 py-2 text-sm rounded-lg border border-zinc-800 opacity-30 text-zinc-300 cursor-not-allowed">
+            <span className="px-4 py-2 text-sm rounded-lg border border-[var(--border-default)] opacity-30 text-foreground cursor-not-allowed">
               Próxima →
             </span>
           )}
