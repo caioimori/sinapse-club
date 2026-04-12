@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Image as ImageIcon, X, Smile, BarChart2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { ComposerEmojiPicker } from "@/components/forum/composer-emoji-picker";
 import { ComposerPoll, type PollData } from "@/components/forum/composer-poll";
 import { MarkdownContent } from "@/components/forum/markdown-content";
+import { publishBurst } from "@/lib/celebration";
 import type { Database } from "@/types/database";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -150,6 +152,7 @@ export function ForumComposer({
       ? { options: poll.options.filter((o) => o.trim()), duration_days: poll.duration_days }
       : null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from("posts")
       .insert({
@@ -164,8 +167,14 @@ export function ForumComposer({
       });
 
     setLoading(false);
-    if (error) { setPublishError("Erro ao publicar. Tente novamente."); return; }
+    if (error) {
+      setPublishError("Erro ao publicar. Tente novamente.");
+      toast.error("Não foi possível publicar seu post");
+      return;
+    }
     handleCancel();
+    toast.success("Post publicado!");
+    publishBurst();
     router.refresh();
   }
 

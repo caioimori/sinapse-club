@@ -127,7 +127,7 @@ function CommentItem({
             <Button
               variant="ghost"
               size="sm"
-              className={cn("h-7 gap-1 text-xs text-muted-foreground px-2", liked && "text-rose-500")}
+              className={cn("h-7 gap-1 text-xs text-muted-foreground px-2", liked && "text-[var(--accent-like)]")}
               onClick={() => { setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1); }}
             >
               <Heart className={cn("h-3 w-3", liked && "fill-current")} />

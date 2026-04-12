@@ -17,29 +17,37 @@ interface ThemesBarProps {
   activeCategory?: string;
 }
 
-/** Reduce a category name to a single word label */
+/**
+ * Reduce a category name to a short chip label.
+ * Priority: explicit override → "AI para X" → drop connectors → 2 words max.
+ * Important: several categories start with "AI para ..." — using the first
+ * word alone would collapse all of them to "AI", which is what E2E-4 caught.
+ */
 function toChipLabel(name: string): string {
   const overrides: Record<string, string> = {
-    "Inteligência Artificial": "IA",
-    "Machine Learning": "ML",
-    "Data Science": "Data",
-    "Dev Tools": "Tools",
-    "Open Source": "Open",
-    "Carreira & Negócios": "Carreira",
-    "Negócios": "Negócios",
-    "Produto": "Produto",
-    "Design": "Design",
-    "Backend": "Backend",
-    "Frontend": "Frontend",
-    "DevOps": "DevOps",
-    "Segurança": "Segurança",
-    "Mobile": "Mobile",
-    "Cloud": "Cloud",
-    "Blockchain": "Web3",
+    "AI para Ads": "Ads",
+    "AI para E-commerce": "E-com",
+    "AI para Infoprodutos": "Infoprod",
+    "AI para Afiliados": "Afiliados",
+    "AI Copywriting": "Copy",
+    "AI para SEO & Conteúdo": "SEO",
+    "LLMs & Agentes": "LLMs",
+    "Automação & No-Code": "Automação",
+    "AI Generativa": "Generativa",
+    "Negócios & Estratégia": "Negócios",
+    "Carreira em AI": "Carreira",
+    "Marketplace": "Marketplace",
+    "Ferramentas & Reviews": "Ferramentas",
+    "Off-topic & Networking": "Off",
   };
   if (overrides[name]) return overrides[name];
-  const first = name.split(/[\s&\/\-]/)[0];
-  return first;
+  // Fallback: drop parentheticals, drop "AI" prefix, take up to 2 words.
+  const cleaned = name
+    .replace(/\([^)]*\)/g, "")
+    .replace(/^AI\s+/i, "")
+    .trim();
+  const words = cleaned.split(/[\s&\/\-]+/).filter(Boolean);
+  return words.slice(0, 2).join(" ") || name;
 }
 
 export function ThemesBar({ categories, activeCategory }: ThemesBarProps) {

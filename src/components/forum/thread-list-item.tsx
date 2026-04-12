@@ -16,11 +16,13 @@ import {
   BarChart2,
   Link2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { UserRankBadge } from "@/components/user-rank-badge";
+import { heartBurst, originFromEvent } from "@/lib/celebration";
 import type { ProfessionalCluster } from "@/types/database";
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/g;
@@ -135,45 +137,66 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   async function handleLike(e: React.MouseEvent) {
     e.stopPropagation();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error("Entre para curtir");
+      return;
+    }
 
-    if (liked) {
-      setLiked(false);
-      setLikesCount(c => Math.max(0, c - 1));
-      await supabase.from("reactions").delete()
-        .eq("user_id", user.id).eq("target_id", thread.id).eq("target_type", "post").eq("type", "like");
-    } else {
-      setLiked(true);
-      setLikesCount(c => c + 1);
-      await (supabase as any).from("reactions").insert({
-        user_id: user.id,
-        target_id: thread.id,
-        target_type: "post",
-        type: "like",
-      });
+    const prevLiked = liked;
+    const prevCount = likesCount;
+    const nextLiked = !prevLiked;
+
+    // Optimistic update
+    setLiked(nextLiked);
+    setLikesCount(c => nextLiked ? c + 1 : Math.max(0, c - 1));
+
+    // Celebration on like (not unlike)
+    if (nextLiked) {
+      heartBurst(originFromEvent(e));
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { error } = nextLiked
+      ? await db.from("reactions").insert({
+          user_id: user.id,
+          target_id: thread.id,
+          target_type: "post",
+          type: "like",
+        })
+      : await db.from("reactions").delete()
+          .eq("user_id", user.id)
+          .eq("target_id", thread.id)
+          .eq("target_type", "post")
+          .eq("type", "like");
+
+    if (error) {
+      // Rollback on failure
+      setLiked(prevLiked);
+      setLikesCount(prevCount);
+      toast.error(nextLiked ? "Não foi possível curtir" : "Não foi possível desfazer");
     }
   }
 
   async function handleRepost(e: React.MouseEvent) {
     e.stopPropagation();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error("Entre para repostar");
+      return;
+    }
 
-    if (reposted) {
-      setReposted(false);
-      setRepostsCount(c => Math.max(0, c - 1));
-      await (supabase as any)
-        .from("posts")
-        .delete()
-        .eq("author_id", user.id)
-        .eq("repost_of", thread.id)
-        .eq("type", "thread");
-    } else {
-      setReposted(true);
-      setRepostsCount(c => c + 1);
-      await (supabase as any)
-        .from("posts")
-        .insert({
+    const prevReposted = reposted;
+    const prevCount = repostsCount;
+    const nextReposted = !prevReposted;
+
+    setReposted(nextReposted);
+    setRepostsCount(c => nextReposted ? c + 1 : Math.max(0, c - 1));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { error } = nextReposted
+      ? await db.from("posts").insert({
           author_id: user.id,
           type: "thread",
           repost_of: thread.id,
@@ -181,7 +204,21 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
           content_plain: "",
           title: null,
           tags: [],
-        });
+        })
+      : await db.from("posts").delete()
+          .eq("author_id", user.id)
+          .eq("repost_of", thread.id)
+          .eq("type", "thread");
+
+    if (error) {
+      setReposted(prevReposted);
+      setRepostsCount(prevCount);
+      toast.error(nextReposted ? "Não foi possível repostar" : "Não foi possível desfazer");
+      return;
+    }
+
+    if (nextReposted) {
+      toast.success("Repostado");
     }
   }
 
@@ -214,6 +251,7 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
   return (
     <article
+      data-thread-id={thread.id}
       onClick={() => router.push(`/forum/thread/${thread.id}`)}
       className="border-b border-[var(--border-subtle)] hover:bg-accent/30 transition-colors duration-150 cursor-pointer"
     >
@@ -343,9 +381,13 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             onClick={(e) => e.stopPropagation()}
           >
             {/* Reply */}
-            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+            <button
+              type="button"
+              aria-label={`Responder (${thread.replies_count} respostas)`}
+              className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors"
+            >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
-                <MessageSquare className="h-[18px] w-[18px]" />
+                <MessageSquare className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
               {thread.replies_count > 0 && (
                 <span>{formatCount(thread.replies_count)}</span>
@@ -354,23 +396,30 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
             {/* Repost */}
             <button
+              type="button"
+              aria-label={reposted ? "Desfazer repost" : "Repostar"}
+              aria-pressed={reposted}
               onClick={handleRepost}
               className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", reposted ? "text-[var(--accent-repost)]" : "hover:text-[var(--accent-repost)]")}
             >
               <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", reposted ? "bg-[var(--accent-repost-soft)]" : "group-hover:bg-[var(--accent-repost-soft)]")}>
-                <Repeat2 className="h-[18px] w-[18px]" />
+                <Repeat2 className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
               {repostsCount > 0 && <span>{formatCount(repostsCount)}</span>}
             </button>
 
             {/* Like */}
             <button
+              type="button"
+              aria-label={liked ? "Remover curtida" : "Curtir"}
+              aria-pressed={liked}
               onClick={handleLike}
               className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", liked ? "text-[var(--accent-like)]" : "hover:text-[var(--accent-like)]")}
             >
               <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", liked ? "bg-[var(--accent-like-soft)]" : "group-hover:bg-[var(--accent-like-soft)]")}>
                 <Heart
-                  className="h-[18px] w-[18px]"
+                  className={cn("h-[18px] w-[18px] transition-transform", liked && "scale-110")}
+                  aria-hidden="true"
                   style={liked ? { fill: "var(--accent-like)" } : undefined}
                 />
               </span>
@@ -378,9 +427,13 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </button>
 
             {/* Views */}
-            <button className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors">
+            <button
+              type="button"
+              aria-label={`${thread.views_count} visualizações`}
+              className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors"
+            >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
-                <BarChart2 className="h-[18px] w-[18px]" />
+                <BarChart2 className="h-[18px] w-[18px]" aria-hidden="true" />
               </span>
               {thread.views_count > 0 && (
                 <span>{formatCount(thread.views_count)}</span>
@@ -389,11 +442,13 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
             {/* Share */}
             <button
+              type="button"
+              aria-label={copied ? "Link copiado" : "Compartilhar"}
               onClick={handleShare}
               className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", copied ? "text-foreground" : "hover:text-foreground")}
             >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
-                {copied ? <Link2 className="h-[18px] w-[18px]" /> : <Share className="h-[18px] w-[18px]" />}
+                {copied ? <Link2 className="h-[18px] w-[18px]" aria-hidden="true" /> : <Share className="h-[18px] w-[18px]" aria-hidden="true" />}
               </span>
             </button>
           </div>

@@ -158,11 +158,22 @@ function parseItems(xml: string) {
 }
 
 function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, " ")
+  // Order matters: Reddit + some RSS feeds ship doubly-escaped HTML inside
+  // <description> CDATA blocks (e.g. &lt;table&gt;). If we decode entities
+  // BEFORE stripping tags, the decoded '<table>' would re-enter the tag set
+  // and need a second pass. Instead: strip real tags FIRST, then decode
+  // entities, then strip any tags that emerged from decoding, and repeat
+  // once more to catch triple-escaped payloads.
+  let out = html.replace(/<[^>]*>/g, " ");
+  // First entity decode pass
+  out = out
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ").trim();
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
+  // Strip any tags that appeared from decoding
+  out = out.replace(/<[^>]*>/g, " ");
+  // Strip HTML comments (e.g. <!-- SC_OFF -->)
+  out = out.replace(/<!--[\s\S]*?-->/g, " ");
+  return out.replace(/\s+/g, " ").trim();
 }
 
 // ─── Main ───────────────────────────────────────────────────────────

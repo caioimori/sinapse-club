@@ -276,7 +276,7 @@ export function SettingsForm({ profile }: { profile: any }) {
 
       {/* Feedback */}
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {success && <p className="text-sm text-emerald-600 dark:text-emerald-400">Perfil atualizado!</p>}
+      {success && <p className="text-sm text-[var(--accent-repost)]">Perfil atualizado!</p>}
 
       {/* Save */}
       <button
