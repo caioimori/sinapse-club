@@ -7,7 +7,9 @@ import { GitHubRepos } from "@/components/profile/github-repos";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { CalendarDays, MapPin, LinkIcon, GitFork, RefreshCw } from "lucide-react";
+import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
+import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
+import { CalendarDays, MapPin, LinkIcon, GitFork, RefreshCw, PenLine, MessageCircle, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
@@ -248,9 +250,12 @@ export default async function ProfilePage({
               <ThreadListItem key={thread.id} thread={thread} showCategory />
             ))
           ) : (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>Nenhum post ainda</p>
-            </div>
+            <EmptyState
+              icon={PenLine}
+              title="Nenhum post ainda"
+              description="Seu primeiro post é o que transforma seu perfil de visitante em membro."
+              cta={<EmptyStateComposeCta label="Escrever primeiro post" />}
+            />
           )}
         </div>
       )}
@@ -283,9 +288,12 @@ export default async function ProfilePage({
               </Link>
             ))
           ) : (
-            <div className="py-12 text-center text-muted-foreground">
-              Nenhuma resposta ainda
-            </div>
+            <EmptyState
+              icon={MessageCircle}
+              title="Nenhuma resposta ainda"
+              description="Responder a outros posts é a forma mais rápida de ser notado na comunidade."
+              cta={<EmptyStateLinkCta href="/forum" label="Explorar posts" />}
+            />
           )}
         </div>
       )}
@@ -297,9 +305,11 @@ export default async function ProfilePage({
               <ThreadListItem key={thread.id} thread={thread} showCategory />
             ))
           ) : (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>Nenhuma curtida ainda</p>
-            </div>
+            <EmptyState
+              icon={Heart}
+              title="Nenhuma curtida ainda"
+              description="Os posts que você curtir aparecem aqui como referência rápida."
+            />
           )}
         </div>
       )}

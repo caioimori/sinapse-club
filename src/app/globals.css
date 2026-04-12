@@ -96,6 +96,19 @@
   --border-strong: rgba(0, 0, 0, 0.15);
   --border-hover: rgba(0, 0, 0, 0.20);
 
+  /* ─── Accent (semantic) ─── */
+  /* Dark-parity semantic accents for interactive signals in the product.
+     Use these tokens for reactions (like/repost), info states (follow/unread),
+     and warnings (mention/admin). Hardcoded Tailwind palette colors are forbidden. */
+  --accent-like: #E11D48;         /* rose-600 */
+  --accent-like-soft: rgba(225, 29, 72, 0.10);
+  --accent-repost: #059669;       /* emerald-600 */
+  --accent-repost-soft: rgba(5, 150, 105, 0.10);
+  --accent-info: #2563EB;         /* blue-600 */
+  --accent-info-soft: rgba(37, 99, 235, 0.10);
+  --accent-warn: #D97706;         /* amber-600 */
+  --accent-warn-soft: rgba(217, 119, 6, 0.10);
+
   /* ─── Glass ─── */
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-bg-hover: rgba(255, 255, 255, 0.85);
@@ -212,6 +225,16 @@
   --border-default: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
   --border-hover: rgba(255, 255, 255, 0.20);
+
+  /* ─── Accent (semantic) — dark overrides with lifted saturation ─── */
+  --accent-like: #FB7185;         /* rose-400 */
+  --accent-like-soft: rgba(251, 113, 133, 0.14);
+  --accent-repost: #34D399;       /* emerald-400 */
+  --accent-repost-soft: rgba(52, 211, 153, 0.14);
+  --accent-info: #60A5FA;         /* blue-400 */
+  --accent-info-soft: rgba(96, 165, 250, 0.14);
+  --accent-warn: #FBBF24;         /* amber-400 */
+  --accent-warn-soft: rgba(251, 191, 36, 0.14);
 
   /* ─── Glass ─── */
   --glass-bg: rgba(0, 0, 0, 0.6);
@@ -346,5 +369,14 @@
     background: var(--glass-nav-bg);
     backdrop-filter: var(--glass-nav-backdrop);
     -webkit-backdrop-filter: var(--glass-nav-backdrop);
+  }
+
+  /* Hide scrollbar while keeping scroll interaction (used by themes-bar) */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

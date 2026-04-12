@@ -8,7 +8,8 @@ import { FollowButton } from "@/components/feed/follow-button";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { CalendarDays, MapPin, LinkIcon, GitFork } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import { CalendarDays, MapPin, LinkIcon, GitFork, FileText, MessageCircle, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
@@ -270,9 +271,11 @@ export default async function PublicProfilePage({
               <ThreadListItem key={thread.id} thread={thread} showCategory />
             ))
           ) : (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>Nenhum post ainda</p>
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="Nenhum post ainda"
+              description={`@${profile.username} ainda não publicou nada.`}
+            />
           )}
         </div>
       )}
@@ -305,9 +308,11 @@ export default async function PublicProfilePage({
               </Link>
             ))
           ) : (
-            <div className="py-12 text-center text-muted-foreground">
-              Nenhuma resposta ainda
-            </div>
+            <EmptyState
+              icon={MessageCircle}
+              title="Nenhuma resposta ainda"
+              description={`@${profile.username} ainda não respondeu a nenhum post.`}
+            />
           )}
         </div>
       )}
@@ -319,9 +324,11 @@ export default async function PublicProfilePage({
               <ThreadListItem key={thread.id} thread={thread} showCategory />
             ))
           ) : (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>Nenhuma curtida ainda</p>
-            </div>
+            <EmptyState
+              icon={Heart}
+              title="Nenhuma curtida ainda"
+              description={`@${profile.username} ainda não curtiu nenhum post.`}
+            />
           )}
         </div>
       )}

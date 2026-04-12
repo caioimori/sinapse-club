@@ -278,7 +278,7 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
                 </span>
               )}
               {thread.is_solved && (
-                <span className="inline-flex items-center gap-0.5 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 rounded">
+                <span className="inline-flex items-center gap-0.5 border border-[var(--accent-repost)]/30 px-2 py-0.5 text-[10px] font-medium text-[var(--accent-repost)] rounded">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                   RESOLVIDO
                 </span>
@@ -355,9 +355,9 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             {/* Repost */}
             <button
               onClick={handleRepost}
-              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", reposted ? "text-emerald-500" : "hover:text-emerald-500")}
+              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", reposted ? "text-[var(--accent-repost)]" : "hover:text-[var(--accent-repost)]")}
             >
-              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", reposted ? "bg-emerald-500/10" : "group-hover:bg-emerald-500/10")}>
+              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", reposted ? "bg-[var(--accent-repost-soft)]" : "group-hover:bg-[var(--accent-repost-soft)]")}>
                 <Repeat2 className="h-[18px] w-[18px]" />
               </span>
               {repostsCount > 0 && <span>{formatCount(repostsCount)}</span>}
@@ -366,10 +366,13 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             {/* Like */}
             <button
               onClick={handleLike}
-              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", liked ? "text-rose-500" : "hover:text-rose-500")}
+              className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", liked ? "text-[var(--accent-like)]" : "hover:text-[var(--accent-like)]")}
             >
-              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", liked ? "bg-rose-500/10" : "group-hover:bg-rose-500/10")}>
-                <Heart className={cn("h-[18px] w-[18px]", liked && "fill-rose-500")} />
+              <span className={cn("flex items-center justify-center h-8 w-8 rounded-full transition-colors", liked ? "bg-[var(--accent-like-soft)]" : "group-hover:bg-[var(--accent-like-soft)]")}>
+                <Heart
+                  className="h-[18px] w-[18px]"
+                  style={liked ? { fill: "var(--accent-like)" } : undefined}
+                />
               </span>
               {likesCount > 0 && <span>{formatCount(likesCount)}</span>}
             </button>

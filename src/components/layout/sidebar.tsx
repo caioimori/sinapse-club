@@ -135,7 +135,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           {/* ── Admin ─────────────────────────────────── */}
           {(profile as any)?.role === "admin" && (
             <Link href="/admin/moderation" className={navItemCls(pathname.startsWith("/admin"))}>
-              <Shield className="h-4 w-4 flex-shrink-0 text-amber-500" />
+              <Shield className="h-4 w-4 flex-shrink-0 text-[var(--accent-warn)]" />
               <span>Moderação</span>
             </Link>
           )}
