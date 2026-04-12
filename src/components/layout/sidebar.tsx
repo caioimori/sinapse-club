@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   MessageSquare,
   Search,
@@ -56,8 +57,41 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const isForumRoute = pathname.startsWith("/forum");
+  const isOnNotifs = pathname.startsWith("/notificacoes");
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    let active = true;
+
+    async function fetchUnread() {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", profile!.id)
+        .eq("is_read", false);
+      if (active && typeof count === "number") setUnreadCount(count);
+    }
+
+    fetchUnread();
+
+    // Poll every 30s — cheap and avoids realtime complexity for now
+    const interval = setInterval(fetchUnread, 30_000);
+
+    // Clear when user visits the notifications page
+    if (isOnNotifs && unreadCount > 0) {
+      setUnreadCount(0);
+    }
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.id, isOnNotifs]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -93,8 +127,28 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           </Link>
 
           {/* ── Notificações ──────────────────────────────── */}
-          <Link href="/notificacoes" className={navItemCls(pathname.startsWith("/notificacoes"))}>
-            <Bell className="h-4 w-4 flex-shrink-0" />
+          <Link
+            href="/notificacoes"
+            aria-label={unreadCount > 0 ? `Notificações (${unreadCount} não lidas)` : "Notificações"}
+            className={cn(navItemCls(isOnNotifs), "relative")}
+          >
+            <span className="relative flex-shrink-0">
+              <Bell className="h-4 w-4" aria-hidden="true" />
+              {unreadCount > 0 && (
+                <span
+                  className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent-like)] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-sidebar"
+                  aria-hidden="true"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+              {unreadCount > 0 && (
+                <span
+                  className="absolute -right-1 -top-1 h-4 w-4 animate-ping rounded-full bg-[var(--accent-like)]/70"
+                  aria-hidden="true"
+                />
+              )}
+            </span>
             <span>Notificações</span>
           </Link>
 

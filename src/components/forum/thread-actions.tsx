@@ -86,7 +86,7 @@ export function ThreadActions({
         size="sm"
         className={cn(
           "h-8 gap-1.5 text-xs text-muted-foreground px-2.5",
-          liked && "text-rose-500"
+          liked && "text-[var(--accent-like)]"
         )}
         onClick={handleLike}
       >

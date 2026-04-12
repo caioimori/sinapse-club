@@ -48,11 +48,39 @@ async function getNextBotId(supabase: any): Promise<string> {
   return BOT_USER_IDS.reduce((a, b) => (counts[a] <= counts[b] ? a : b));
 }
 
+// Strip any HTML/entities that slipped through the curate pipeline.
+// Defensive second pass — we already stripHtml in curate-rss, but older
+// rows and third-party feeds can still have escaped or raw tags.
+function sanitizePlain(text: string): string {
+  let out = text.replace(/<[^>]*>/g, " ");
+  out = out
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"').replace(/&#8216;/g, "'").replace(/&#8217;/g, "'")
+    .replace(/&nbsp;/g, " ");
+  out = out.replace(/<[^>]*>/g, " ");
+  out = out.replace(/<!--[\s\S]*?-->/g, " ");
+  return out.replace(/\s+/g, " ").trim();
+}
+
+// Escape for safe interpolation into server-generated HTML.
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Formata o conteúdo para o fórum com link da fonte
-function formatContent(text: string, sourceUrl: string, sourceAuthor?: string): { html: string; plain: string } {
-  const plain = text.slice(0, 1000);
-  const attribution = sourceAuthor ? `— ${sourceAuthor}` : "";
-  const html = `<p>${plain}</p><p><a href="${sourceUrl}" target="_blank" rel="noopener noreferrer">🔗 Ver fonte original ${attribution}</a></p>`;
+function formatContent(rawText: string, sourceUrl: string, sourceAuthor?: string): { html: string; plain: string } {
+  const plain = sanitizePlain(rawText).slice(0, 1000);
+  const safePlain = escapeHtml(plain);
+  const safeUrl = escapeHtml(sourceUrl);
+  const safeAuthor = sourceAuthor ? escapeHtml(sourceAuthor) : "";
+  const attribution = safeAuthor ? `— ${safeAuthor}` : "";
+  const html = `<p>${safePlain}</p><p><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 Ver fonte original ${attribution}</a></p>`;
   return { html, plain };
 }
 

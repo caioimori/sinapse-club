@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Bot, Code, Briefcase, Brain, Sparkles, Cpu, ArrowRight, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,6 @@ export default function OnboardingPage() {
   const [headline, setHeadline] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const supabase = createClient();
 
   function toggleInterest(id: string) {
@@ -62,8 +60,9 @@ export default function OnboardingPage() {
         onboarded: true,
       }).eq("id", user.id);
       if (updateError) throw updateError;
-      router.push("/forum");
-      router.refresh();
+      // Hard navigation guarantees middleware re-runs with fresh profile state
+      // (router.push + router.refresh raced and left user stuck on /onboarding)
+      window.location.href = "/forum";
     } catch (err) {
       console.error("Onboarding error:", err);
       setError("Erro ao salvar perfil. Tente novamente.");

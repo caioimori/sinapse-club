@@ -316,7 +316,7 @@ export function ThreadReply({
               size="sm"
               className={cn(
                 "h-7 gap-1 text-xs text-muted-foreground px-2",
-                liked && "text-rose-500"
+                liked && "text-[var(--accent-like)]"
               )}
               onClick={handleLike}
             >

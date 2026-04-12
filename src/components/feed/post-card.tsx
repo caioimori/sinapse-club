@@ -407,11 +407,11 @@ export function PostCard({
           <button
             className={cn(
               "group flex items-center gap-1.5 transition-colors",
-              liked ? "text-rose-500" : "text-muted-foreground hover:text-rose-500"
+              liked ? "text-[var(--accent-like)]" : "text-muted-foreground hover:text-[var(--accent-like)]"
             )}
             onClick={toggleLike}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-rose-500/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full group-hover:bg-[var(--accent-like-soft)]">
               <Heart className={cn("h-[18px] w-[18px]", liked && "fill-current")} />
             </div>
             {likes > 0 && <span className="text-xs">{likes}</span>}
