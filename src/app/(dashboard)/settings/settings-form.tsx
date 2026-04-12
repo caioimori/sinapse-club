@@ -302,23 +302,56 @@ export function SettingsForm({ profile }: { profile: any }) {
         </div>
       )}
 
-      {/* Danger Zone — LGPD Art. 18 */}
-      <div className="mt-12 border border-red-900/50 rounded-lg p-6">
-        <h3 className="text-red-400 font-semibold mb-2">Zona de Perigo</h3>
-        <p className="text-zinc-400 text-sm mb-4">
-          Excluir sua conta é permanente. Seus dados pessoais serão removidos em até 30 dias conforme a{' '}
-          <a href="/privacidade" className="text-zinc-300 underline hover:text-white" target="_blank" rel="noopener noreferrer">
-            LGPD
+      {/* Privacy & LGPD zone */}
+      <div className="mt-12 space-y-6">
+        {/* Data export — LGPD Art. 18, II (portabilidade) */}
+        <div className="border border-[var(--border-default)] rounded-lg p-6">
+          <h3 className="font-semibold mb-2">Baixar meus dados</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Você pode baixar uma cópia completa dos seus dados pessoais armazenados no sinapse.club
+            (perfil, posts, comentários, curtidas, follows, notificações e histórico de consentimento)
+            em formato JSON. Art. 18, II da LGPD.
+          </p>
+          <a
+            href="/api/user/export"
+            download
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-default)] text-sm hover:bg-muted/50 transition-colors"
+          >
+            Baixar dados (JSON)
+          </a>
+        </div>
+
+        {/* Danger Zone — LGPD Art. 18, VI (deletion) */}
+        <div className="border border-red-900/50 rounded-lg p-6">
+          <h3 className="text-red-400 font-semibold mb-2">Zona de Perigo</h3>
+          <p className="text-zinc-400 text-sm mb-4">
+            Excluir sua conta é permanente. Seus dados pessoais serão removidos em até 30 dias
+            conforme a{' '}
+            <a href="/privacidade" className="text-zinc-300 underline hover:text-white" target="_blank" rel="noopener noreferrer">
+              LGPD
+            </a>
+            . Antes de excluir,{' '}
+            <a href="/api/user/export" className="text-zinc-300 underline hover:text-white">
+              baixe seus dados
+            </a>
+            .
+          </p>
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            className="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg text-sm transition-colors"
+          >
+            Excluir minha conta
+          </button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Dúvidas sobre privacidade?{' '}
+          <a href="/privacidade/dpo" className="underline hover:text-foreground">
+            Fale com nosso DPO
           </a>
           .
         </p>
-        <button
-          type="button"
-          onClick={handleDeleteAccount}
-          className="px-4 py-2 bg-red-950 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg text-sm transition-colors"
-        >
-          Excluir minha conta
-        </button>
       </div>
     </form>
   );

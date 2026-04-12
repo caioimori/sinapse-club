@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   env: {
@@ -38,4 +39,19 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry only when the DSN is set. Otherwise return the config
+// untouched so dev builds don't pay the cost of the Sentry webpack plugin.
+const hasSentryDsn =
+  !!process.env.SENTRY_DSN || !!process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+export default hasSentryDsn
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      tunnelRoute: "/monitoring",
+      disableLogger: true,
+      automaticVercelMonitors: false,
+    })
+  : nextConfig;

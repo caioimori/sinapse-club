@@ -1,0 +1,24 @@
+# gitleaks config — inherits the default rules and adds project-specific
+# allowlists so we don't flag example fixtures or public anon keys.
+
+title = "sinapse-plataform"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Project-specific safe patterns"
+paths = [
+  '''\.env\.example$''',
+  '''docs/audits/.*\.md$''',
+  '''docs/stories/.*\.md$''',
+  '''package-lock\.json$''',
+  '''pnpm-lock\.yaml$''',
+]
+
+# Supabase publishes its anon key (safe by design, protected by RLS) and it
+# shows up in .env.example. The service_role key, on the other hand, we DO want
+# to catch — so we only allow-list JWTs whose role claim is "anon".
+regexes = [
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]*cm9sZSI6ImFub24[^"]*"''',
+]
