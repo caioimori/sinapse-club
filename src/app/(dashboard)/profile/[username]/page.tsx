@@ -37,6 +37,55 @@ function formatCount(n: number): string {
   return String(n);
 }
 
+type CachedRepo = {
+  name: string;
+  description: string | null;
+  html_url: string;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  topics: string[];
+};
+
+/**
+ * Fetches live repos from GitHub with a 10-minute edge cache. On any failure
+ * (rate limit, network, 404) falls back to the cached column we persisted
+ * via `/api/github/sync` so the profile never looks broken.
+ */
+async function fetchGithubReposLive(
+  username: string,
+  fallback: CachedRepo[],
+): Promise<CachedRepo[]> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/users/${username}/repos?sort=stars&direction=desc&per_page=30&type=owner`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          "User-Agent": "sinapse-club",
+        },
+        next: { revalidate: 600, tags: [`github-repos-${username}`] },
+      },
+    );
+    if (!res.ok) return fallback;
+    const all = (await res.json()) as (CachedRepo & { fork: boolean })[];
+    return all
+      .filter((r) => !r.fork)
+      .slice(0, 8)
+      .map((r) => ({
+        name: r.name,
+        description: r.description,
+        html_url: r.html_url,
+        language: r.language,
+        stargazers_count: r.stargazers_count,
+        forks_count: r.forks_count,
+        topics: r.topics || [],
+      }));
+  } catch {
+    return fallback;
+  }
+}
+
 export default async function PublicProfilePage({
   params,
   searchParams,
@@ -121,7 +170,10 @@ export default async function PublicProfilePage({
 
   const threads: any[] = threadsData || [];
   const replies: any[] = repliesData || [];
-  const githubRepos = (profile.github_repos || []) as any[];
+  const cachedRepos = (profile.github_repos || []) as CachedRepo[];
+  const githubRepos = profile.github_username
+    ? await fetchGithubReposLive(profile.github_username, cachedRepos)
+    : cachedRepos;
 
   const joinDate = new Intl.DateTimeFormat("pt-BR", {
     month: "long",
