@@ -299,6 +299,26 @@
   to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
+@keyframes themes-marquee {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+.animate-themes-marquee {
+  animation: themes-marquee 45s linear infinite;
+}
+
+.themes-marquee-wrapper:hover .animate-themes-marquee,
+.themes-marquee-wrapper[data-resume-delay="true"] .animate-themes-marquee {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-themes-marquee {
+    animation: none;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
    Base Styles
    ═══════════════════════════════════════════════════════════ */
