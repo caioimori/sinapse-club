@@ -110,21 +110,31 @@ export function SettingsForm({ profile }: { profile: any }) {
   }
 
   async function handleGitHubSync() {
-    if (!githubUsername.trim()) return;
     setSyncLoading(true);
     try {
-      const res = await fetch("/api/github/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ github_username: githubUsername.trim() }),
-      });
+      const res = await fetch("/api/github/sync", { method: "POST" });
       if (res.ok) {
         setSuccess(true);
         router.refresh();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Falha ao sincronizar GitHub");
       }
     } finally {
       setSyncLoading(false);
     }
+  }
+
+  async function handleGitHubConnect() {
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent("/settings")}`;
+    const { error: linkError } = await supabase.auth.linkIdentity({
+      provider: "github",
+      options: {
+        redirectTo,
+        scopes: "read:user user:email public_repo",
+      },
+    });
+    if (linkError) setError(linkError.message);
   }
 
   return (
@@ -258,19 +268,37 @@ export function SettingsForm({ profile }: { profile: any }) {
       {/* GitHub */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">GitHub</label>
-        <div className="flex items-center gap-1">
-          <span className="text-muted-foreground text-[15px]">github.com/</span>
-          <input
-            type="text"
-            value={githubUsername}
-            onChange={e => setGithubUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))}
-            placeholder="seu-usuario"
-            maxLength={39}
-            className="flex-1 px-3 py-2 rounded-lg border border-[var(--border-default)] bg-background text-[15px] outline-none focus:border-foreground transition-colors"
-          />
-        </div>
+        {profile?.github_username ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-default)] bg-background px-3 py-2.5">
+            <div className="flex items-center gap-2 text-[15px]">
+              <svg className="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+              </svg>
+              <span className="text-muted-foreground">github.com/</span>
+              <span className="font-medium">{profile.github_username}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleGitHubConnect}
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+            >
+              Trocar conta
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleGitHubConnect}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-default)] bg-background px-3 py-2.5 text-[15px] font-medium hover:bg-muted/50 transition-colors"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+            </svg>
+            Conectar GitHub
+          </button>
+        )}
         <p className="text-xs text-muted-foreground mt-1">
-          Seus repositórios serão sincronizados automaticamente ao salvar.
+          Autorize o acesso para sincronizar seus repositórios automaticamente. Ownership verificado via OAuth.
         </p>
       </div>
 
