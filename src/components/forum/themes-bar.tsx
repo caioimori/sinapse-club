@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface Category {
@@ -53,22 +53,25 @@ function toChipLabel(name: string): string {
 export function ThemesBar({ categories, activeCategory }: ThemesBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Mouse wheel hijack: convert vertical scroll into horizontal scroll when
-  // hovering the chip bar. Keeps trackpad 2D gestures unchanged.
+  // Auto-marquee: chips slide rightward, new ones emerge from behind "Todos".
+  // CSS `:hover` on `.themes-marquee-wrapper` handles the instant pause;
+  // `resumeDelayed` keeps the pause active for an extra 3s after the cursor
+  // leaves so readers have time to aim before the track starts moving again.
+  const [resumeDelayed, setResumeDelayed] = useState(false);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      }
+    return () => {
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
   }, []);
+
+  function handleMouseLeave() {
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    setResumeDelayed(true);
+    resumeTimer.current = setTimeout(() => setResumeDelayed(false), 3000);
+  }
 
   function handleSelect(slug: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -109,20 +112,23 @@ export function ThemesBar({ categories, activeCategory }: ThemesBarProps) {
         }}
       />
 
-      {/* Scrollable chip track — native horizontal scroll, no animation */}
+      {/* Marquee track — chips auto-scroll rightward, duplicated for seamless loop.
+          CSS `:hover` handles instant pause; `data-resume-delay` extends the
+          pause 3s after the cursor leaves so readers keep control of the bar. */}
       <div
-        ref={scrollRef}
-        className="flex-1 overflow-x-auto overflow-y-hidden ml-[88px] scrollbar-none"
+        className="themes-marquee-wrapper flex-1 overflow-hidden ml-[88px]"
+        data-resume-delay={resumeDelayed ? "true" : undefined}
+        onMouseLeave={handleMouseLeave}
       >
-        <div className="flex items-center gap-2 pr-8">
-          {categories.map((c) => {
+        <div className="flex items-center gap-2 w-max animate-themes-marquee">
+          {[...categories, ...categories].map((c, i) => {
             const isActive = activeCategory === c.slug;
             return (
               <button
-                key={c.id}
+                key={`${c.id}-${i}`}
                 onClick={() => handleSelect(c.slug)}
                 className={cn(
-                  "flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[13px] font-medium transition-colors duration-150 whitespace-nowrap",
+                  "flex-shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[13px] font-medium transition-colors duration-150 whitespace-nowrap cursor-pointer",
                   isActive
                     ? "bg-foreground text-background"
                     : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-[var(--surface-default)]"
