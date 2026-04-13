@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Mail, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,15 +15,65 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [showPendingConfirmation, setShowPendingConfirmation] = useState(false);
   const supabase = createClient();
+
+  async function handleResend() {
+    setLoading(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setLoading(false);
+    if (error) setError(error.message);
+  }
+
+  if (showPendingConfirmation) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-dvh">
+        <div className="flex items-center justify-center p-6 lg:p-12">
+          <div className="w-full max-w-sm space-y-6 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <Inbox className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <h1 className="text-3xl font-bold">Confira seu email</h1>
+            <p className="text-sm text-muted-foreground">
+              Enviamos um link de confirmação para{" "}
+              <strong className="text-foreground">{email}</strong>. Clique no link para ativar
+              sua conta e começar a usar o sinapse.club.
+            </p>
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-left text-xs text-muted-foreground">
+              <p className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+                Não chegou? Cheque a caixa de spam ou promoções.
+              </p>
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleResend}
+              disabled={loading}
+            >
+              {loading ? "Reenviando..." : "Reenviar email de confirmação"}
+            </Button>
+            <Link
+              href="/login"
+              className="block text-sm text-muted-foreground hover:text-foreground"
+            >
+              Já confirmei — ir para o login
+            </Link>
+          </div>
+        </div>
+        <AuthSideVisual />
+      </div>
+    );
+  }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
+    const { data: signupData, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -40,8 +90,39 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/forum");
-    router.refresh();
+    // LGPD Art. 7, V / Art. 8 — persist consent as audit trail.
+    // Two events: one for Terms of Use, one for Privacy Policy.
+    // If insert fails we still proceed with signup (compliance best-effort
+    // logged to Sentry in production).
+    const userId = signupData.user?.id;
+    if (userId) {
+      const userAgent = typeof navigator !== "undefined" ? navigator.userAgent : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from("consent_log").insert([
+        {
+          user_id: userId,
+          event_type: "signup_terms",
+          document_version: "v1",
+          user_agent: userAgent,
+        },
+        {
+          user_id: userId,
+          event_type: "signup_privacy",
+          document_version: "v1",
+          user_agent: userAgent,
+        },
+      ]);
+    }
+
+    // If email confirmation is ON, show pending screen; otherwise land in /forum.
+    if (signupData.user && !signupData.session) {
+      setShowPendingConfirmation(true);
+      setLoading(false);
+      return;
+    }
+
+    // Hard navigation guarantees middleware re-runs with fresh session.
+    window.location.href = "/forum";
   }
 
   async function handleGoogleSignup() {

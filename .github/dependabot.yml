@@ -1,0 +1,65 @@
+version: 2
+updates:
+  # npm packages
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    groups:
+      # Group minor/patch for noisy ecosystems to avoid PR storm
+      supabase:
+        patterns:
+          - "@supabase/*"
+        update-types:
+          - minor
+          - patch
+      tiptap:
+        patterns:
+          - "@tiptap/*"
+        update-types:
+          - minor
+          - patch
+      radix-base-ui:
+        patterns:
+          - "@base-ui/*"
+          - "@radix-ui/*"
+        update-types:
+          - minor
+          - patch
+      types:
+        patterns:
+          - "@types/*"
+      sentry:
+        patterns:
+          - "@sentry/*"
+    ignore:
+      # Next.js majors bring breaking changes; upgrade manually.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "chore(ci)"

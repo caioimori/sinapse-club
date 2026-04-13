@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, rateLimiters } from '@/lib/rate-limit';
 
 // ─── Zod schemas ───────────────────────────────────────────────────
 const UuidSchema = z.string().uuid('ID inválido');
@@ -39,6 +40,13 @@ async function requireUser() {
   return { supabase, user };
 }
 
+async function rateGuard(userId: string, bucket: string, limiter = rateLimiters.api) {
+  const rl = await checkRateLimit(limiter, `${bucket}:${userId}`);
+  if (rl && !rl.success) {
+    throw new Error('Muitas requisições. Aguarde alguns instantes.');
+  }
+}
+
 async function requireAdmin() {
   const { supabase, user } = await requireUser();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +65,7 @@ export async function updateReply(replyId: string, content: string) {
   if (!parsed.success) throw new Error(firstError(parsed.error.issues));
 
   const { supabase, user } = await requireUser();
+  await rateGuard(user.id, 'updateReply');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from('comments')
@@ -73,6 +82,7 @@ export async function deleteReply(replyId: string) {
   if (!parsed.success) throw new Error(firstError(parsed.error.issues));
 
   const { supabase, user } = await requireUser();
+  await rateGuard(user.id, 'deleteReply');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from('comments')
@@ -89,6 +99,7 @@ export async function updatePost(postId: string, title: string, content: string)
   if (!parsed.success) throw new Error(firstError(parsed.error.issues));
 
   const { supabase, user } = await requireUser();
+  await rateGuard(user.id, 'updatePost');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from('posts')
@@ -110,6 +121,7 @@ export async function deletePost(postId: string) {
   if (!parsed.success) throw new Error(firstError(parsed.error.issues));
 
   const { supabase, user } = await requireUser();
+  await rateGuard(user.id, 'deletePost');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from('posts')
@@ -152,6 +164,7 @@ export async function reportContent(
   if (!parsed.success) throw new Error(firstError(parsed.error.issues));
 
   const { supabase, user } = await requireUser();
+  await rateGuard(user.id, 'reportContent');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any).from('reports').insert({
     reporter_id: user.id,

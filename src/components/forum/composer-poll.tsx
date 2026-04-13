@@ -87,7 +87,7 @@ export function ComposerPoll({ poll, onChange, onRemove }: ComposerPollProps) {
       {/* Duration */}
       <div className="flex items-center gap-2 px-3 pb-3">
         <span className="text-xs text-muted-foreground">Duração:</span>
-        {[1, 3, 7].map((d) => (
+        {[1, 3, 7, 15, 30].map((d) => (
           <button
             key={d}
             type="button"
