@@ -75,7 +75,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
         .from("notifications")
         .select("id", { count: "exact", head: true })
         .eq("user_id", profile!.id)
-        .eq("is_read", false);
+        .eq("read", false);
       if (active && typeof count === "number") setUnreadCount(count);
     }
 
