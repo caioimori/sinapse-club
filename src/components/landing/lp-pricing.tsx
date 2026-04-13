@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -77,13 +76,10 @@ export function LpPricing() {
       className="relative border-t border-border bg-card py-24 sm:py-32"
     >
       <div className="mx-auto max-w-4xl px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5, ease: [0.165, 0.84, 0.44, 1] }}
-          className="mb-12 text-center"
-        >
+        <div className="mb-12 text-center">
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Planos
+          </p>
           <h2 className="mb-4 text-4xl font-semibold tracking-tight sm:text-5xl">
             Um preco. Tres formas de comecar.
           </h2>
@@ -91,7 +87,7 @@ export function LpPricing() {
             O mesmo acesso ao forum e a comunidade. Quanto maior seu compromisso,
             maior a sua economia.
           </p>
-        </motion.div>
+        </div>
 
         {/* Toggle */}
         <div className="mb-10 flex justify-center">
@@ -120,13 +116,7 @@ export function LpPricing() {
         </div>
 
         {/* Card */}
-        <motion.div
-          key={activePlan.id}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.165, 0.84, 0.44, 1] }}
-          className="mx-auto max-w-md"
-        >
+        <div className="mx-auto max-w-md">
           <div className="relative rounded-2xl border border-border bg-background p-8 shadow-[var(--shadow-md)] sm:p-10">
             {activePlan.popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-foreground px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-background">
@@ -182,7 +172,7 @@ export function LpPricing() {
               Pix · Cartao · Boleto · Cancele quando quiser
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

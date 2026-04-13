@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -95,20 +94,14 @@ export function LpFaq() {
       className="border-t border-border bg-muted/40 py-24 sm:py-32"
     >
       <div className="mx-auto max-w-3xl px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5, ease: [0.165, 0.84, 0.44, 1] }}
-          className="mb-12 text-center"
-        >
+        <div className="mb-12 text-center">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Duvidas
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Perguntas frequentes
           </h2>
-        </motion.div>
+        </div>
 
         <div>
           {faqs.map((faq, i) => (
