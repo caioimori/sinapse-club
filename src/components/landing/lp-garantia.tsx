@@ -9,12 +9,16 @@ export function LpGarantia() {
             <ShieldCheck className="size-6 text-foreground" />
           </div>
           <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            14 dias de garantia incondicional
+            7 dias de garantia incondicional
           </h2>
           <p className="mx-auto max-w-lg text-base font-light leading-relaxed text-muted-foreground">
             Entre, conheça o fórum, leia as discussões, fale com os membros. Se
-            você não achar que vale o preço de um almoço por mês, devolvemos
-            100% — sem perguntas, sem burocracia, sem cara feia.
+            nos primeiros 7 dias você não achar que vale o preço de um almoço
+            por mês, devolvemos 100% — sem perguntas, sem burocracia.
+          </p>
+          <p className="mx-auto mt-4 max-w-md text-xs text-muted-foreground">
+            Garantia alinhada ao direito de arrependimento previsto no Código de
+            Defesa do Consumidor (Art. 49).
           </p>
         </div>
       </div>

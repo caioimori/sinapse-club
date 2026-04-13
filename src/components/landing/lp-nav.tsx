@@ -9,7 +9,7 @@ export function LpNav() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -18,52 +18,66 @@ export function LpNav() {
   return (
     <header
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300",
+        "fixed top-0 z-50 w-full border-b transition-all duration-300",
         scrolled
-          ? "border-b border-border/60 backdrop-blur-xl bg-background/80"
-          : "border-b border-transparent bg-transparent"
+          ? "border-border/70 bg-background/85 backdrop-blur-xl shadow-[var(--shadow-xs)] supports-[backdrop-filter]:bg-background/75"
+          : "border-transparent bg-background/60 backdrop-blur-md supports-[backdrop-filter]:bg-background/50"
       )}
+      style={{ WebkitBackdropFilter: "saturate(1.8) blur(20px)" }}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-base font-semibold tracking-tight">
-          sinapse<span className="text-muted-foreground">.club</span>
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-1 text-base font-semibold tracking-tight text-foreground sm:text-[17px]"
+        >
+          <span>sinapse</span>
+          <span className="text-muted-foreground">.club</span>
         </Link>
-        <nav className="hidden items-center gap-7 md:flex">
+
+        {/* Nav links (desktop) */}
+        <nav className="hidden items-center gap-8 md:flex">
           <Link
             href="#solucao"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Como funciona
           </Link>
           <Link
             href="#mentores"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Mentores
           </Link>
           <Link
             href="#pricing"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Planos
           </Link>
           <Link
             href="#faq"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             FAQ
           </Link>
         </nav>
+
+        {/* CTAs */}
         <div className="flex items-center gap-2">
           <Link href="/login" className="hidden sm:block">
-            <Button variant="ghost" size="sm" className="text-sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground"
+            >
               Entrar
             </Button>
           </Link>
           <Link href="#pricing">
             <Button
               size="sm"
-              className="bg-foreground text-background border-0 text-sm"
+              className="h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold hover:bg-foreground/90"
             >
               Ver planos
             </Button>

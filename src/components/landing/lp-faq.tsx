@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: "Qual a diferença entre os três planos?",
-    a: "Todos os planos dão o mesmo acesso ao fórum e à comunidade. O que muda é o tempo de compromisso e o desconto. Mensal é flexível, semestral oferece um bom desconto (R$ 3 a menos por mês), e anual é o de maior economia (R$ 5 a menos por mês).",
+    a: "Todos os planos dão o mesmo acesso ao fórum e à comunidade. O que muda é o tempo de compromisso e o desconto. Mensal é flexível, semestral oferece um bom desconto (R$ 3 a menos por mês) e é o mais escolhido, e anual é o de maior economia (R$ 5 a menos por mês).",
   },
   {
     q: "Como funciona o pagamento dos planos semestral e anual?",
@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "Posso cancelar a qualquer momento?",
-    a: "Sim. Cancelamento imediato, sem multa. Nos primeiros 14 dias, devolvemos 100% sem perguntas — você mantém o controle total.",
+    a: "Sim. Cancelamento imediato, sem multa. Nos primeiros 7 dias você tem o direito legal de arrependimento (CDC, Art. 49) e devolvemos 100% do valor pago, sem perguntas.",
   },
   {
     q: "Qual a diferença de um grupo de WhatsApp?",

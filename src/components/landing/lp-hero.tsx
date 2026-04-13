@@ -61,7 +61,7 @@ export function LpHero() {
 
         {/* Trust line */}
         <p className="mt-6 text-xs text-muted-foreground">
-          14 dias de garantia incondicional · cancele quando quiser
+          7 dias de garantia legal · cancele quando quiser
         </p>
       </div>
     </section>

@@ -28,7 +28,7 @@ export function LpCtaFinal() {
             </Button>
           </Link>
           <p className="mt-5 text-xs text-background/50">
-            14 dias de garantia · cancele quando quiser · pix, cartão ou boleto
+            7 dias de garantia · cancele quando quiser · pix, cartão ou boleto
           </p>
         </div>
       </div>
