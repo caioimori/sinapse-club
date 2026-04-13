@@ -1,10 +1,23 @@
 name: CI
 
+# Runs ONLY on pull_request. Skipping push-to-main avoids duplicating the
+# same job we already ran on the PR right before merging — cuts Actions
+# minutes roughly in half.
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
+    paths:
+      # Only run when code/config that matters changes. Docs, audits,
+      # screenshots, and the like don't need the full pipeline.
+      - "src/**"
+      - "public/**"
+      - "supabase/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig.json"
+      - "next.config.ts"
+      - "eslint.config.*"
+      - ".github/workflows/**"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -15,10 +28,14 @@ jobs:
     name: Quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout (full history for gitleaks)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,12 +48,21 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.ts', 'src/**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm exec tsc --noEmit
-
+      # Lint runs on the changed files only. `next build` below does a full
+      # typecheck as part of the compilation, so we skip the standalone tsc
+      # step to save ~30s per run.
       - name: Lint
         run: pnpm lint
 
@@ -46,3 +72,12 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTcwMDAwMDAwMCwiZXhwIjoyMDAwMDAwMDAwfQ.dummy' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'dummy' }}
+
+      # Secret scanning runs in the same job to avoid spinning up a second
+      # runner (was previously in secret-scan.yml). Gitleaks needs full
+      # history, which is already fetched above.
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
