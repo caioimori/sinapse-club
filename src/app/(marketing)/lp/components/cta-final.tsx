@@ -1,68 +1,67 @@
-"use client";
-
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollReveal } from "./motion-wrapper";
-
 export function CTAFinal() {
   return (
-    <section className="border-t border-border bg-card py-24" id="cta-final">
-      <div className="mx-auto max-w-2xl px-4 text-center">
-        <ScrollReveal>
-          <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight">
-            A decisao e sua.
-          </h2>
-        </ScrollReveal>
+    <section
+      style={{
+        paddingTop: 96,
+        paddingBottom: 96,
+        paddingLeft: 24,
+        paddingRight: 24,
+        backgroundColor: "#fff",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+        <h2
+          style={{
+            fontSize: "clamp(28px, 5vw, 56px)",
+            fontWeight: 600,
+            letterSpacing: "-1.5px",
+            color: "#1a1a1a",
+            lineHeight: 1.1,
+            marginBottom: 20,
+          }}
+        >
+          Comece hoje por R$27
+        </h2>
 
-        <ScrollReveal delay={0.1}>
-          <p className="mt-4 text-muted-foreground">
-            Forum ativo. Empresarios que aplicam IA de verdade. Cursos chegando.
-            Mentoria disponivel. Por R$27/mes.
-          </p>
-        </ScrollReveal>
+        <p
+          style={{
+            fontSize: 16,
+            fontWeight: 300,
+            color: "#6e6e6e",
+            lineHeight: 1.6,
+            marginBottom: 40,
+          }}
+        >
+          Entre na comunidade e implemente com quem ja esta fazendo.
+        </p>
 
-        <ScrollReveal delay={0.15}>
-          <div
-            className="mx-auto mt-8 max-w-lg rounded-xl p-6"
-            style={{
-              background: "rgba(32,189,90,0.12)",
-              border: "1px solid rgba(32,189,90,0.25)",
-            }}
-          >
-            <p className="text-foreground font-medium">
-              Voce pode aprender sozinho em 2 anos. Ou com a comunidade em 2 meses.
-              O mercado nao vai esperar voce se sentir pronto.
-            </p>
-          </div>
-        </ScrollReveal>
+        <a
+          href="https://forum.sinapse.club/auth"
+          style={{
+            display: "inline-block",
+            backgroundColor: "#1a1a1a",
+            color: "#fff",
+            borderRadius: 10,
+            padding: "16px 36px",
+            fontSize: 15,
+            fontWeight: 600,
+            textDecoration: "none",
+            marginBottom: 20,
+          }}
+        >
+          Entrar na comunidade
+        </a>
 
-        {/* CTA */}
-        <ScrollReveal delay={0.2} className="mt-8">
-          <a href="https://forum.sinapse.club/auth" className="inline-block">
-            <Button size="lg" className="bg-[#20BD5A] text-white border-0 hover:bg-[#1aa04d] px-10 py-6 text-lg">
-              Entrar pra SINAPSE agora
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </a>
-        </ScrollReveal>
-
-        {/* Reassurance */}
-        <ScrollReveal delay={0.25}>
-          <p className="mx-auto mt-5 max-w-md text-sm text-muted-foreground">
-            Comunidade de empresarios verificados. R$27/mes protegido por
-            7 dias de garantia. Devolucao total, sem burocracia.
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground/50">
-            R$27/mes · Cancele quando quiser · Garantia de 7 dias
-          </p>
-        </ScrollReveal>
-
-        {/* Footer note */}
-        <ScrollReveal delay={0.3} className="mt-12">
-          <p className="mx-auto max-w-md text-sm text-muted-foreground/50 italic">
-            A SINAPSE e pra quem quer aplicar, nao estudar.
-          </p>
-        </ScrollReveal>
+        <p
+          style={{
+            fontSize: 11,
+            color: "#c0c0c0",
+            letterSpacing: 0.3,
+          }}
+        >
+          7 dias de garantia · Cancele quando quiser · Sem compromisso
+        </p>
       </div>
     </section>
   );
