@@ -10,6 +10,7 @@ import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CalendarDays, MapPin, LinkIcon, GitFork, FileText, MessageCircle, Heart } from "lucide-react";
+import { BackButton } from "@/components/layout/back-button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
@@ -186,6 +187,14 @@ export default async function PublicProfilePage({
 
   return (
     <div className="w-full">
+      {/* Header with back arrow — Twitter-style sticky bar */}
+      <div className="sticky top-0 z-30 backdrop-blur bg-background/85 border-b border-[var(--border-subtle)] px-4 py-2 flex items-center gap-3">
+        <BackButton fallbackHref="/forum" />
+        <div className="min-w-0">
+          <h1 className="text-[17px] font-bold truncate">{displayName}</h1>
+          <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
+        </div>
+      </div>
       {/* Banner */}
       <div className="relative h-48 bg-muted overflow-hidden">
         {profile.header_url ? (

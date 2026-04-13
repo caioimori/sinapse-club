@@ -9,7 +9,20 @@ function nanoid(len = 12) {
   return Math.random().toString(36).slice(2, 2 + len);
 }
 
-export function SettingsForm({ profile }: { profile: any }) {
+/**
+ * `compact` hides the LGPD / danger zone sections when the form is rendered
+ * inside the profile edit modal. The settings page renders without it so the
+ * legal controls stay discoverable under Settings & privacy (Twitter pattern).
+ */
+export function SettingsForm({
+  profile,
+  compact = false,
+  onSaved,
+}: {
+  profile: any;
+  compact?: boolean;
+  onSaved?: () => void;
+}) {
   const router = useRouter();
   const supabase = createClient();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +94,7 @@ export function SettingsForm({ profile }: { profile: any }) {
     } else {
       setSuccess(true);
       router.refresh();
+      onSaved?.();
       if (githubUsername.trim() && githubUsername.trim() !== profile?.github_username) {
         // Fire and forget — don't block the UX
         fetch("/api/github/sync", {
@@ -330,7 +344,8 @@ export function SettingsForm({ profile }: { profile: any }) {
         </div>
       )}
 
-      {/* Privacy & LGPD zone */}
+      {/* Privacy & LGPD zone — hidden in compact (modal) mode, only on /settings */}
+      {!compact && (
       <div className="mt-12 space-y-6">
         {/* Data export — LGPD Art. 18, II (portabilidade) */}
         <div className="border border-[var(--border-default)] rounded-lg p-6">
@@ -381,6 +396,7 @@ export function SettingsForm({ profile }: { profile: any }) {
           .
         </p>
       </div>
+      )}
     </form>
   );
 }
