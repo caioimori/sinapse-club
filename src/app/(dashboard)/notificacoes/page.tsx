@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationsMarkRead } from "@/components/notifications/notifications-mark-read";
 import { StickySidebar } from "@/components/forum/sticky-sidebar";
 import { TrendingUsers } from "@/components/forum/trending-users";
+import { BackButton } from "@/components/layout/back-button";
 
 export const metadata = { title: "Notificações — Sinapse" };
 
@@ -172,8 +173,11 @@ export default async function NotificacoesPage() {
       {/* Main column */}
       <div className="min-w-0 border-l border-r border-[var(--border-subtle)] min-h-screen">
         {/* Header */}
-        <div className="sticky top-0 z-40 glass-nav border-b border-[var(--border-subtle)] px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-extrabold">Notificações</h1>
+        <div className="sticky top-0 z-40 glass-nav border-b border-[var(--border-subtle)] px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <BackButton fallbackHref="/forum" />
+            <h1 className="text-xl font-extrabold truncate">Notificações</h1>
+          </div>
           {unreadIds.length > 0 && (
             <NotificationsMarkRead unreadIds={unreadIds} />
           )}

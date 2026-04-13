@@ -197,11 +197,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
             </Link>
           )}
 
-          {/* ── Settings + Sair ──────────────────────────── */}
-          <Link href="/settings" className={navItemCls(pathname.startsWith("/settings"))}>
-            <Settings className="h-4 w-4 flex-shrink-0" />
-            <span>Configurações</span>
-          </Link>
+          {/* Configurações movido para o avatar dropdown (topbar), padrão Twitter. */}
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-destructive transition-colors"

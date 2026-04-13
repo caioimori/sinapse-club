@@ -9,6 +9,7 @@ import type { ReplyData, ReplyAuthor } from "@/components/forum/thread-reply";
 import { ThreadReplyComposer } from "@/components/forum/thread-reply-composer";
 import { ThreadActions } from "@/components/forum/thread-actions";
 import { ThreadHeaderMenu } from "@/components/forum/thread-header-menu";
+import { BackButton } from "@/components/layout/back-button";
 import type { ProfessionalCluster } from "@/types/database";
 
 export async function generateMetadata({
@@ -180,7 +181,10 @@ export default async function ForumThreadPage({
 
   return (
     <div className="space-y-0">
-      {/* Breadcrumb */}
+      {/* Back arrow + Breadcrumb */}
+      <div className="flex items-center gap-2 mb-4">
+        <BackButton fallbackHref="/forum" />
+      </div>
       <nav className="flex items-center gap-1 text-sm text-muted-foreground mb-6">
         <MessageSquare className="h-4 w-4 flex-shrink-0" />
         <Link

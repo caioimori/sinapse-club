@@ -5,6 +5,7 @@ import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ThreadListItem } from "@/components/forum/thread-list-item";
 import { GitHubRepos } from "@/components/profile/github-repos";
 import { ConnectGitHubButton } from "@/components/profile/connect-github-button";
+import { EditProfileTrigger } from "@/components/profile/edit-profile-trigger";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -147,12 +148,7 @@ export default async function ProfilePage({
           </AvatarFallback>
         </Avatar>
         <div className="mt-14">
-          <Link
-            href="/settings"
-            className="px-4 py-1.5 rounded-full border border-border text-sm font-semibold hover:bg-muted/50 transition-colors inline-block"
-          >
-            Editar perfil
-          </Link>
+          <EditProfileTrigger profile={profile} />
         </div>
       </div>
 
