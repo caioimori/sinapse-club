@@ -3,18 +3,18 @@ import { Clock, Wallet, Network } from "lucide-react";
 const problems = [
   {
     icon: Clock,
-    title: "Voce perde tempo na curva",
-    desc: "Tutorial no YouTube, video em ingles, ferramenta nova toda semana. Tres meses depois, ainda sem implementar nada.",
+    title: "Você perde tempo na curva",
+    desc: "Tutorial no YouTube, vídeo em inglês, ferramenta nova toda semana. Três meses depois, ainda sem implementar nada.",
   },
   {
     icon: Wallet,
-    title: "Voce paga caro pelo errado",
-    desc: "Assinatura de IA que nao usa, automacao mal feita, consultor que cobra R$5k pra te entregar prompt.",
+    title: "Você paga caro pelo errado",
+    desc: "Assinatura de IA que não usa, automação mal feita, consultor que cobra R$ 5k pra te entregar prompt.",
   },
   {
     icon: Network,
-    title: "Voce esta sozinho na decisao",
-    desc: "Ninguem na sua bolha entende. WhatsApp e bagunca. LinkedIn e teoria. Voce precisa de quem ja fez.",
+    title: "Você está sozinho na decisão",
+    desc: "Ninguém na sua bolha entende. WhatsApp é bagunça. LinkedIn é teoria. Você precisa de quem já fez.",
   },
 ];
 
@@ -27,7 +27,7 @@ export function LpProblem() {
             O problema
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            IA virou ruido. E voce
+            IA virou ruído. E você
             <br />
             precisa de sinal.
           </h2>

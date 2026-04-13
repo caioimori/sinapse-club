@@ -3,22 +3,22 @@ import { MessagesSquare, Users, BookOpen, Trophy } from "lucide-react";
 const blocks = [
   {
     icon: MessagesSquare,
-    title: "Forum 24/7",
-    desc: "Categorias por area: marketing, vendas, operacao, financeiro, automacao. Pergunte de tarde, leia respostas a noite.",
+    title: "Fórum 24/7",
+    desc: "Categorias por área: marketing, vendas, operação, financeiro, automação. Pergunte de tarde, leia respostas à noite.",
   },
   {
     icon: Users,
     title: "Networking verificado",
-    desc: "Donos de negocio reais. Sem perfil fake, sem influencer-de-IA, sem promessa furada.",
+    desc: "Donos de negócio reais. Sem perfil fake, sem influencer-de-IA, sem promessa furada.",
   },
   {
     icon: BookOpen,
-    title: "Conteudo de trincheira",
-    desc: "Casos reais publicados toda semana. O que funcionou, o que nao funcionou e por que.",
+    title: "Conteúdo de trincheira",
+    desc: "Casos reais publicados toda semana. O que funcionou, o que não funcionou e por quê.",
   },
   {
     icon: Trophy,
-    title: "Gamificacao com proposito",
+    title: "Gamificação com propósito",
     desc: "Ranks, streaks e leaderboard. Quem mais ajuda sobe. Quem mais aprende fica.",
   },
 ];
@@ -29,12 +29,12 @@ export function LpSolution() {
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-16 max-w-2xl">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            A solucao
+            A solução
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Tudo o que falta esta
+            Tudo o que falta está
             <br />
-            <span className="text-muted-foreground">dentro de um lugar so.</span>
+            <span className="text-muted-foreground">dentro de um lugar só.</span>
           </h2>
         </div>
 

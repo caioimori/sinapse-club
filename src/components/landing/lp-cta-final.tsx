@@ -7,14 +7,14 @@ export function LpCtaFinal() {
     <section className="relative border-t border-border bg-foreground py-24 text-background sm:py-32">
       <div className="mx-auto max-w-3xl px-4 text-center">
         <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">
-          Por menos que um almoco.
+          Por menos que um almoço.
           <br />
-          <span className="text-background/60">Por mais que voce imagina.</span>
+          <span className="text-background/60">Por mais do que você imagina.</span>
         </h2>
 
         <p className="mx-auto mb-10 max-w-xl text-base font-light leading-relaxed text-background/70 sm:text-lg">
-          Entre na comunidade, faca a primeira pergunta hoje, comece a aplicar
-          IA na operacao real ja na proxima semana.
+          Entre na comunidade, faça a primeira pergunta hoje, comece a aplicar
+          IA na operação real já na próxima semana.
         </p>
 
         <div>
@@ -28,7 +28,7 @@ export function LpCtaFinal() {
             </Button>
           </Link>
           <p className="mt-5 text-xs text-background/50">
-            14 dias de garantia · cancele quando quiser · pix, cartao ou boleto
+            14 dias de garantia · cancele quando quiser · pix, cartão ou boleto
           </p>
         </div>
       </div>

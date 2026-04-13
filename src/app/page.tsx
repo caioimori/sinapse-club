@@ -12,13 +12,13 @@ import { LpCtaFinal } from "@/components/landing/lp-cta-final";
 import { LpFooter } from "@/components/landing/lp-footer";
 
 export const metadata: Metadata = {
-  title: "SINAPSE — IA na operacao real, sem teoria",
+  title: "SINAPSE — IA na operação real, sem teoria",
   description:
-    "A comunidade onde donos de negocio aplicam IA para reduzir custo, escalar entrega e ganhar tempo. Forum 24/7, networking verificado, conteudo de trincheira. A partir de R$ 22,90/mes.",
+    "A comunidade onde donos de negócio aplicam IA para reduzir custo, escalar entrega e ganhar tempo. Fórum 24/7, networking verificado, conteúdo de trincheira. A partir de R$ 22,90/mês.",
   openGraph: {
-    title: "SINAPSE — IA na operacao real, sem teoria",
+    title: "SINAPSE — IA na operação real, sem teoria",
     description:
-      "A comunidade onde donos de negocio aplicam IA na operacao. Forum 24/7, networking verificado. A partir de R$ 22,90/mes.",
+      "A comunidade onde donos de negócio aplicam IA na operação. Fórum 24/7, networking verificado. A partir de R$ 22,90/mês.",
     type: "website",
     url: "https://forum.sinapse.club",
     images: [
@@ -26,15 +26,15 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "SINAPSE — Comunidade de IA para negocios",
+        alt: "SINAPSE — Comunidade de IA para negócios",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SINAPSE — IA na operacao real",
+    title: "SINAPSE — IA na operação real",
     description:
-      "Forum 24/7 onde donos de negocio aplicam IA. A partir de R$ 22,90/mes.",
+      "Fórum 24/7 onde donos de negócio aplicam IA. A partir de R$ 22,90/mês.",
     images: ["/opengraph-image"],
   },
 };

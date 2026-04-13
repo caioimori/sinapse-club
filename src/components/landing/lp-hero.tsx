@@ -25,16 +25,16 @@ export function LpHero() {
 
         {/* Headline */}
         <h1 className="mb-6 text-5xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-7xl lg:text-8xl">
-          IA na operacao.
+          IA na operação.
           <br />
           <span className="text-muted-foreground">Sem teoria.</span>
         </h1>
 
         {/* Subheadline */}
         <p className="mx-auto mb-10 max-w-xl text-base font-light leading-relaxed text-muted-foreground sm:text-lg">
-          A comunidade onde donos de negocio aplicam IA para reduzir custo,
-          escalar entrega e ganhar tempo. Forum 24/7, conteudo de trincheira,
-          networking verificado. A partir de R$ 22,90/mes.
+          A comunidade onde donos de negócio aplicam IA para reduzir custo,
+          escalar entrega e ganhar tempo. Fórum 24/7, conteúdo de trincheira,
+          networking verificado. A partir de R$ 22,90/mês.
         </p>
 
         {/* CTAs */}
@@ -44,7 +44,7 @@ export function LpHero() {
               size="lg"
               className="h-12 bg-foreground text-background border-0 px-7 text-sm font-semibold"
             >
-              Ver planos e comecar
+              Ver planos e começar
               <ArrowRight className="ml-2 size-4" />
             </Button>
           </Link>

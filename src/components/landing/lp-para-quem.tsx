@@ -3,17 +3,17 @@ import { Briefcase, BarChart3, User } from "lucide-react";
 const personas = [
   {
     icon: Briefcase,
-    title: "Donos de negocio",
+    title: "Donos de negócio",
     desc: "Que querem escalar sem contratar. IA corta custo e multiplica entrega.",
   },
   {
     icon: BarChart3,
     title: "Gestores e diretores",
-    desc: "Que precisam de resultado em marketing, vendas ou produto. Rapido.",
+    desc: "Que precisam de resultado em marketing, vendas ou produto. Rápido.",
   },
   {
     icon: User,
-    title: "Profissionais autonomos",
+    title: "Profissionais autônomos",
     desc: "Que operam sozinhos e querem produzir o equivalente a uma equipe.",
   },
 ];
@@ -24,12 +24,12 @@ export function LpParaQuem() {
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-14 text-center">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Para quem e
+            Para quem é
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Para quem quer resultado,
             <br />
-            <span className="text-muted-foreground">nao teoria.</span>
+            <span className="text-muted-foreground">não teoria.</span>
           </h2>
         </div>
 

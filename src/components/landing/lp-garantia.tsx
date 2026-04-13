@@ -12,8 +12,8 @@ export function LpGarantia() {
             14 dias de garantia incondicional
           </h2>
           <p className="mx-auto max-w-lg text-base font-light leading-relaxed text-muted-foreground">
-            Entre, conheca o forum, leia as discussoes, fale com os membros. Se
-            voce nao achar que vale o preco de um almoco por mes, devolvemos
+            Entre, conheça o fórum, leia as discussões, fale com os membros. Se
+            você não achar que vale o preço de um almoço por mês, devolvemos
             100% — sem perguntas, sem burocracia, sem cara feia.
           </p>
         </div>
