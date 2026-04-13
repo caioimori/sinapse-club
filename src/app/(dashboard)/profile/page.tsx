@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ThreadListItem } from "@/components/forum/thread-list-item";
 import { GitHubRepos } from "@/components/profile/github-repos";
+import { ConnectGitHubButton } from "@/components/profile/connect-github-button";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -340,13 +341,7 @@ export default async function ProfilePage({
               <p className="text-muted-foreground">
                 Conecte seu GitHub para mostrar seus repositórios
               </p>
-              <Link
-                href="/settings"
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border text-sm font-semibold hover:bg-muted/50 transition-colors"
-              >
-                <GitFork className="h-4 w-4" />
-                Conectar GitHub
-              </Link>
+              <ConnectGitHubButton nextPath="/profile?tab=github" />
             </div>
           )}
         </div>
