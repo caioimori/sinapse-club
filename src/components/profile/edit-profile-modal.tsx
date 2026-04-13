@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import { SettingsForm } from "@/app/(dashboard)/settings/settings-form";
 
@@ -19,10 +19,6 @@ export function EditProfileModal({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   profile: any;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(open), [open]);
-
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
@@ -36,7 +32,7 @@ export function EditProfileModal({
     };
   }, [open, onClose]);
 
-  if (!mounted) return null;
+  if (!open) return null;
 
   return (
     <div
