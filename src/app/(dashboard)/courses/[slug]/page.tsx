@@ -67,7 +67,7 @@ export default async function CourseDetailPage({ params, searchParams }: {
     : allLessons[0];
 
   // Get progress
-  let progressMap = new Map<string, any>();
+  const progressMap = new Map<string, any>();
   if (user && isEnrolled) {
     const { data } = await supabase
       .from("lesson_progress")

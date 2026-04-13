@@ -1,16 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 export function AuthSideVisual() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   return (
     <div className="hidden lg:flex items-center justify-center bg-black relative overflow-hidden">
       {/* Centered content */}
