@@ -5,13 +5,14 @@ import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ThreadListItem } from "@/components/forum/thread-list-item";
 import { GitHubRepos } from "@/components/profile/github-repos";
 import { ConnectGitHubButton } from "@/components/profile/connect-github-button";
+import { SyncGithubButton } from "@/components/profile/sync-github-button";
 import { EditProfileTrigger } from "@/components/profile/edit-profile-trigger";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
 import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
-import { CalendarDays, MapPin, LinkIcon, GitFork, RefreshCw, PenLine, MessageCircle, Heart } from "lucide-react";
+import { CalendarDays, MapPin, LinkIcon, GitFork, PenLine, MessageCircle, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
@@ -320,15 +321,7 @@ export default async function ProfilePage({
                 repos={githubRepos}
               />
               <div className="px-4 py-4 border-t border-[var(--border-subtle)]">
-                <form action="/api/github/sync" method="POST">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-border text-sm font-semibold hover:bg-muted/50 transition-colors"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Sincronizar
-                  </button>
-                </form>
+                <SyncGithubButton />
               </div>
             </>
           ) : (
