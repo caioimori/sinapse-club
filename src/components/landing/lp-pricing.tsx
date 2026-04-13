@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
 type BillingPeriod = "mensal" | "semestral" | "anual";
