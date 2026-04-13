@@ -53,8 +53,9 @@ function AccordionItem({
   return (
     <div className="border-b border-border">
       <button
+        type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-foreground"
+        className="flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left transition-colors hover:text-foreground"
         aria-expanded={isOpen}
       >
         <span className="text-sm font-medium text-foreground sm:text-base">

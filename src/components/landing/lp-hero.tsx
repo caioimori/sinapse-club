@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function LpHero() {
   return (
@@ -39,23 +40,24 @@ export function LpHero() {
 
         {/* CTAs */}
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link href="#pricing">
-            <Button
-              size="lg"
-              className="h-12 bg-foreground text-background border-0 px-7 text-sm font-semibold"
-            >
-              Ver planos e começar
-              <ArrowRight className="ml-2 size-4" />
-            </Button>
+          <Link
+            href="#pricing"
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "h-12 bg-foreground text-background border-0 px-7 text-sm font-semibold"
+            )}
+          >
+            Ver planos e começar
+            <ArrowRight className="ml-2 size-4" />
           </Link>
-          <Link href="#solucao">
-            <Button
-              size="lg"
-              variant="ghost"
-              className="h-12 px-5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              Como funciona
-            </Button>
+          <Link
+            href="#solucao"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "lg" }),
+              "h-12 px-5 text-sm text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Como funciona
           </Link>
         </div>
 
