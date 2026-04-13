@@ -140,7 +140,7 @@ export default function RegisterPage() {
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: "read:user public_repo",
+        scopes: "read:user user:email public_repo",
       },
     });
     if (error) setError(error.message);

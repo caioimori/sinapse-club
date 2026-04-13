@@ -54,7 +54,7 @@ function LoginForm() {
       provider: "github",
       options: {
         redirectTo: callbackUrl,
-        scopes: "read:user public_repo",
+        scopes: "read:user user:email public_repo",
       },
     });
     if (error) setError(error.message);

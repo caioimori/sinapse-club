@@ -131,7 +131,7 @@ export function SettingsForm({ profile }: { profile: any }) {
       provider: "github",
       options: {
         redirectTo,
-        scopes: "read:user public_repo",
+        scopes: "read:user user:email public_repo",
       },
     });
     if (linkError) setError(linkError.message);
