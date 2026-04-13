@@ -21,6 +21,20 @@ export const metadata: Metadata = {
       "Forum ativo com empresarios que usam IA de verdade. R$27/mes.",
     type: "website",
     url: "https://sinapse.club/lp",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "SINAPSE — Comunidade de IA para Negocios",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SINAPSE | Comunidade de IA para Negocios",
+    description: "Forum ativo com empresarios que usam IA de verdade. R$27/mes.",
+    images: ["/opengraph-image"],
   },
 };
 
