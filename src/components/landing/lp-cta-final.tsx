@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function LpCtaFinal() {
   return (
@@ -18,14 +19,15 @@ export function LpCtaFinal() {
         </p>
 
         <div>
-          <Link href="#pricing">
-            <Button
-              size="lg"
-              className="h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold hover:bg-background/90"
-            >
-              Escolher meu plano
-              <ArrowRight className="ml-2 size-4" />
-            </Button>
+          <Link
+            href="#pricing"
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold hover:bg-background/90"
+            )}
+          >
+            Escolher meu plano
+            <ArrowRight className="ml-2 size-4" />
           </Link>
           <p className="mt-5 text-xs text-background/50">
             7 dias de garantia · cancele quando quiser · pix, cartão ou boleto

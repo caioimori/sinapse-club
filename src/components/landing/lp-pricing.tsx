@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type BillingPeriod = "mensal" | "semestral" | "anual";
@@ -187,18 +187,17 @@ function PlanCard({ plan }: { plan: Plan }) {
       </ul>
 
       {/* CTA — pushed to bottom */}
-      <Link href={`/register?plan=${plan.id}`} className="mt-auto block">
-        <Button
-          size="lg"
-          className={cn(
-            "h-12 w-full border-0 text-sm font-semibold",
-            isPopular
-              ? "bg-background text-foreground hover:bg-background/90"
-              : "bg-foreground text-background hover:bg-foreground/90"
-          )}
-        >
-          {plan.cta}
-        </Button>
+      <Link
+        href={`/register?plan=${plan.id}`}
+        className={cn(
+          buttonVariants({ size: "lg" }),
+          "mt-auto h-12 w-full border-0 text-sm font-semibold",
+          isPopular
+            ? "bg-background text-foreground hover:bg-background/90"
+            : "bg-foreground text-background hover:bg-foreground/90"
+        )}
+      >
+        {plan.cta}
       </Link>
     </div>
   );

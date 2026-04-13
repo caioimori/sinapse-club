@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function LpNav() {
@@ -65,22 +65,23 @@ export function LpNav() {
 
         {/* CTAs */}
         <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden sm:block">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground"
-            >
-              Entrar
-            </Button>
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "hidden h-9 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground sm:inline-flex"
+            )}
+          >
+            Entrar
           </Link>
-          <Link href="#pricing">
-            <Button
-              size="sm"
-              className="h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold hover:bg-foreground/90"
-            >
-              Ver planos
-            </Button>
+          <Link
+            href="#pricing"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold hover:bg-foreground/90"
+            )}
+          >
+            Ver planos
           </Link>
         </div>
       </div>
