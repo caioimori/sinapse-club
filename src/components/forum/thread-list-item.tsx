@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -349,15 +348,15 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </div>
           )}
 
-          {/* Image */}
+          {/* Image — Twitter-style: natural aspect ratio, rounded, no crop */}
           {thread.image_url && (
-            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)] relative aspect-video">
-              <Image
+            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-muted/30">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={thread.image_url}
                 alt="Imagem do post"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 600px"
+                className="w-full max-h-[510px] object-contain"
+                loading="lazy"
               />
             </div>
           )}

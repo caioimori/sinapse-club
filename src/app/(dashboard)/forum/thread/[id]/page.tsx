@@ -98,6 +98,7 @@ export default async function ForumThreadPage({
     id: thread.id,
     title: thread.title,
     content: thread.content,
+    image_url: thread.image_url ?? null,
     is_sticky: thread.is_sticky,
     is_solved: thread.is_solved,
     is_locked: thread.is_locked,
