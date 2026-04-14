@@ -48,6 +48,19 @@ async function getNextBotId(supabase: any): Promise<string> {
   return BOT_USER_IDS.reduce((a, b) => (counts[a] <= counts[b] ? a : b));
 }
 
+// PT-BR heuristic: check if text contains common Portuguese function words.
+// Used as a second gate to avoid publishing English content even if
+// translation_status was mistakenly marked 'translated'.
+const PT_MARKERS = [
+  " para ", " com ", " que ", " uma ", " como ", " mais ", " por ", " são ",
+  " está ", " você ", " não ", " isso ", " essa ", " esse ", " quando ",
+  " sobre ", " dos ", " das ", " também ", " já ", " nos ", " nas ",
+];
+function looksPortuguese(text: string): boolean {
+  const t = ` ${text.toLowerCase()} `;
+  return PT_MARKERS.filter((w) => t.includes(w)).length >= 2;
+}
+
 // Strip any HTML/entities that slipped through the curate pipeline.
 // Defensive second pass — we already stripHtml in curate-rss, but older
 // rows and third-party feeds can still have escaped or raw tags.
@@ -101,8 +114,9 @@ Deno.serve(async () => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Pega itens prontos para publicar
-    // Publica: traduzidos OU conteúdo PT original (sem precisar de DeepL)
+    // Pega itens prontos para publicar — PT-only (MVP BR-first).
+    // Item precisa ter texto em portugues: ou o original ja era PT, ou
+    // o translate-content rodou e marcou translation_status = 'translated'.
     const { data: items, error: fetchErr } = await supabase
       .from("curated_content")
       .select("*")
@@ -130,6 +144,21 @@ Deno.serve(async () => {
       const botUserId = await getNextBotId(supabase);
       const categoryId = categoryMap.get(item.category) ?? defaultCategoryId;
       const text = item.translated_text || item.original_text || item.title;
+
+      // PT gate: if both body and title don't look Portuguese, skip.
+      // We mark the row as published=true to get it out of the queue so it
+      // doesn't block future runs.
+      if (!looksPortuguese(`${item.title ?? ""} ${text ?? ""}`)) {
+        await supabase
+          .from("curated_content")
+          .update({
+            is_published: true,
+            published_at: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+        continue;
+      }
+
       const { html, plain } = formatContent(text, item.source_url, item.source_author);
       const title = cleanTitle(item.title || "Sem título");
 
