@@ -57,11 +57,12 @@ const RSS_FEEDS = [
   { url: "https://www.producthunt.com/feed?category=ai", category: "ferramentas-reviews" },
 
   // ── Brazilian Sources (PT already, no translation needed) ──────
+  // Only AI-specific feeds. Olhar Digital and Startups.com geral feeds were
+  // removed — they mix lottery results, space news, and curiosities into the
+  // same RSS firehose, which poisoned the "LLMs & Agentes" default bucket.
   { url: "https://canaltech.com.br/rss/inteligencia-artificial/", category: "llms-agentes" },
-  { url: "https://olhardigital.com.br/feed/", category: "llms-agentes" },
   { url: "https://www.tecmundo.com.br/rss/inteligencia-artificial.xml", category: "llms-agentes" },
   { url: "https://exame.com/tecnologia/inteligencia-artificial/feed/", category: "negocios-estrategia" },
-  { url: "https://startups.com.br/feed/", category: "negocios-estrategia" },
 
   // ── Reddit (free RSS, no API key) ─────────────────────────────
   { url: "https://www.reddit.com/r/artificial/hot.rss", category: "llms-agentes" },
@@ -70,8 +71,7 @@ const RSS_FEEDS = [
   { url: "https://www.reddit.com/r/ChatGPT/hot.rss", category: "ferramentas-reviews" },
   { url: "https://www.reddit.com/r/OpenAI/hot.rss", category: "llms-agentes" },
   { url: "https://www.reddit.com/r/ClaudeAI/hot.rss", category: "ferramentas-reviews" },
-  { url: "https://www.reddit.com/r/singularity/hot.rss", category: "llms-agentes" },
-  { url: "https://www.reddit.com/r/Futurology/hot.rss", category: "llms-agentes" },
+  // r/singularity and r/Futurology removed — philosophical/space content, not AI operations
   { url: "https://www.reddit.com/r/automation/hot.rss", category: "automacao-no-code" },
   { url: "https://www.reddit.com/r/n8n/hot.rss", category: "automacao-no-code" },
   { url: "https://www.reddit.com/r/AItools/hot.rss", category: "ferramentas-reviews" },
@@ -113,6 +113,24 @@ function detectCategory(title: string, description: string, defaultCategory: str
     }
   }
   return defaultCategory;
+}
+
+// Relevance gate: drop items that don't contain any AI-related token. Without
+// this, generic RSS (tech news, business feeds, subreddits that mix topics)
+// dumps noise into the default category bucket.
+const AI_TOKENS = [
+  "ai", "a.i", "artificial intelligence", "intelig", "machine learning", "ml ",
+  "llm", "gpt", "claude", "gemini", "llama", "mistral", "anthropic", "openai",
+  "copilot", "agent", "agente", "neural", "transformer", "prompt",
+  "automacao", "automação", "automation", "n8n", "zapier", "make.com",
+  "stable diffusion", "midjourney", "dall-e", "dall·e", "sora", "runway",
+  "hugging face", "huggingface", "rag", "embedding", "fine-tuning",
+  "generative", "generativa",
+];
+
+function isRelevant(title: string, description: string): boolean {
+  const text = ` ${title.toLowerCase()} ${description.toLowerCase()} `;
+  return AI_TOKENS.some((t) => text.includes(t));
 }
 
 function detectLang(text: string): string {
@@ -207,6 +225,13 @@ Deno.serve(async () => {
             .eq("source_url", item.link)
             .limit(1);
           if (exists && exists.length > 0) { totalSkipped++; continue; }
+
+          // Relevance gate — skip items that don't mention AI at all.
+          // Prevents lottery/curiosity/space content from leaking in as "LLMs & Agentes".
+          if (!isRelevant(item.title, item.description)) {
+            totalSkipped++;
+            continue;
+          }
 
           const lang = detectLang(`${item.title} ${item.description}`);
           const category = detectCategory(item.title, item.description, feed.category);
