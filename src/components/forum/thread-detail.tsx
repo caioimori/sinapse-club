@@ -42,6 +42,7 @@ export interface ThreadDetailData {
   id: string;
   title: string | null;
   content: string;
+  image_url: string | null;
   is_sticky: boolean;
   is_solved: boolean;
   is_locked: boolean;
@@ -158,6 +159,19 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
         className="prose dark:prose-invert prose-sm max-w-none text-foreground/90 [&_a]:text-muted-foreground [&_a]:underline [&_pre]:bg-muted [&_pre]:border [&_pre]:border-border [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_blockquote]:border-border"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(thread.content) }}
       />
+
+      {/* Image (Twitter-style: natural aspect, rounded, no crop) */}
+      {thread.image_url && (
+        <div className="rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-muted/30">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={thread.image_url}
+            alt="Imagem do post"
+            className="w-full max-h-[680px] object-contain"
+            loading="lazy"
+          />
+        </div>
+      )}
 
       {/* Tags */}
       {thread.tags.length > 0 && (
