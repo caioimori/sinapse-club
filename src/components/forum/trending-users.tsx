@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, MessageSquare, UserPlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -46,7 +47,15 @@ const SUGGESTIONS_INITIAL = 3;
 
 export function TrendingUsers({ users, topics = [], suggestions = [] }: TrendingUsersProps) {
   const supabase = createClient();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    router.push(`/explore?q=${encodeURIComponent(q)}`);
+  }
   const [rankingExpanded, setRankingExpanded] = useState(false);
   const [topicsExpanded, setTopicsExpanded] = useState(false);
   const [suggestionsExpanded, setSuggestionsExpanded] = useState(false);
@@ -100,18 +109,18 @@ export function TrendingUsers({ users, topics = [], suggestions = [] }: Trending
   return (
     <div className="space-y-3 pb-8">
       {/* Search bar */}
-      <div className="py-4 bg-background">
+      <form onSubmit={handleSearchSubmit} className="py-4 bg-background" role="search">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <input
-            type="text"
+            type="search"
             placeholder="Buscar no Sinapse"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-full bg-muted/70 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:bg-background transition-colors"
           />
         </div>
-      </div>
+      </form>
 
       {/* Ranking da semana */}
       <div className="rounded-2xl border border-[var(--border-default)] bg-card shadow-sm overflow-hidden">

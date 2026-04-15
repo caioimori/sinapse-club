@@ -7,7 +7,7 @@ import {
   X,
   Image as ImageIcon,
   Smile,
-  BarChart2,
+  ListChecks,
   Loader2,
 } from "lucide-react";
 import Image from "next/image";
@@ -323,9 +323,9 @@ export function ComposeModal() {
               type="button"
               title="Enquete"
               onClick={togglePoll}
-              className={`p-1.5 rounded-full hover:bg-muted transition-colors hover:text-foreground ${poll ? "text-foreground bg-muted" : ""}`}
+              className={`p-1.5 rounded-full hover:bg-muted transition-colors hover:text-foreground cursor-pointer ${poll ? "text-foreground bg-muted" : ""}`}
             >
-              <BarChart2 className="h-[18px] w-[18px]" />
+              <ListChecks className="h-[18px] w-[18px]" />
             </button>
           </div>
 

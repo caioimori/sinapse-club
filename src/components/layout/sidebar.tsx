@@ -7,14 +7,12 @@ import {
   MessageSquare,
   Search,
   Bell,
-  Settings,
   Trophy,
   BookOpen,
   ShoppingBag,
   Calendar,
   Wrench,
   Gift,
-  LogOut,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,7 +26,6 @@ import { StreakBadge } from "@/components/gamification/streak-badge";
 import { XpProgressBar } from "@/components/gamification/xp-progress-bar";
 import { LevelUpDetector } from "@/components/gamification/level-up-detector";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -58,7 +55,6 @@ interface SidebarProps {
 
 export function Sidebar({ profile, professionalRole, className }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const supabase = createClient();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -95,12 +91,6 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id, isOnNotifs]);
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }
 
   return (
     <aside
@@ -158,7 +148,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
           {/* ── Botão Publicar — Twitter-style ────────────── */}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("open-compose-modal"))}
-            className="mt-2 w-full flex items-center justify-center rounded-full bg-foreground text-background py-2.5 px-4 text-sm font-bold hover:bg-foreground/85 transition-colors"
+            className="mt-2 w-full flex items-center justify-center rounded-full bg-foreground text-background py-2.5 px-4 text-sm font-bold hover:bg-foreground/85 transition-colors cursor-pointer"
           >
             Post
           </button>
@@ -197,14 +187,7 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
             </Link>
           )}
 
-          {/* Configurações movido para o avatar dropdown (topbar), padrão Twitter. */}
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-destructive transition-colors"
-          >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            <span>Sair</span>
-          </button>
+          {/* Sair movido para o menu do perfil (padrão Twitter). */}
 
         </div>
       </ScrollArea>

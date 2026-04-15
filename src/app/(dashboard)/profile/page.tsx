@@ -5,30 +5,22 @@ import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ThreadListItem } from "@/components/forum/thread-list-item";
 import { GitHubRepos } from "@/components/profile/github-repos";
 import { ConnectGitHubButton } from "@/components/profile/connect-github-button";
-import { SyncGithubButton } from "@/components/profile/sync-github-button";
 import { EditProfileTrigger } from "@/components/profile/edit-profile-trigger";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
 import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
-import { CalendarDays, MapPin, LinkIcon, GitFork, PenLine, MessageCircle, Heart } from "lucide-react";
+import { CalendarDays, MapPin, LinkIcon, GitFork, PenLine, MessageCircle, Heart, Settings, Briefcase } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeWebsiteUrl, displayDomain } from "@/lib/url";
 
 export const metadata = {
   title: "Perfil",
 };
-
-function displayDomain(url: string) {
-  try {
-    return new URL(url).hostname.replace("www.", "");
-  } catch {
-    return url;
-  }
-}
 
 function formatCount(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "K";
@@ -80,7 +72,7 @@ export default async function ProfilePage({
 
   // Run threads, replies and liked reactions in parallel
   const [threadsRes, repliesRes, likedReactionsRes] = await Promise.all([
-    (supabase.from("posts").select(postSelect).eq("author_id", user.id).is("parent_id", null).order("created_at", { ascending: false }).limit(30)) as any,
+    (supabase.from("posts").select(postSelect + ", repost_of, reposts_count").eq("author_id", user.id).eq("type", "thread").order("created_at", { ascending: false }).limit(30)) as any,
     (supabase.from("comments").select("id, content, created_at, post_id, posts!post_id(id, title, content_plain)").eq("author_id", user.id).order("created_at", { ascending: false }).limit(20)) as any,
     (supabase as any).from("reactions").select("target_id").eq("user_id", user.id).eq("target_type", "post").eq("type", "like").limit(30),
   ]);
@@ -148,37 +140,58 @@ export default async function ProfilePage({
             {initial}
           </AvatarFallback>
         </Avatar>
-        <div className="mt-14">
+        <div className="mt-14 flex items-center gap-2">
+          <Link
+            href="/settings"
+            aria-label="Configuracoes"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border hover:bg-muted/60 transition-colors cursor-pointer"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
           <EditProfileTrigger profile={profile} />
         </div>
       </div>
 
-      {/* Profile info */}
+      {/* Profile info — LinkedIn-style prominence for name / cargo / empresa */}
       <div className="px-4 mt-3 space-y-3">
-        {/* Name + badges */}
+        {/* Name line */}
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h1 className="text-xl font-bold">{displayName}</h1>
+            <h1 className="text-2xl font-extrabold leading-tight">{displayName}</h1>
             <TierBadge tier={profile.role} size="sm" />
-            {profile.professional_role && (
-              <CargoBadge
-                cluster={profile.professional_role.cluster}
-                roleName={profile.professional_role.name}
-                size="sm"
-                className="mt-0.5"
-              />
-            )}
           </div>
           <p className="text-muted-foreground text-sm">@{profile.username}</p>
         </div>
 
-        {/* Headline */}
-        {(profile.headline || profile.company) && (
-          <p className="text-sm text-muted-foreground">
-            {profile.headline}
-            {profile.headline && profile.company ? ` @ ${profile.company}` : ""}
-            {!profile.headline && profile.company ? `@ ${profile.company}` : ""}
-          </p>
+        {/* Cargo + Empresa — destaque LinkedIn-style */}
+        {(profile.professional_role || profile.company || profile.headline) && (
+          <div className="flex items-start gap-2">
+            <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+            <div className="space-y-0.5 min-w-0">
+              {profile.professional_role && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <CargoBadge
+                    cluster={profile.professional_role.cluster}
+                    roleName={profile.professional_role.name}
+                    size="sm"
+                  />
+                  {profile.company && (
+                    <span className="text-[15px] font-semibold text-foreground truncate">
+                      @ {profile.company}
+                    </span>
+                  )}
+                </div>
+              )}
+              {!profile.professional_role && profile.company && (
+                <p className="text-[15px] font-semibold text-foreground truncate">
+                  {profile.company}
+                </p>
+              )}
+              {profile.headline && (
+                <p className="text-sm text-muted-foreground">{profile.headline}</p>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Bio */}
@@ -192,17 +205,20 @@ export default async function ProfilePage({
               {profile.location}
             </span>
           )}
-          {profile.website_url && (
-            <a
-              href={profile.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-foreground hover:underline"
-            >
-              <LinkIcon className="h-3.5 w-3.5" />
-              {displayDomain(profile.website_url)}
-            </a>
-          )}
+          {profile.website_url && (() => {
+            const href = normalizeWebsiteUrl(profile.website_url);
+            return href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-foreground hover:underline"
+              >
+                <LinkIcon className="h-3.5 w-3.5" />
+                {displayDomain(href)}
+              </a>
+            ) : null;
+          })()}
           {profile.github_username && (
             <a
               href={`https://github.com/${profile.github_username}`}
@@ -313,17 +329,15 @@ export default async function ProfilePage({
       )}
 
       {activeTab === "github" && (
-        <div>
+        <div className="px-4 py-4">
           {profile.github_username ? (
-            <>
-              <GitHubRepos
-                username={profile.github_username}
-                repos={githubRepos}
-              />
-              <div className="px-4 py-4 border-t border-[var(--border-subtle)]">
-                <SyncGithubButton />
-              </div>
-            </>
+            <GitHubRepos
+              username={profile.github_username}
+              repos={githubRepos}
+              hiddenRepos={(profile.github_hidden_repos as string[]) ?? []}
+              isOwner
+              autoSync
+            />
           ) : (
             <div className="py-16 text-center space-y-3">
               <GitFork className="mx-auto h-12 w-12 text-muted-foreground" />
