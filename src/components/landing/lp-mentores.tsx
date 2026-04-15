@@ -14,8 +14,8 @@ const mentores = [
   {
     photo: "/caio-imori.png",
     name: "Caio Imori",
-    role: "Co-fundador do SINAPSE",
-    bio: "Atuação em tecnologia e estratégia de negócios com IA. Experiência em implementação de soluções de inteligência artificial para empresas, com foco em resultados práticos e retorno mensurável.",
+    role: "Co-fundador do SINAPSE · CAIOaaS",
+    bio: "Chief AI Office as a Service. Co-arquiteta o framework SINAPSE e opera o ecossistema de squads de agentes que roda por trás da plataforma. Desenha pipelines de IA ponta a ponta (estratégia, copy, brand, growth, produto) pra donos de negócio que querem sair do discurso e entrar em produção. Foco em decisão assistida por agentes e ROI mensurável.",
   },
 ];
 
