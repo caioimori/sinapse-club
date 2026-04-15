@@ -16,6 +16,8 @@ import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
 import { normalizeWebsiteUrl, displayDomain } from "@/lib/url";
+import { hydrateReposts, mapRowToThreadData } from "@/app/(dashboard)/forum/_thread-query";
+import type { ThreadData } from "@/components/forum/thread-list-item";
 
 export async function generateMetadata({
   params,
@@ -107,32 +109,13 @@ export default async function PublicProfilePage({
     redirect("/profile");
   }
 
-  const postSelect = `
-    id,
-    title,
-    content_plain,
-    image_url,
-    is_sticky,
-    is_solved,
-    replies_count,
-    views_count,
-    likes_count,
-    tags,
-    created_at,
-    last_reply_at,
-    author:profiles!posts_author_id_fkey(
-      username,
-      display_name,
-      avatar_url,
-      professional_role:professional_roles(name, cluster)
-    ),
-    subcategory:forum_subcategories(slug, name),
-    category:forum_categories(slug, name, icon, color)
-  `;
+  // Use the same THREAD_SELECT shape as the main feed so mapRowToThreadData +
+  // hydrateReposts work identically.
+  const postSelect = "id, title, content_plain, image_url, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)";
 
   // Run threads, replies, liked reactions and follow check in parallel
   const [threadsRes, repliesRes, likedReactionsRes, followRes] = await Promise.all([
-    (supabase.from("posts").select(postSelect + ", repost_of, reposts_count").eq("author_id", profile.id).eq("type", "thread").order("created_at", { ascending: false }).limit(30)) as any,
+    (supabase.from("posts").select(postSelect).eq("author_id", profile.id).eq("type", "thread").order("created_at", { ascending: false }).limit(30)) as any,
     (supabase.from("comments").select("id, content, created_at, post_id, posts!post_id(id, title, content_plain)").eq("author_id", profile.id).order("created_at", { ascending: false }).limit(20)) as any,
     (supabase as any).from("reactions").select("target_id").eq("user_id", profile.id).eq("target_type", "post").eq("type", "like").limit(30),
     user
@@ -146,14 +129,14 @@ export default async function PublicProfilePage({
   const isFollowing = !!followRes.data;
 
   // Fetch liked posts only if there are reactions (1 conditional round-trip)
-  let likedThreads: any[] = [];
+  let likedRaw: Record<string, unknown>[] = [];
   if (likedReactions?.length) {
     const { data: lt } = await (supabase
       .from("posts")
       .select(postSelect)
       .in("id", likedReactions.map((r: any) => r.target_id))
       .order("created_at", { ascending: false })) as any;
-    likedThreads = lt || [];
+    likedRaw = lt || [];
   }
 
   const { tab: rawTab } = await searchParams;
@@ -162,7 +145,13 @@ export default async function PublicProfilePage({
       ? rawTab
       : "posts";
 
-  const threads: any[] = threadsData || [];
+  const rawThreads = (threadsData || []) as Record<string, unknown>[];
+  const mappedThreads: ThreadData[] = rawThreads.map((r) => mapRowToThreadData(r, new Set()));
+  const threads: ThreadData[] = await hydrateReposts(supabase, mappedThreads);
+
+  const likedMapped: ThreadData[] = likedRaw.map((r) => mapRowToThreadData(r, new Set()));
+  const likedThreads: ThreadData[] = await hydrateReposts(supabase, likedMapped);
+
   const replies: any[] = repliesData || [];
   const cachedRepos = (profile.github_repos || []) as CachedRepo[];
   const githubRepos = profile.github_username
