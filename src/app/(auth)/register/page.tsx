@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Mail, Inbox } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthSideVisual } from "@/components/auth/auth-side-visual";
 
+const VALID_PLANS = new Set(["mensal", "semestral", "anual"]);
+
+async function redirectToCheckout(plan: string): Promise<string | null> {
+  const res = await fetch("/api/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plan }),
+  });
+  const payload = (await res.json().catch(() => null)) as
+    | { url?: string; error?: string }
+    | null;
+  if (!res.ok || !payload?.url) {
+    return payload?.error ?? "Não foi possível iniciar o checkout.";
+  }
+  window.location.href = payload.url;
+  return null;
+}
+
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan")?.toLowerCase() ?? "";
+  const selectedPlan = VALID_PLANS.has(planParam) ? planParam : null;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -17,6 +40,24 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [showPendingConfirmation, setShowPendingConfirmation] = useState(false);
   const supabase = createClient();
+
+  // If the user already has a session (e.g. returning after email confirmation
+  // or OAuth) and arrived with ?plan=, kick off the checkout immediately.
+  useEffect(() => {
+    if (!selectedPlan) return;
+    let canceled = false;
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session || canceled) return;
+      const err = await redirectToCheckout(selectedPlan);
+      if (err && !canceled) setError(err);
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, [selectedPlan, supabase]);
 
   async function handleResend() {
     setLoading(true);
@@ -114,10 +155,20 @@ export default function RegisterPage() {
       ]);
     }
 
-    // If email confirmation is ON, show pending screen; otherwise land in /forum.
+    // If email confirmation is ON, show pending screen; otherwise start checkout
+    // (when ?plan= was provided) or land in /forum.
     if (signupData.user && !signupData.session) {
       setShowPendingConfirmation(true);
       setLoading(false);
+      return;
+    }
+
+    if (selectedPlan) {
+      const err = await redirectToCheckout(selectedPlan);
+      if (err) {
+        setError(err);
+        setLoading(false);
+      }
       return;
     }
 
@@ -125,11 +176,22 @@ export default function RegisterPage() {
     window.location.href = "/forum";
   }
 
+  function buildOAuthRedirect() {
+    const base = `${window.location.origin}/auth/callback`;
+    // `next` bounces the user back to /register so the useEffect above can
+    // detect the new session and kick off checkout with the chosen plan.
+    if (selectedPlan) {
+      const next = encodeURIComponent(`/register?plan=${selectedPlan}`);
+      return `${base}?next=${next}`;
+    }
+    return base;
+  }
+
   async function handleGoogleSignup() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: buildOAuthRedirect(),
       },
     });
     if (error) setError(error.message);
@@ -139,7 +201,7 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: buildOAuthRedirect(),
         scopes: "read:user user:email public_repo",
       },
     });
