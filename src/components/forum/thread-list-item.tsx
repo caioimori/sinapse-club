@@ -224,9 +224,32 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   async function handleShare(e: React.MouseEvent) {
     e.stopPropagation();
     const url = `${window.location.origin}/forum/thread/${thread.id}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const title = thread.title || "Post no sinapse.club";
+    const shareText = thread.content_plain
+      ? thread.content_plain.slice(0, 140)
+      : "Confira no sinapse.club";
+    // Use Web Share API when available (mobile + some desktop)
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share({ title, text: shareText, url });
+        return;
+      } catch {
+        // User cancelled or share unavailable — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Link copiado");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Nao foi possivel compartilhar");
+    }
+  }
+
+  function handleReply(e: React.MouseEvent) {
+    e.stopPropagation();
+    router.push(`/forum/thread/${thread.id}#reply`);
   }
 
   const timeRef = thread.last_reply_at || thread.created_at;
@@ -348,14 +371,14 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             </div>
           )}
 
-          {/* Image — Twitter-style: natural aspect ratio, rounded, no crop */}
+          {/* Image — Twitter-style: fixed 16:9 ratio with cover crop */}
           {thread.image_url && (
-            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-muted/30">
+            <div className="mt-3 rounded-2xl overflow-hidden border border-[var(--border-subtle)] bg-muted/30 aspect-[16/9] relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={thread.image_url}
                 alt="Imagem do post"
-                className="w-full max-h-[510px] object-contain"
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
               />
             </div>
@@ -382,8 +405,9 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
             {/* Reply */}
             <button
               type="button"
+              onClick={handleReply}
               aria-label={`Responder (${thread.replies_count} respostas)`}
-              className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors"
+              className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors cursor-pointer"
             >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
                 <MessageSquare className="h-[18px] w-[18px]" aria-hidden="true" />

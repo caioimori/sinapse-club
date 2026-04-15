@@ -9,12 +9,13 @@ import { CargoBadge } from "@/components/profile/cargo-badge";
 import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/shared/empty-state";
-import { CalendarDays, MapPin, LinkIcon, GitFork, FileText, MessageCircle, Heart } from "lucide-react";
+import { CalendarDays, MapPin, LinkIcon, GitFork, FileText, MessageCircle, Heart, Briefcase } from "lucide-react";
 import { BackButton } from "@/components/layout/back-button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeWebsiteUrl, displayDomain } from "@/lib/url";
 
 export async function generateMetadata({
   params,
@@ -23,14 +24,6 @@ export async function generateMetadata({
 }) {
   const { username } = await params;
   return { title: `@${username}` };
-}
-
-function displayDomain(url: string) {
-  try {
-    return new URL(url).hostname.replace("www.", "");
-  } catch {
-    return url;
-  }
 }
 
 function formatCount(n: number): string {
@@ -139,7 +132,7 @@ export default async function PublicProfilePage({
 
   // Run threads, replies, liked reactions and follow check in parallel
   const [threadsRes, repliesRes, likedReactionsRes, followRes] = await Promise.all([
-    (supabase.from("posts").select(postSelect).eq("author_id", profile.id).is("parent_id", null).order("created_at", { ascending: false }).limit(30)) as any,
+    (supabase.from("posts").select(postSelect + ", repost_of, reposts_count").eq("author_id", profile.id).eq("type", "thread").order("created_at", { ascending: false }).limit(30)) as any,
     (supabase.from("comments").select("id, content, created_at, post_id, posts!post_id(id, title, content_plain)").eq("author_id", profile.id).order("created_at", { ascending: false }).limit(20)) as any,
     (supabase as any).from("reactions").select("target_id").eq("user_id", profile.id).eq("target_type", "post").eq("type", "like").limit(30),
     user
@@ -237,32 +230,46 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-      {/* Profile info */}
+      {/* Profile info — LinkedIn-style prominence for name / cargo / empresa */}
       <div className="px-4 mt-3 space-y-3">
-        {/* Name + badges */}
+        {/* Name line */}
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h1 className="text-xl font-bold">{displayName}</h1>
+            <h1 className="text-2xl font-extrabold leading-tight">{displayName}</h1>
             <TierBadge tier={profile.role} size="sm" />
-            {profile.professional_role && (
-              <CargoBadge
-                cluster={profile.professional_role.cluster}
-                roleName={profile.professional_role.name}
-                size="sm"
-                className="mt-0.5"
-              />
-            )}
           </div>
           <p className="text-muted-foreground text-sm">@{profile.username}</p>
         </div>
 
-        {/* Headline */}
-        {(profile.headline || profile.company) && (
-          <p className="text-sm text-muted-foreground">
-            {profile.headline}
-            {profile.headline && profile.company ? ` @ ${profile.company}` : ""}
-            {!profile.headline && profile.company ? `@ ${profile.company}` : ""}
-          </p>
+        {/* Cargo + Empresa — destaque LinkedIn-style */}
+        {(profile.professional_role || profile.company || profile.headline) && (
+          <div className="flex items-start gap-2">
+            <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+            <div className="space-y-0.5 min-w-0">
+              {profile.professional_role && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <CargoBadge
+                    cluster={profile.professional_role.cluster}
+                    roleName={profile.professional_role.name}
+                    size="sm"
+                  />
+                  {profile.company && (
+                    <span className="text-[15px] font-semibold text-foreground truncate">
+                      @ {profile.company}
+                    </span>
+                  )}
+                </div>
+              )}
+              {!profile.professional_role && profile.company && (
+                <p className="text-[15px] font-semibold text-foreground truncate">
+                  {profile.company}
+                </p>
+              )}
+              {profile.headline && (
+                <p className="text-sm text-muted-foreground">{profile.headline}</p>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Bio */}
@@ -276,17 +283,20 @@ export default async function PublicProfilePage({
               {profile.location}
             </span>
           )}
-          {profile.website_url && (
-            <a
-              href={profile.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-foreground hover:underline"
-            >
-              <LinkIcon className="h-3.5 w-3.5" />
-              {displayDomain(profile.website_url)}
-            </a>
-          )}
+          {profile.website_url && (() => {
+            const href = normalizeWebsiteUrl(profile.website_url);
+            return href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-foreground hover:underline"
+              >
+                <LinkIcon className="h-3.5 w-3.5" />
+                {displayDomain(href)}
+              </a>
+            ) : null;
+          })()}
           {profile.github_username && (
             <a
               href={`https://github.com/${profile.github_username}`}
@@ -395,11 +405,13 @@ export default async function PublicProfilePage({
       )}
 
       {activeTab === "github" && (
-        <div>
+        <div className="px-4 py-4">
           {profile.github_username ? (
             <GitHubRepos
               username={profile.github_username}
               repos={githubRepos}
+              hiddenRepos={(profile.github_hidden_repos as string[]) ?? []}
+              isOwner={false}
             />
           ) : (
             <div className="py-16 text-center space-y-3">

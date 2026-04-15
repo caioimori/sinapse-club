@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera, Loader2 } from "lucide-react";
+import { LocationAutocomplete } from "@/components/profile/location-autocomplete";
 
 function nanoid(len = 12) {
   return Math.random().toString(36).slice(2, 2 + len);
@@ -254,16 +255,13 @@ export function SettingsForm({
         />
       </div>
 
-      {/* Location */}
+      {/* Location — autocomplete via Photon (OpenStreetMap) */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Localizacao</label>
-        <input
-          type="text"
+        <LocationAutocomplete
           value={location}
-          onChange={e => setLocation(e.target.value)}
-          placeholder="Ex: Sao Paulo, Brasil"
-          maxLength={80}
-          className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-background text-[15px] outline-none focus:border-foreground transition-colors"
+          onChange={setLocation}
+          placeholder="Comece a digitar sua cidade..."
         />
       </div>
 
