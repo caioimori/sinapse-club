@@ -20,7 +20,7 @@ export function LpCtaFinal() {
 
         <div>
           <Link
-            href="#pricing"
+            href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
               "h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold hover:bg-background/90"

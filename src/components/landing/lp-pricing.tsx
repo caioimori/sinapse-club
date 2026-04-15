@@ -206,7 +206,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 export function LpPricing() {
   return (
     <section
-      id="pricing"
+      id="precos"
       className="relative border-t border-border bg-card py-24 sm:py-32"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">

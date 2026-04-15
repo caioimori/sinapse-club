@@ -20,7 +20,7 @@ const problems = [
 
 export function LpProblem() {
   return (
-    <section className="border-t border-border bg-muted/40 py-24 sm:py-32">
+    <section id="problema" className="border-t border-border bg-muted/40 py-24 sm:py-32">
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-16 max-w-2xl">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">

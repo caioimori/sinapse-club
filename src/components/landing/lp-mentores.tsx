@@ -21,10 +21,12 @@ export function LpMentores() {
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-14 text-center">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Quem conduz
+            Fundadores
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Quem vai te guiar
+            Quem construiu isso
+            <br />
+            <span className="text-muted-foreground">opera IA em produção.</span>
           </h2>
         </div>
 

@@ -32,9 +32,9 @@ export function LpSolution() {
             A solução
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Tudo o que falta está
+            Quatro coisas que um grupo
             <br />
-            <span className="text-muted-foreground">dentro de um lugar só.</span>
+            <span className="text-muted-foreground">de WhatsApp nunca vai te dar.</span>
           </h2>
         </div>
 
