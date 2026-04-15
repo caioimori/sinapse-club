@@ -8,8 +8,8 @@ const mentores = [
   {
     photo: "/matheus-soier.png",
     name: "Matheus Soier",
-    role: "Fundador do SINAPSE",
-    bio: "Especialista em IA aplicada, automação e agentes autônomos. Construiu o framework SINAPSE e opera assessoria de marketing digital com IA para dezenas de empresas. Experiência prática em Claude Code, VPS, Playwright e orquestração de agentes em produção.",
+    role: "CEO & Fundador do SINAPSE",
+    bio: "Fundou e lidera o SINAPSE. Arquiteto principal do framework de orquestração de squads de agentes que roda por trás da plataforma e da assessoria de IA aplicada que já atende dezenas de empresas brasileiras. Hands-on em Claude Code, Playwright, VPS e pipelines de agentes autônomos em produção 24/7. Referência em engenharia de contexto, orquestração cross-domain e automação ponta a ponta pra negócios que precisam de resultado antes de virar case de LinkedIn.",
   },
   {
     photo: "/caio-imori.png",
