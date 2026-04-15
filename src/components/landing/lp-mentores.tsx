@@ -9,13 +9,13 @@ const mentores = [
     photo: "/matheus-soier.png",
     name: "Matheus Soier",
     role: "CEO & Fundador do SINAPSE",
-    bio: "Fundou e lidera o SINAPSE. Arquiteto principal do framework de orquestração de squads de agentes que roda por trás da plataforma. Também toca sua própria assessoria de marketing, onde aplica IA em volume real pra escalar entregas de dezenas de clientes brasileiros. Stack hands-on: Claude Code, Playwright, VPS e pipelines de agentes autônomos em produção 24/7. Referência em engenharia de contexto, orquestração cross-domain e automação ponta a ponta.",
+    bio: "Fundou e lidera o SINAPSE. Arquiteto principal do framework de orquestração de squads de agentes que roda por trás da plataforma. Também toca sua própria assessoria de marketing, onde aplica IA em volume real pra escalar entregas de dezenas de clientes. Stack hands-on: Claude Code, Playwright, VPS e pipelines de agentes autônomos em produção 24/7. Referência em growth, tráfego pago, engenharia de contexto e automação ponta a ponta.",
   },
   {
     photo: "/caio-imori.png",
     name: "Caio Imori",
     role: "Co-fundador do SINAPSE · CAIOaaS",
-    bio: "Chief AI Office as a Service. Co-arquiteta o framework SINAPSE e opera o ecossistema de squads de agentes que roda por trás da plataforma. Desenha pipelines de IA ponta a ponta (estratégia, copy, brand, growth, produto) pra donos de negócio que querem sair do discurso e entrar em produção. Foco em decisão assistida por agentes e ROI mensurável.",
+    bio: "Chief AI Office as a Service. Co-arquiteta o framework SINAPSE e opera o ecossistema de squads de agentes que roda por trás da plataforma. Desenha pipelines de IA ponta a ponta (estratégia, copy, brand, produto) pra donos de negócio que querem sair do discurso e entrar em produção. Referência em marketing digital, com foco em decisão assistida por agentes e ROI mensurável.",
   },
 ];
 
