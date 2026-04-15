@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminConfig } from "@/lib/supabase/admin-config";
 import type { Database } from "@/types/database";
 import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
+import { getPlan, parseExternalIdToCycle, type BillingCycle } from "@/lib/abacatepay";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ function maskId(id: string): string {
 }
 
 type JsonRecord = Record<string, unknown>;
-type Plan = "pro" | "premium";
+type Plan = "pro" | "premium" | BillingCycle;
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 type SubscriptionInsert = Database["public"]["Tables"]["subscriptions"]["Insert"];
 type SubscriptionLookup = Pick<
@@ -172,6 +173,11 @@ function getNormalizedIdentifiers(data: JsonRecord | null) {
   const subscription = asRecord(data?.subscription);
   const products = Array.isArray(data?.products) ? data.products : [];
   const firstProduct = asRecord(products[0]);
+  // Billing-level metadata (what we send in /api/checkout) is nested as
+  // `data.metadata.metadata` in the AbacatePay v1 payload because the top-level
+  // metadata slot is reserved by the provider for `fee`/`returnUrl`/etc.
+  const billingMetadata = asRecord(data?.metadata);
+  const nestedMetadata = asRecord(billingMetadata?.metadata);
 
   return {
     externalId:
@@ -190,6 +196,8 @@ function getNormalizedIdentifiers(data: JsonRecord | null) {
       ?? readString(data, "id")
       ?? readString(data, "billingId"),
     subscriptionId: readString(subscription, "id"),
+    metadataPlan: readString(nestedMetadata, "plan"),
+    metadataUserId: readString(nestedMetadata, "userId"),
   };
 }
 
@@ -205,6 +213,7 @@ async function activatePlan(
   customerId: string | null,
   billingId: string,
   plan: Plan,
+  options?: { profileRole?: string; periodDays?: number },
 ) {
   const { data: existingSub } = await subscriptionsTable(supabaseAdmin)
     .select("id, status, stripe_subscription_id")
@@ -225,6 +234,11 @@ async function activatePlan(
     return;
   }
 
+  const now = new Date();
+  const currentPeriodEnd = options?.periodDays
+    ? new Date(now.getTime() + options.periodDays * 24 * 60 * 60 * 1000).toISOString()
+    : undefined;
+
   await subscriptionsTable(supabaseAdmin)
     .upsert(
       {
@@ -233,7 +247,8 @@ async function activatePlan(
         stripe_subscription_id: billingId,
         plan,
         status: "active",
-        current_period_start: new Date().toISOString(),
+        current_period_start: now.toISOString(),
+        ...(currentPeriodEnd ? { current_period_end: currentPeriodEnd } : {}),
       },
       { onConflict: "user_id" },
     );
@@ -242,11 +257,15 @@ async function activatePlan(
     .update({ canceled_at: null })
     .eq("user_id", userId);
 
+  const roleForProfile = (options?.profileRole ?? plan) as Database["public"]["Tables"]["profiles"]["Update"]["role"];
   await profilesTable(supabaseAdmin)
-    .update({ role: plan })
+    .update({ role: roleForProfile })
     .eq("id", userId);
 
-  log("info", `Plan '${plan}' activated for user ${maskId(userId)}`, { billingId });
+  log("info", `Plan '${plan}' activated for user ${maskId(userId)}`, {
+    billingId,
+    currentPeriodEnd,
+  });
 }
 
 async function activateCourse(
@@ -285,6 +304,26 @@ async function processPaidEvent(
 ) {
   const details = getNormalizedIdentifiers(payloadData);
 
+  // Prefer metadata-driven routing (/api/checkout passes { userId, plan }).
+  // Falls back to legacy externalId parsing for other flows.
+  if (details.metadataUserId && details.metadataPlan) {
+    const planDef = getPlan(details.metadataPlan);
+    const billingId = details.subscriptionId ?? details.paymentId;
+    if (!planDef || !billingId) {
+      log("warn", "Metadata-driven webhook missing plan def or billing id", details);
+      return;
+    }
+    await activatePlan(
+      supabaseAdmin,
+      details.metadataUserId,
+      details.customerId,
+      billingId,
+      planDef.id,
+      { profileRole: "pro", periodDays: planDef.periodDays },
+    );
+    return;
+  }
+
   if (!details.externalId || !details.customerEmail) {
     log("warn", "Missing externalId or customerEmail", details);
     return;
@@ -293,6 +332,30 @@ async function processPaidEvent(
   const user = await findUserByEmail(supabaseAdmin, details.customerEmail);
   if (!user) {
     log("warn", `User not found for email: ${maskEmail(details.customerEmail)}`);
+    return;
+  }
+
+  // New sinapse.club forum plans (mensal/semestral/anual) — all grant the same
+  // "pro" access with `current_period_end` derived from the billing cycle.
+  const cycle = parseExternalIdToCycle(details.externalId);
+  if (cycle) {
+    const billingId = details.subscriptionId ?? details.paymentId;
+    const planDef = getPlan(cycle);
+    if (!billingId || !planDef) {
+      log("warn", "sinapse.club plan webhook missing billing id or plan", {
+        ...details,
+        cycle,
+      });
+      return;
+    }
+    await activatePlan(
+      supabaseAdmin,
+      user.id,
+      details.customerId,
+      billingId,
+      cycle,
+      { profileRole: "pro", periodDays: planDef.periodDays },
+    );
     return;
   }
 
