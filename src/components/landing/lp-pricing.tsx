@@ -78,10 +78,10 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col rounded-2xl border p-6 transition-all sm:p-7 lg:p-8",
+        "group relative flex h-full flex-col rounded-2xl border p-6 transition-all duration-500 ease-out sm:p-7 lg:p-8",
         isPopular
-          ? "border-foreground bg-foreground text-background shadow-[var(--shadow-lg)]"
-          : "border-border bg-background text-foreground hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+          ? "border-foreground bg-foreground text-background shadow-[var(--shadow-lg)] hover:-translate-y-1 hover:shadow-[var(--shadow-xl)]"
+          : "border-border bg-background text-foreground hover:-translate-y-1 hover:border-foreground/30 hover:shadow-[var(--shadow-md)]"
       )}
     >
       {/* Popular badge */}

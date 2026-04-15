@@ -67,25 +67,28 @@ export function LpNav() {
         </Link>
 
         {/* Nav links (desktop), scroll-spy */}
-        <nav className="hidden items-center gap-7 md:flex">
-          {navLinks.map((link) => {
+        <nav className="hidden items-center gap-8 md:flex">
+          {navLinks.map((link, i) => {
             const isActive = activeId === link.id;
             return (
               <Link
                 key={link.id}
                 href={link.href}
                 className={cn(
-                  "relative font-mono text-[14px] tracking-tight transition-colors",
+                  "group relative font-mono text-[15px] tracking-tight opacity-0 transition-colors duration-300",
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
+                style={{
+                  animation: `fade-in 0.5s ease-out ${0.1 + i * 0.05}s forwards`,
+                }}
               >
                 {link.label}
                 <span
                   className={cn(
-                    "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-300",
-                    isActive ? "w-full" : "w-0"
+                    "absolute -bottom-1.5 left-0 h-[1.5px] bg-foreground transition-all duration-500 ease-out",
+                    isActive ? "w-full" : "w-0 group-hover:w-full"
                   )}
                 />
               </Link>
@@ -94,12 +97,15 @@ export function LpNav() {
         </nav>
 
         {/* CTAs */}
-        <div className="flex items-center gap-2">
+        <div
+          className="flex items-center gap-2 opacity-0"
+          style={{ animation: "fade-in 0.6s ease-out 0.35s forwards" }}
+        >
           <Link
             href="/login"
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden h-9 px-4 text-[13px] font-medium text-muted-foreground hover:text-foreground sm:inline-flex"
+              "hidden h-9 px-4 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
             )}
           >
             Entrar
@@ -108,7 +114,7 @@ export function LpNav() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold hover:bg-foreground/90"
+              "group h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold shadow-[var(--shadow-xs)] transition-all duration-300 hover:bg-foreground/90 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
             )}
           >
             Ver planos

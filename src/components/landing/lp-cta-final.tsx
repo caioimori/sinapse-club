@@ -22,11 +22,11 @@ export function LpCtaFinal() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold hover:bg-background/90"
+              "group h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold shadow-[var(--shadow-md)] transition-all duration-300 hover:bg-background hover:shadow-[var(--shadow-xl)] hover:-translate-y-0.5"
             )}
           >
             Escolher meu plano
-            <ArrowRight className="ml-2 size-4" />
+            <ArrowRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
           <p className="mt-5 text-xs text-background/50">
             7 dias de garantia · cancele quando quiser · pix, cartão ou boleto

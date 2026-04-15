@@ -35,20 +35,21 @@ export function LpStatBlock() {
             <div
               key={stat.value}
               className={cn(
-                "text-center transition-all duration-700 ease-out sm:text-left",
+                "group text-center transition-all duration-700 ease-out sm:text-left",
                 inView
                   ? "translate-y-0 opacity-100"
                   : "translate-y-3 opacity-0"
               )}
               style={{ transitionDelay: `${i * 120}ms` }}
             >
-              <div className="mb-2 text-5xl font-bold tracking-[-0.03em] text-foreground sm:text-6xl">
+              <div className="mb-2 text-5xl font-bold tracking-[-0.03em] text-foreground transition-all duration-500 group-hover:-translate-y-0.5 sm:text-6xl">
                 {stat.value}
               </div>
               <div className="text-sm font-semibold text-foreground">
                 {stat.label}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{stat.sub}</p>
+              <div className="mt-4 h-px w-8 bg-foreground/20 transition-all duration-500 group-hover:w-16 group-hover:bg-foreground sm:mx-0 mx-auto" />
             </div>
           ))}
         </div>

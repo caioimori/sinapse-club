@@ -52,15 +52,19 @@ export function LpSolution() {
             <div
               key={b.title}
               className={cn(
-                "group rounded-2xl border border-border bg-card p-7 transition-all duration-700 ease-out hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]",
+                "group relative overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-700 ease-out hover:-translate-y-1 hover:border-foreground/20 hover:shadow-[var(--shadow-lg)]",
                 inView
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               )}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
-              <div className="mb-5 inline-flex size-11 items-center justify-center rounded-xl bg-muted">
-                <b.icon className="size-5 text-foreground" />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-foreground/0 blur-2xl transition-all duration-700 group-hover:bg-foreground/[0.04]"
+              />
+              <div className="mb-5 inline-flex size-11 items-center justify-center rounded-xl bg-muted transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-4deg] group-hover:bg-foreground group-hover:text-background">
+                <b.icon className="size-5 transition-colors" />
               </div>
               <h3 className="mb-2 text-lg font-semibold tracking-tight">
                 {b.title}

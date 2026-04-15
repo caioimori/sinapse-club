@@ -44,20 +44,20 @@ export function LpMentores() {
             <div
               key={m.name}
               className={cn(
-                "rounded-2xl border border-border bg-card p-8 transition-all duration-700 ease-out",
+                "group rounded-2xl border border-border bg-card p-8 transition-all duration-700 ease-out hover:-translate-y-1 hover:border-foreground/20 hover:shadow-[var(--shadow-lg)]",
                 inView
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               )}
               style={{ transitionDelay: `${i * 120}ms` }}
             >
-              <div className="mb-5 size-20 overflow-hidden rounded-full border border-border">
+              <div className="mb-5 size-20 overflow-hidden rounded-full border border-border transition-all duration-500 group-hover:scale-105 group-hover:border-foreground">
                 <img
                   src={m.photo}
                   alt={m.name}
                   width={80}
                   height={80}
-                  className="size-full object-cover"
+                  className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
               <h3 className="text-lg font-semibold tracking-tight">{m.name}</h3>

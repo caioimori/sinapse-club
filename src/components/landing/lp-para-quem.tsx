@@ -47,15 +47,15 @@ export function LpParaQuem() {
             <div
               key={p.title}
               className={cn(
-                "rounded-2xl border border-border bg-background p-7 transition-all duration-700 ease-out",
+                "group rounded-2xl border border-border bg-background p-7 transition-all duration-700 ease-out hover:-translate-y-1 hover:border-foreground/20 hover:shadow-[var(--shadow-md)]",
                 inView
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               )}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
-              <div className="mb-5 inline-flex size-10 items-center justify-center rounded-full bg-muted">
-                <p.icon className="size-4 text-foreground" />
+              <div className="mb-5 inline-flex size-10 items-center justify-center rounded-full bg-muted transition-all duration-500 group-hover:scale-110 group-hover:bg-foreground group-hover:text-background">
+                <p.icon className="size-4 transition-colors" />
               </div>
               <h3 className="mb-2 text-base font-semibold tracking-tight">
                 {p.title}

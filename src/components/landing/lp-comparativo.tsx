@@ -142,7 +142,7 @@ export function LpComparativo() {
                     >
                       {col.highlight && (
                         <div className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground shadow-[var(--shadow-md)]">
-                          <Sparkles className="size-3" />
+                          <Sparkles className="size-3 animate-pulse" />
                           Recomendado
                         </div>
                       )}
