@@ -15,11 +15,11 @@ import { LpCtaFinal } from "@/components/landing/lp-cta-final";
 import { LpFooter } from "@/components/landing/lp-footer";
 
 export const metadata: Metadata = {
-  title: "SINAPSE — IA não é sobre ferramenta. É sobre operação.",
+  title: "SINAPSE · IA não é sobre ferramenta. É sobre operação.",
   description:
     "Fórum 24/7 de donos de negócio aplicando IA pra reduzir custo, escalar entrega e ganhar tempo. Sem teoria, sem guru, sem curso de R$ 5k. A partir de R$ 22,90/mês.",
   openGraph: {
-    title: "SINAPSE — IA não é sobre ferramenta. É sobre operação.",
+    title: "SINAPSE · IA não é sobre ferramenta. É sobre operação.",
     description:
       "Fórum 24/7 de donos de negócio aplicando IA na operação real. A partir de R$ 22,90/mês.",
     type: "website",
@@ -29,13 +29,13 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "SINAPSE — Comunidade de IA para negócios",
+        alt: "SINAPSE · Comunidade de IA para negócios",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SINAPSE — IA não é sobre ferramenta. É sobre operação.",
+    title: "SINAPSE · IA não é sobre ferramenta. É sobre operação.",
     description:
       "Fórum 24/7 de donos de negócio aplicando IA. A partir de R$ 22,90/mês.",
     images: ["/opengraph-image"],

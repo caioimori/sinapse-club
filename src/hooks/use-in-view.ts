@@ -14,9 +14,7 @@ export function useInView<T extends HTMLElement = HTMLDivElement>({
   once = true,
 }: Options = {}) {
   const ref = useRef<T | null>(null);
-  const [inView, setInView] = useState(
-    () => typeof IntersectionObserver === "undefined"
-  );
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
     const node = ref.current;

@@ -1,6 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 export function LpFounderStrip() {
   return (
@@ -27,17 +25,9 @@ export function LpFounderStrip() {
         </div>
 
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-          Construído por quem opera IA em produção todo dia — não por quem
+          Construído por quem opera IA em produção todo dia, não por quem
           escreve post sobre.
         </p>
-
-        <Link
-          href="#mentores"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-foreground transition-colors hover:text-foreground/80"
-        >
-          Conheça os fundadores
-          <ArrowRight className="size-3.5" />
-        </Link>
       </div>
     </section>
   );

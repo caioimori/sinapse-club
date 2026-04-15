@@ -47,7 +47,7 @@ export function LpHero() {
               "h-12 bg-foreground text-background border-0 px-7 text-sm font-semibold"
             )}
           >
-            Assinar a partir de R$ 22,90
+            Ver planos
             <ArrowRight className="ml-2 size-4" />
           </Link>
           <Link

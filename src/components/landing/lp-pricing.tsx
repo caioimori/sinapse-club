@@ -92,7 +92,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         </div>
       )}
 
-      {/* Header — label + tagline */}
+      {/* Header: label + tagline */}
       <div className="mb-5">
         <h3
           className={cn(
@@ -186,7 +186,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </ul>
 
-      {/* CTA — pushed to bottom */}
+      {/* CTA: pushed to bottom */}
       <Link
         href={`/register?plan=${plan.id}`}
         className={cn(
@@ -212,8 +212,8 @@ export function LpPricing() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* Header */}
         <div className="mb-14 text-center sm:mb-16">
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            Planos
+          <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
+            {"//precos"}
           </p>
           <h2 className="mb-4 text-4xl font-semibold tracking-tight sm:text-5xl">
             Escolha como você quer começar

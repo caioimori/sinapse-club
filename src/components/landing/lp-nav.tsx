@@ -66,7 +66,7 @@ export function LpNav() {
           <img src="/brand/sinapse.svg" alt="sinapse" className="h-6 w-auto sm:h-7" />
         </Link>
 
-        {/* Nav links (desktop) — scroll-spy */}
+        {/* Nav links (desktop), scroll-spy */}
         <nav className="hidden items-center gap-7 md:flex">
           {navLinks.map((link) => {
             const isActive = activeId === link.id;
@@ -75,7 +75,7 @@ export function LpNav() {
                 key={link.id}
                 href={link.href}
                 className={cn(
-                  "relative font-mono text-[12px] tracking-tight transition-colors",
+                  "relative font-mono text-[14px] tracking-tight transition-colors",
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -111,7 +111,7 @@ export function LpNav() {
               "h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold hover:bg-foreground/90"
             )}
           >
-            Assinar
+            Ver planos
           </Link>
         </div>
       </div>

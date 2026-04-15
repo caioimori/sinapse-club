@@ -14,11 +14,7 @@ export function LpGarantia() {
           <p className="mx-auto max-w-lg text-base font-light leading-relaxed text-muted-foreground">
             Entre, conheça o fórum, leia as discussões, fale com os membros. Se
             nos primeiros 7 dias você não achar que vale o preço de um almoço
-            por mês, devolvemos 100% — sem perguntas, sem burocracia.
-          </p>
-          <p className="mx-auto mt-4 max-w-md text-xs text-muted-foreground">
-            Garantia alinhada ao direito de arrependimento previsto no Código de
-            Defesa do Consumidor (Art. 49).
+            por mês, devolvemos 100%. Sem perguntas, sem burocracia.
           </p>
         </div>
       </div>

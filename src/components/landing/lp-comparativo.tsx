@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, X, Sparkles } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +55,7 @@ const rows: Row[] = [
 const columns = [
   { key: "sinapse" as const, label: "Sinapse", highlight: true },
   { key: "curso" as const, label: "Curso de IA", highlight: false },
-  { key: "grupo" as const, label: "Grupo de WhatsApp", highlight: false },
+  { key: "grupo" as const, label: "WhatsApp", highlight: false },
   { key: "social" as const, label: "Twitter / YouTube", highlight: false },
 ];
 
@@ -64,18 +64,20 @@ function CellView({ cell, highlight }: { cell: Cell; highlight: boolean }) {
     return (
       <span
         className={cn(
-          "inline-flex size-6 items-center justify-center rounded-full",
-          highlight ? "bg-foreground text-background" : "bg-muted text-foreground"
+          "inline-flex size-7 items-center justify-center rounded-full",
+          highlight
+            ? "bg-background text-foreground shadow-[var(--shadow-sm)]"
+            : "bg-muted/70 text-muted-foreground"
         )}
       >
-        <Check className="size-3.5" strokeWidth={3} />
+        <Check className="size-4" strokeWidth={3} />
       </span>
     );
   }
   if (cell.kind === "no") {
     return (
-      <div className="flex flex-col items-center gap-0.5 sm:items-start">
-        <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
+      <div className="flex flex-col items-center gap-1">
+        <span className="inline-flex size-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/60">
           <X className="size-3.5" strokeWidth={2.5} />
         </span>
         {cell.note && (
@@ -87,8 +89,8 @@ function CellView({ cell, highlight }: { cell: Cell; highlight: boolean }) {
   return (
     <span
       className={cn(
-        "text-xs font-semibold",
-        highlight ? "text-foreground" : "text-muted-foreground"
+        "text-sm font-semibold",
+        highlight ? "text-background" : "text-muted-foreground"
       )}
     >
       {cell.value}
@@ -109,8 +111,8 @@ export function LpComparativo() {
     >
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-14 max-w-2xl">
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Comparativo
+          <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
+            {"//comparativo"}
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Por que não usar
@@ -123,54 +125,69 @@ export function LpComparativo() {
           </p>
         </div>
 
-        <div ref={ref} className="overflow-x-auto">
-          <table className="w-full min-w-[640px] border-separate border-spacing-0">
+        <div ref={ref} className="overflow-x-auto pt-6">
+          <table className="w-full min-w-[680px] border-separate border-spacing-0">
             <thead>
               <tr>
-                <th className="w-[32%] py-4 text-left text-xs font-medium uppercase tracking-widest text-muted-foreground" />
+                <th className="w-[30%] py-4 text-left" />
                 {columns.map((col) => (
-                  <th
-                    key={col.key}
-                    className={cn(
-                      "px-4 pb-4 text-center text-xs font-semibold uppercase tracking-widest",
-                      col.highlight
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {col.label}
+                  <th key={col.key} className="relative px-2 pb-4">
+                    <div
+                      className={cn(
+                        "rounded-t-2xl px-4 py-4 text-center text-sm font-semibold tracking-tight",
+                        col.highlight
+                          ? "relative -mt-3 bg-foreground text-background shadow-[var(--shadow-lg)]"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {col.highlight && (
+                        <div className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full bg-background px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground shadow-[var(--shadow-md)]">
+                          <Sparkles className="size-3" />
+                          Recomendado
+                        </div>
+                      )}
+                      {col.label}
+                    </div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
-                <tr
-                  key={row.label}
-                  className={cn(
-                    "transition-all duration-700 ease-out",
-                    inView
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-2 opacity-0"
-                  )}
-                  style={{ transitionDelay: `${i * 80}ms` }}
-                >
-                  <td className="border-t border-border py-5 pr-4 text-sm font-medium text-foreground">
-                    {row.label}
-                  </td>
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={cn(
-                        "border-t border-border px-4 py-5 text-center",
-                        col.highlight && "bg-background"
-                      )}
-                    >
-                      <CellView cell={row[col.key]} highlight={col.highlight} />
+              {rows.map((row, i) => {
+                const isLast = i === rows.length - 1;
+                return (
+                  <tr
+                    key={row.label}
+                    className={cn(
+                      "transition-all duration-700 ease-out",
+                      inView
+                        ? "translate-y-0 opacity-100"
+                        : "translate-y-2 opacity-0"
+                    )}
+                    style={{ transitionDelay: `${i * 80}ms` }}
+                  >
+                    <td className="border-t border-border py-5 pr-4 text-sm font-medium text-foreground">
+                      {row.label}
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className={cn(
+                          "px-2 py-5 text-center align-middle",
+                          col.highlight
+                            ? cn(
+                                "bg-foreground text-background",
+                                isLast && "rounded-b-2xl shadow-[var(--shadow-lg)]"
+                              )
+                            : "border-t border-border"
+                        )}
+                      >
+                        <CellView cell={row[col.key]} highlight={col.highlight} />
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
