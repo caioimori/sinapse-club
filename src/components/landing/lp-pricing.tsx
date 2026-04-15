@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
@@ -191,13 +191,16 @@ function PlanCard({ plan }: { plan: Plan }) {
         href={`/register?plan=${plan.id}`}
         className={cn(
           buttonVariants({ size: "lg" }),
-          "mt-auto h-12 w-full border-0 text-sm font-semibold transition-all",
+          "group/cta mt-auto flex h-12 w-full items-center justify-center gap-2 border-0 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5",
           isPopular
-            ? "bg-background text-foreground [a]:hover:bg-background hover:shadow-[var(--shadow-md)]"
-            : "bg-foreground text-background [a]:hover:bg-foreground/90"
+            ? "bg-background text-foreground [a]:hover:bg-background hover:shadow-[var(--shadow-lg)]"
+            : "bg-foreground text-background [a]:hover:bg-foreground/90 hover:shadow-[var(--shadow-md)]"
         )}
       >
-        {plan.cta}
+        <span className="transition-transform duration-300 group-hover/cta:-translate-x-1">
+          {plan.cta}
+        </span>
+        <ArrowRight className="size-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover/cta:translate-x-0 group-hover/cta:opacity-100" />
       </Link>
     </div>
   );
