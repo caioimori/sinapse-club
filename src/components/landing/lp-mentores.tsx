@@ -9,7 +9,7 @@ const mentores = [
     photo: "/matheus-soier.png",
     name: "Matheus Soier",
     role: "CEO & Fundador do SINAPSE",
-    bio: "Fundou e lidera o SINAPSE. Arquiteto principal do framework de orquestração de squads de agentes que roda por trás da plataforma. Também toca sua própria assessoria de marketing, onde aplica IA em volume real pra escalar entregas de dezenas de clientes. Stack hands-on: Claude Code, Playwright, VPS e pipelines de agentes autônomos em produção 24/7. Referência em growth, tráfego pago, engenharia de contexto e automação ponta a ponta.",
+    bio: "Fundou e lidera o SINAPSE. Arquiteto principal do framework de orquestração de squads de agentes que roda por trás da plataforma. Também toca sua própria assessoria de marketing, onde aplica IA em volume real pra escalar entregas de dezenas de clientes. Stack hands-on: Claude Code, Playwright, VPS e pipelines de agentes autônomos em produção 24/7. Referência em growth, tráfego pago e engenharia de contexto aplicada.",
   },
   {
     photo: "/caio-imori.png",
@@ -62,7 +62,7 @@ export function LpMentores() {
               </div>
               <h3 className="text-lg font-semibold tracking-tight">{m.name}</h3>
               <p className="mb-4 text-xs text-muted-foreground">{m.role}</p>
-              <p className="text-sm font-light leading-relaxed text-muted-foreground">
+              <p className="text-sm font-light leading-relaxed text-pretty text-muted-foreground">
                 {m.bio}
               </p>
             </div>
