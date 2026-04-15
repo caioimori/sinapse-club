@@ -114,7 +114,7 @@ export function LpNav() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "group h-9 bg-foreground text-background border-0 px-4 text-[13px] font-semibold shadow-[var(--shadow-xs)] transition-all duration-300 hover:bg-foreground/90 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
+              "group h-9 bg-foreground text-background [a]:hover:bg-foreground/90 border-0 px-4 text-[13px] font-semibold shadow-[var(--shadow-xs)] transition-all duration-300 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
             )}
           >
             Ver planos

@@ -191,10 +191,10 @@ function PlanCard({ plan }: { plan: Plan }) {
         href={`/register?plan=${plan.id}`}
         className={cn(
           buttonVariants({ size: "lg" }),
-          "mt-auto h-12 w-full border-0 text-sm font-semibold",
+          "mt-auto h-12 w-full border-0 text-sm font-semibold transition-all",
           isPopular
-            ? "bg-background text-foreground hover:bg-background/90"
-            : "bg-foreground text-background hover:bg-foreground/90"
+            ? "bg-background text-foreground [a]:hover:bg-background hover:shadow-[var(--shadow-md)]"
+            : "bg-foreground text-background [a]:hover:bg-foreground/90"
         )}
       >
         {plan.cta}

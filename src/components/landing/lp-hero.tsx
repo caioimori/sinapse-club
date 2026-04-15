@@ -72,7 +72,7 @@ export function LpHero() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "group h-12 bg-foreground text-background border-0 px-7 text-sm font-semibold shadow-[var(--shadow-sm)] transition-all duration-300 hover:bg-foreground/90 hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5"
+              "group h-12 bg-foreground text-background [a]:hover:bg-foreground/90 border-0 px-7 text-sm font-semibold shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5"
             )}
           >
             Ver planos

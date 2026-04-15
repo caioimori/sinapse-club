@@ -22,7 +22,7 @@ export function LpCtaFinal() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "group h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold shadow-[var(--shadow-md)] transition-all duration-300 hover:bg-background hover:shadow-[var(--shadow-xl)] hover:-translate-y-0.5"
+              "group h-12 bg-background text-foreground [a]:hover:bg-background border-0 px-8 text-sm font-semibold shadow-[var(--shadow-md)] transition-all duration-300 hover:shadow-[var(--shadow-xl)] hover:-translate-y-0.5"
             )}
           >
             Escolher meu plano
