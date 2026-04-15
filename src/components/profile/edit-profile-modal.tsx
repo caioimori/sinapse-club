@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { X } from "lucide-react";
-import { SettingsForm } from "@/app/(dashboard)/settings/settings-form";
+import { ProfileEditForm } from "@/components/profile/profile-edit-form";
 
 /**
- * Twitter-style "Edit profile" overlay. Opens from the profile page and
- * reuses the existing SettingsForm in `compact` mode so legal/danger
- * controls stay on /settings and we don't duplicate the save logic.
+ * Twitter-style "Edit profile" overlay. Handles only the visual profile
+ * fields (avatar, banner, name, bio, location, website). Everything else —
+ * username, cargo/role, GitHub, privacy, danger zone — lives on /settings.
  */
 export function EditProfileModal({
   open,
@@ -46,21 +47,30 @@ export function EditProfileModal({
     >
       <div className="relative w-full max-w-xl rounded-2xl bg-background shadow-2xl border border-[var(--border-subtle)] my-auto">
         {/* Header */}
-        <div className="sticky top-0 flex items-center gap-4 border-b border-[var(--border-subtle)] bg-background/95 backdrop-blur px-4 py-3 rounded-t-2xl z-10">
-          <button
-            type="button"
+        <div className="sticky top-0 flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-background/95 backdrop-blur px-4 py-3 rounded-t-2xl z-10">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted/60 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="text-[17px] font-bold">Editar perfil</h2>
+          </div>
+          <Link
+            href="/settings"
             onClick={onClose}
-            aria-label="Fechar"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer"
           >
-            <X className="h-5 w-5" />
-          </button>
-          <h2 className="text-[17px] font-bold">Editar perfil</h2>
+            Mais configuracoes
+          </Link>
         </div>
 
-        {/* Form (compact — sem LGPD/danger zone) */}
+        {/* Minimal form — avatar, banner, nome, bio, location, website */}
         <div className="px-5 py-5">
-          <SettingsForm profile={profile} compact onSaved={onClose} />
+          <ProfileEditForm profile={profile} onSaved={onClose} />
         </div>
       </div>
     </div>
