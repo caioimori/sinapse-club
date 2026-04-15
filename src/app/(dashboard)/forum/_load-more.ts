@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { ThreadData } from "@/components/forum/thread-list-item";
-import { PAGE_SIZE, THREAD_SELECT, mapRowToThreadData } from "./_thread-query";
+import { PAGE_SIZE, THREAD_SELECT, mapRowToThreadData, hydrateReposts } from "./_thread-query";
 
 export async function loadMoreForumThreads(params: {
   page: number;
@@ -81,5 +81,6 @@ export async function loadMoreForumThreads(params: {
     userRepostIds = new Set((reposts ?? []).map((r) => r.repost_of));
   }
 
-  return rows.map((r: Record<string, unknown>) => mapRowToThreadData(r, userRepostIds));
+  const mapped = rows.map((r: Record<string, unknown>) => mapRowToThreadData(r, userRepostIds));
+  return hydrateReposts(supabase, mapped);
 }

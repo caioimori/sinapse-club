@@ -12,7 +12,7 @@ import { Sparkles, UserPlus } from "lucide-react";
 import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
 import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
 import type { Database } from "@/types/database";
-import { PAGE_SIZE, THREAD_SELECT, mapRowToThreadData } from "./_thread-query";
+import { PAGE_SIZE, THREAD_SELECT, mapRowToThreadData, hydrateReposts } from "./_thread-query";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
@@ -195,9 +195,11 @@ async function ForumFeed({
   }
 
   // Transform threads into ThreadData via shared helper
-  const threads: ThreadData[] = rawThreads.map((t: Record<string, unknown>) =>
+  const rawMapped: ThreadData[] = rawThreads.map((t: Record<string, unknown>) =>
     mapRowToThreadData(t, userRepostIds),
   );
+  // Hydrate repost rows with the original post's content/author/media.
+  const threads: ThreadData[] = await hydrateReposts(supabase, rawMapped);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
