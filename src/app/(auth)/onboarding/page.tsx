@@ -45,8 +45,10 @@ export default function OnboardingPage() {
   return (
     <div className="flex min-h-dvh items-center justify-center">
       <div className="w-full max-w-lg space-y-6 rounded-xl border border-border bg-card p-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Bem-vindo ao sinapse.club</h1>
+        <div className="flex flex-col items-center space-y-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sinapse.svg" alt="sinapse" className="h-7 w-auto" />
+          <h1 className="text-2xl font-bold">Bem-vindo</h1>
           <p className="text-muted-foreground">
             Conte um pouco sobre voce para a comunidade. E opcional — voce pode preencher depois no perfil.
           </p>

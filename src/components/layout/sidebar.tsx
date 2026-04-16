@@ -99,8 +99,9 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
     >
       {/* Logo */}
       <div className="flex h-14 items-center px-6" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-        <Link href="/forum" className="text-xl font-bold tracking-tight text-gradient">
-          sinapse.club
+        <Link href="/forum" aria-label="sinapse.club" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sinapse.svg" alt="sinapse" className="h-7 w-auto" />
         </Link>
       </div>
 

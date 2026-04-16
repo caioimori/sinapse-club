@@ -107,8 +107,8 @@ export default function TermosPage() {
                 <p className="text-zinc-400 text-sm mt-1">Acesso limitado ao fórum e feed de conteúdo. Sem custo.</p>
               </div>
               <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-                <p className="font-medium text-white">Plano Membro Pro — R$ 97/mês</p>
-                <p className="text-zinc-400 text-sm mt-1">Acesso completo à comunidade, conteúdos exclusivos, badge de membro e recursos premium. Cobrança mensal recorrente. Cancelamento a qualquer momento, sem multa.</p>
+                <p className="font-medium text-white">Plano Membro — a partir de R$ 29,90/mês</p>
+                <p className="text-zinc-400 text-sm mt-1">Acesso completo à comunidade, conteúdos exclusivos, badge de membro e recursos premium. Disponível nos ciclos mensal (R$ 37,90), semestral (R$ 203,40) e anual (R$ 358,80). Cancelamento a qualquer momento, sem multa.</p>
               </div>
             </div>
             <p className="text-zinc-400 text-sm mt-4">

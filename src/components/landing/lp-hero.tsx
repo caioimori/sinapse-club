@@ -58,7 +58,7 @@ export function LpHero() {
         >
           Fórum 24/7 de donos de negócio aplicando IA pra reduzir custo,
           escalar entrega e ganhar tempo. Sem teoria, sem guru, sem curso
-          de R$ 5k. A partir de R$ 22,90/mês.
+          de R$ 5k. A partir de R$ 29,90/mês.
         </p>
 
         {/* CTAs */}

@@ -45,7 +45,7 @@ const rows: Row[] = [
   },
   {
     label: "Preço previsível",
-    sinapse: { kind: "text", value: "R$ 22,90/mês" },
+    sinapse: { kind: "text", value: "R$ 29,90/mês" },
     curso: { kind: "text", value: "R$ 2-5k upfront" },
     grupo: { kind: "text", value: "Grátis" },
     social: { kind: "text", value: "Grátis" },

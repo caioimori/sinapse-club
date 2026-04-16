@@ -1,72 +1,80 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Crown, Zap, Sparkles, CheckCircle } from "lucide-react";
+import { Check, Zap, Crown, Sparkles, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { CheckoutButton } from "./checkout-button";
+import type { BillingCycle } from "@/lib/abacatepay";
 
 export const metadata = {
   title: "Planos — sinapse.club",
 };
 
-const PLANS = [
+const baseFeatures = [
+  "Fórum completo — todas as categorias",
+  "Curadoria diária de conteúdo IA + negócios",
+  "Ferramentas AI da comunidade",
+  "Marketplace de serviços",
+  "Gamificação, ranks e leaderboard",
+  "7 dias de garantia incondicional",
+];
+
+interface PlanCard {
+  cycle: BillingCycle;
+  label: string;
+  tagline: string;
+  monthlyPrice: number;
+  billingNote: string;
+  savings: string | null;
+  popular: boolean;
+  cta: string;
+  icon: typeof Zap;
+}
+
+const plans: PlanCard[] = [
   {
-    id: "free",
-    name: "Free",
-    price: "R$ 0",
-    period: "para sempre",
-    description: "Comece a explorar a comunidade",
+    cycle: "mensal",
+    label: "Mensal",
+    tagline: "Para testar sem compromisso",
+    monthlyPrice: 37.9,
+    billingNote: "Cobrado todo mês · cancele quando quiser",
+    savings: null,
+    popular: false,
+    cta: "Começar mensal",
     icon: Zap,
-    features: [
-      { label: "Forum (categorias free)", included: true },
-      { label: "3 threads por mes", included: true },
-      { label: "Categorias PRO", included: false },
-      { label: "Marketplace", included: false },
-      { label: "Ferramentas AI", included: false },
-      { label: "Beneficios parceiros", included: false },
-      { label: "Cursos inclusos", included: false },
-      { label: "Suporte prioritario", included: false },
-    ],
   },
   {
-    id: "pro",
-    name: "Pro",
-    price: "R$ 97",
-    period: "/mes",
-    description: "Para quem quer aproveitar tudo",
+    cycle: "semestral",
+    label: "Semestral",
+    tagline: "O mais escolhido",
+    monthlyPrice: 33.9,
+    billingNote: "R$ 203,40 a cada 6 meses · parcelável",
+    savings: "Economize R$ 24",
+    popular: true,
+    cta: "Assinar semestral",
     icon: Crown,
-    highlight: true,
-    features: [
-      { label: "Forum completo", included: true },
-      { label: "Threads ilimitados", included: true },
-      { label: "Todas as categorias", included: true },
-      { label: "Marketplace", included: true },
-      { label: "Ferramentas AI", included: true },
-      { label: "Beneficios parceiros", included: true },
-      { label: "Cursos inclusos", included: false },
-      { label: "Suporte prioritario", included: false },
-    ],
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: "R$ 197",
-    period: "/mes",
-    description: "Acesso total + cursos inclusos",
+    cycle: "anual",
+    label: "Anual",
+    tagline: "Maior economia do plano",
+    monthlyPrice: 29.9,
+    billingNote: "R$ 358,80 por ano · parcelável",
+    savings: "Economize R$ 96",
+    popular: false,
+    cta: "Assinar anual",
     icon: Sparkles,
-    features: [
-      { label: "Tudo do Pro", included: true },
-      { label: "Threads ilimitados", included: true },
-      { label: "Todas as categorias", included: true },
-      { label: "Marketplace", included: true },
-      { label: "Ferramentas AI", included: true },
-      { label: "Beneficios parceiros", included: true },
-      { label: "Cursos inclusos", included: true },
-      { label: "Suporte prioritario", included: true },
-    ],
   },
-] as const;
+];
+
+function formatBRL(value: number) {
+  return value
+    .toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    })
+    .replace(/\s/g, " ");
+}
 
 export default async function PricingPage({
   searchParams,
@@ -87,38 +95,35 @@ export default async function PricingPage({
     currentRole = (profile as any)?.role ?? "free";
   }
 
+  const isPro = currentRole === "pro" || currentRole === "premium";
+
   return (
     <div className="space-y-8 py-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1
-          className="text-3xl font-bold"
-          style={{ letterSpacing: "var(--tracking-tight)" }}
-        >
-          sinapse.club
-        </h1>
+        <h1 className="sr-only">sinapse</h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/sinapse.svg" alt="sinapse" className="mx-auto h-8 w-auto" />
         <p className="text-lg text-muted-foreground">
-          Escolha o plano ideal para voce
+          Escolha o plano ideal para você
         </p>
 
-        {/* Success message after checkout */}
         {success && (
           <div className="mx-auto mt-4 max-w-md rounded-lg border border-foreground/20 bg-foreground/5 px-4 py-3 flex items-center gap-2">
             <CheckCircle className="h-4 w-4 flex-shrink-0" />
             <p className="text-sm">
-              Pagamento realizado com sucesso! Seu plano sera atualizado em instantes.
+              Pagamento realizado com sucesso! Seu plano será atualizado em instantes.
             </p>
           </div>
         )}
 
-        {/* Context message when redirected */}
         {!success && (upgrade || reason) && (
           <div className="mx-auto mt-4 max-w-md rounded-lg border border-border bg-muted/50 px-4 py-3">
             <p className="text-sm text-muted-foreground">
               {reason === "pro-required"
-                ? "Essa funcionalidade requer um plano Pro ou superior."
+                ? "Essa funcionalidade requer um plano ativo."
                 : upgrade
-                  ? `Para acessar ${from || "essa area"}, voce precisa do plano ${upgrade === "premium" ? "Premium" : "Pro"} ou superior.`
+                  ? `Para acessar ${from || "essa área"}, você precisa de um plano ativo.`
                   : null}
             </p>
           </div>
@@ -127,108 +132,79 @@ export default async function PricingPage({
 
       {/* Plan cards */}
       <div className="grid gap-6 sm:grid-cols-3 mx-auto max-w-4xl">
-        {PLANS.map((plan) => {
-          const isCurrent = currentRole === plan.id;
-          const isHighlighted = "highlight" in plan ? (plan as any).highlight : false;
+        {plans.map((plan) => (
+          <div
+            key={plan.cycle}
+            className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
+              plan.popular
+                ? "border-foreground shadow-md"
+                : "border-border"
+            }`}
+            style={{ borderRadius: "var(--radius-card)" }}
+          >
+            {plan.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <Badge className="bg-foreground text-background px-3 py-1 text-xs">
+                  Recomendado
+                </Badge>
+              </div>
+            )}
 
-          return (
-            <div
-              key={plan.id}
-              className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
-                isHighlighted
-                  ? "border-foreground shadow-md"
-                  : "border-border"
-              }`}
-              style={{ borderRadius: "var(--radius-card)" }}
-            >
-              {/* Recommended badge */}
-              {isHighlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-foreground text-background px-3 py-1 text-xs">
-                    Recomendado
-                  </Badge>
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <plan.icon className="h-5 w-5" />
+                <h2 className="text-lg font-semibold">{plan.label}</h2>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span
+                  className="text-3xl font-bold"
+                  style={{ letterSpacing: "var(--tracking-tight)" }}
+                >
+                  {formatBRL(plan.monthlyPrice)}
+                </span>
+                <span className="text-sm text-muted-foreground">/mês</span>
+              </div>
+              <p className="text-sm text-muted-foreground">{plan.tagline}</p>
+              <p className="text-xs text-muted-foreground">{plan.billingNote}</p>
+              {plan.savings && (
+                <Badge variant="secondary" className="text-xs">
+                  {plan.savings}
+                </Badge>
               )}
-
-              {/* Plan header */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <plan.icon className="h-5 w-5" />
-                  <h2 className="text-lg font-semibold">{plan.name}</h2>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span
-                    className="text-3xl font-bold"
-                    style={{ letterSpacing: "var(--tracking-tight)" }}
-                  >
-                    {plan.price}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {plan.period}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {plan.description}
-                </p>
-              </div>
-
-              {/* Features */}
-              <ul className="mt-6 flex-1 space-y-3">
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature.label}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    {feature.included ? (
-                      <Check className="h-4 w-4 flex-shrink-0" />
-                    ) : (
-                      <X className="h-4 w-4 flex-shrink-0 text-muted-foreground/40" />
-                    )}
-                    <span
-                      className={
-                        feature.included ? "" : "text-muted-foreground/60"
-                      }
-                    >
-                      {feature.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <div className="mt-6">
-                {isCurrent ? (
-                  <Button
-                    variant="outline"
-                    className="w-full cursor-default"
-                    disabled
-                  >
-                    Plano atual
-                  </Button>
-                ) : plan.id === "free" ? (
-                  <Button variant="outline" className="w-full" disabled>
-                    Gratuito
-                  </Button>
-                ) : (
-                  <CheckoutButton
-                    plan={plan.id as "pro" | "premium"}
-                    highlighted={isHighlighted}
-                  />
-                )}
-              </div>
             </div>
-          );
-        })}
+
+            <ul className="mt-6 flex-1 space-y-3">
+              {baseFeatures.map((feature) => (
+                <li key={feature} className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6">
+              {isPro ? (
+                <Button variant="outline" className="w-full" disabled>
+                  Plano ativo
+                </Button>
+              ) : (
+                <CheckoutButton
+                  cycle={plan.cycle}
+                  highlighted={plan.popular}
+                  label={plan.cta}
+                />
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Footer note */}
       <p className="text-center text-xs text-muted-foreground">
         Pagamento seguro via PIX pelo AbacatePay.
         <br />
         Cancele a qualquer momento. Sem compromisso.
       </p>
 
-      {/* Back link */}
       {from && (
         <div className="text-center">
           <Link
