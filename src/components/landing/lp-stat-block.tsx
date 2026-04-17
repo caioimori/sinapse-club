@@ -10,7 +10,7 @@ const stats = [
     sub: "Pergunte de tarde, leia respostas à noite",
   },
   {
-    value: "R$ 0,76",
+    value: "R$ 0,98",
     label: "por dia no plano anual",
     sub: "Menos que um café do posto",
   },
