@@ -38,7 +38,7 @@ export function LpSolution() {
       <div className="mx-auto max-w-5xl px-4">
         <div className="mb-16 max-w-2xl">
           <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
-            {"//solucao"}
+            {"//solução"}
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Quatro coisas que um grupo

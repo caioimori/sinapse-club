@@ -35,6 +35,7 @@ export async function updateSession(request: NextRequest) {
     || pathname.startsWith("/admin")
     || pathname.startsWith("/login")
     || pathname.startsWith("/register")
+    || pathname.startsWith("/subscribe")
     || pathname.startsWith("/onboarding")
     || pathname.startsWith("/auth/callback");
 
@@ -53,6 +54,7 @@ export async function updateSession(request: NextRequest) {
     || pathname.startsWith("/api")
     || pathname.startsWith("/login")
     || pathname.startsWith("/register")
+    || pathname.startsWith("/subscribe")
     || pathname.startsWith("/onboarding")
     || pathname.startsWith("/auth/callback");
 

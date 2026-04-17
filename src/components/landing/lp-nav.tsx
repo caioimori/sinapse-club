@@ -6,10 +6,10 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "#solucao", label: "//solucao", id: "solucao" },
+  { href: "#solucao", label: "//solução", id: "solucao" },
   { href: "#mentores", label: "//mentores", id: "mentores" },
   { href: "#comparativo", label: "//comparativo", id: "comparativo" },
-  { href: "#precos", label: "//precos", id: "precos" },
+  { href: "#precos", label: "//preços", id: "precos" },
   { href: "#faq", label: "//faq", id: "faq" },
 ];
 
