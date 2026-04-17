@@ -4,27 +4,28 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { createCheckout } from "./actions";
+import type { BillingCycle } from "@/lib/abacatepay";
 
 interface CheckoutButtonProps {
-  plan: "pro" | "premium";
+  cycle: BillingCycle;
   highlighted?: boolean;
+  label: string;
 }
 
-export function CheckoutButton({ plan, highlighted = false }: CheckoutButtonProps) {
+export function CheckoutButton({ cycle, highlighted = false, label }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   function handleClick() {
     setError(null);
     startTransition(async () => {
-      const result = await createCheckout(plan);
+      const result = await createCheckout(cycle);
 
       if ("error" in result) {
         setError(result.error);
         return;
       }
 
-      // Redirect to AbacatePay checkout
       window.location.href = result.url;
     });
   }
@@ -47,7 +48,7 @@ export function CheckoutButton({ plan, highlighted = false }: CheckoutButtonProp
             Redirecionando...
           </>
         ) : (
-          "Assinar agora"
+          label
         )}
       </Button>
       {error && (

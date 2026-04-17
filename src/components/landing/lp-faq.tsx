@@ -7,19 +7,19 @@ import { cn } from "@/lib/utils";
 const faqs = [
   {
     q: "Preciso saber programar?",
-    a: "Não. O conteúdo é para donos de negócio, gestores e profissionais — não para devs. Direto, prático, sem jargão técnico.",
+    a: "Não. O conteúdo é para donos de negócio, gestores e profissionais, não para devs. Direto, prático, sem jargão técnico.",
   },
   {
     q: "Qual a diferença entre os três planos?",
-    a: "Todos os planos dão o mesmo acesso ao fórum e à comunidade. O que muda é o tempo de compromisso e o desconto. Mensal é flexível, semestral oferece um bom desconto (R$ 3 a menos por mês) e é o mais escolhido, e anual é o de maior economia (R$ 5 a menos por mês).",
+    a: "Todos os planos dão o mesmo acesso ao fórum e à comunidade. O que muda é o tempo de compromisso e o desconto. Mensal é flexível, semestral oferece um bom desconto (R$ 4 a menos por mês) e é o mais escolhido, e anual é o de maior economia (R$ 8 a menos por mês).",
   },
   {
     q: "Como funciona o pagamento dos planos semestral e anual?",
-    a: "Os planos semestral e anual são cobrados em pagamento único — R$ 149,40 (semestral) ou R$ 274,80 (anual). Você pode parcelar no cartão de crédito em até 12x. Se preferir pagar mês a mês sem se comprometer, escolha o plano mensal.",
+    a: "Os planos semestral e anual são cobrados em pagamento único: R$ 203,40 (semestral) ou R$ 358,80 (anual). Você pode parcelar no cartão de crédito em até 12x. Se preferir pagar mês a mês sem se comprometer, escolha o plano mensal.",
   },
   {
     q: "Posso cancelar a qualquer momento?",
-    a: "Sim. Cancelamento imediato, sem multa. Nos primeiros 7 dias você tem o direito legal de arrependimento (CDC, Art. 49) e devolvemos 100% do valor pago, sem perguntas.",
+    a: "Sim. Cancelamento imediato, sem multa. Nos primeiros 7 dias devolvemos 100% do valor pago, sem perguntas.",
   },
   {
     q: "Qual a diferença de um grupo de WhatsApp?",
@@ -96,8 +96,8 @@ export function LpFaq() {
     >
       <div className="mx-auto max-w-3xl px-4">
         <div className="mb-12 text-center">
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Dúvidas
+          <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
+            {"//faq"}
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Perguntas frequentes

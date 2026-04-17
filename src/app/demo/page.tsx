@@ -119,7 +119,8 @@ export default function DemoPage() {
       <aside className="hidden lg:flex w-[280px] flex-shrink-0 flex-col border-r border-border">
         {/* Logo */}
         <div className="flex h-14 items-center px-6 border-b border-border">
-          <span className="text-xl font-bold text-gradient">sinapse.club</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sinapse.svg" alt="sinapse" className="h-6 w-auto" />
         </div>
 
         <ScrollArea className="flex-1 py-4">

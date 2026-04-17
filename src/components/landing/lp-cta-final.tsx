@@ -6,11 +6,10 @@ import { cn } from "@/lib/utils";
 export function LpCtaFinal() {
   return (
     <section className="relative border-t border-border bg-foreground py-24 text-background sm:py-32">
-      <div className="mx-auto max-w-3xl px-4 text-center">
-        <h2 className="mb-6 text-4xl font-semibold tracking-tight sm:text-6xl">
-          Por menos que um almoço.
-          <br />
-          <span className="text-background/60">Por mais do que você imagina.</span>
+      <div className="mx-auto w-full px-4 text-center sm:px-6">
+        <h2 className="mx-auto mb-6 max-w-4xl text-5xl font-semibold tracking-[-0.03em] sm:text-7xl">
+          Por menos que um almoço,{" "}
+          <span className="text-background/60">por mais do que você imagina.</span>
         </h2>
 
         <p className="mx-auto mb-10 max-w-xl text-base font-light leading-relaxed text-background/70 sm:text-lg">
@@ -20,14 +19,14 @@ export function LpCtaFinal() {
 
         <div>
           <Link
-            href="#pricing"
+            href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-12 bg-background text-foreground border-0 px-8 text-sm font-semibold hover:bg-background/90"
+              "group h-12 bg-background text-foreground [a]:hover:bg-background border-0 px-8 text-sm font-semibold shadow-[var(--shadow-md)] transition-all duration-300 hover:shadow-[var(--shadow-xl)] hover:-translate-y-0.5"
             )}
           >
             Escolher meu plano
-            <ArrowRight className="ml-2 size-4" />
+            <ArrowRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
           <p className="mt-5 text-xs text-background/50">
             7 dias de garantia · cancele quando quiser · pix, cartão ou boleto

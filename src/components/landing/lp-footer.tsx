@@ -5,11 +5,10 @@ export function LpFooter() {
     <footer className="border-t border-border bg-background py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="text-base font-semibold tracking-tight">
-              sinapse<span className="text-muted-foreground">.club</span>
-            </span>
-          </div>
+          <Link href="/" aria-label="sinapse.club" className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/sinapse.svg" alt="sinapse" className="h-6 w-auto" />
+          </Link>
 
           <nav className="flex items-center gap-6">
             <Link

@@ -53,8 +53,9 @@ export function Topbar({ profile }: TopbarProps) {
       {/* Left: section title (mobile) / logo (mobile only) */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Mobile: show logo */}
-        <Link href="/forum" className="lg:hidden text-lg font-bold tracking-tight text-gradient">
-          sinapse.club
+        <Link href="/forum" aria-label="sinapse.club" className="lg:hidden flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sinapse.svg" alt="sinapse" className="h-6 w-auto" />
         </Link>
         {/* Desktop: section title */}
         <span className="hidden lg:block text-base font-bold text-foreground">

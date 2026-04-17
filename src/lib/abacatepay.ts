@@ -20,23 +20,23 @@ export const PLANS: Record<BillingCycle, Plan> = {
   mensal: {
     id: "mensal",
     label: "SINAPSE - Acesso mensal",
-    priceCents: 2790,
+    priceCents: 3790,
     periodDays: 30,
-    externalId: "sinapse-forum-mensal-v2",
+    externalId: "sinapse-forum-mensal-v3",
   },
   semestral: {
     id: "semestral",
     label: "SINAPSE - Acesso semestral",
-    priceCents: 14940,
+    priceCents: 20340,
     periodDays: 180,
-    externalId: "sinapse-forum-semestral-v2",
+    externalId: "sinapse-forum-semestral-v3",
   },
   anual: {
     id: "anual",
     label: "SINAPSE - Acesso anual",
-    priceCents: 27480,
+    priceCents: 35880,
     periodDays: 365,
-    externalId: "sinapse-forum-anual-v2",
+    externalId: "sinapse-forum-anual-v3",
   },
 };
 

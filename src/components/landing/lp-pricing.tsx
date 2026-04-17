@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ const plans: Plan[] = [
     id: "mensal",
     label: "Mensal",
     tagline: "Para testar sem compromisso",
-    monthlyPrice: 27.9,
+    monthlyPrice: 37.9,
     billingNote: "Cobrado todo mês · cancele quando quiser",
     savings: null,
     popular: false,
@@ -42,9 +42,9 @@ const plans: Plan[] = [
     id: "semestral",
     label: "Semestral",
     tagline: "O mais escolhido",
-    monthlyPrice: 24.9,
-    billingNote: "R$ 149,40 a cada 6 meses · parcelável",
-    savings: "Economize R$ 18",
+    monthlyPrice: 33.9,
+    billingNote: "R$ 203,40 a cada 6 meses · parcelável",
+    savings: "Economize R$ 24",
     popular: true,
     cta: "Assinar semestral",
     features: baseFeatures,
@@ -53,9 +53,9 @@ const plans: Plan[] = [
     id: "anual",
     label: "Anual",
     tagline: "Maior economia do plano",
-    monthlyPrice: 22.9,
-    billingNote: "R$ 274,80 por ano · parcelável",
-    savings: "Economize R$ 60",
+    monthlyPrice: 29.9,
+    billingNote: "R$ 358,80 por ano · parcelável",
+    savings: "Economize R$ 96",
     popular: false,
     cta: "Assinar anual",
     features: baseFeatures,
@@ -78,10 +78,10 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col rounded-2xl border p-6 transition-all sm:p-7 lg:p-8",
+        "group relative flex h-full flex-col rounded-2xl border p-6 transition-all duration-500 ease-out sm:p-7 lg:p-8",
         isPopular
-          ? "border-foreground bg-foreground text-background shadow-[var(--shadow-lg)]"
-          : "border-border bg-background text-foreground hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+          ? "border-foreground bg-foreground text-background shadow-[var(--shadow-lg)] hover:-translate-y-1 hover:shadow-[var(--shadow-xl)]"
+          : "border-border bg-background text-foreground hover:-translate-y-1 hover:border-foreground/30 hover:shadow-[var(--shadow-md)]"
       )}
     >
       {/* Popular badge */}
@@ -92,7 +92,7 @@ function PlanCard({ plan }: { plan: Plan }) {
         </div>
       )}
 
-      {/* Header — label + tagline */}
+      {/* Header: label + tagline */}
       <div className="mb-5">
         <h3
           className={cn(
@@ -186,18 +186,21 @@ function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </ul>
 
-      {/* CTA — pushed to bottom */}
+      {/* CTA: pushed to bottom */}
       <Link
         href={`/register?plan=${plan.id}`}
         className={cn(
           buttonVariants({ size: "lg" }),
-          "mt-auto h-12 w-full border-0 text-sm font-semibold",
+          "group/cta mt-auto flex h-12 w-full items-center justify-center gap-2 border-0 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5",
           isPopular
-            ? "bg-background text-foreground hover:bg-background/90"
-            : "bg-foreground text-background hover:bg-foreground/90"
+            ? "bg-background text-foreground [a]:hover:bg-background hover:shadow-[var(--shadow-lg)]"
+            : "bg-foreground text-background [a]:hover:bg-foreground/90 hover:shadow-[var(--shadow-md)]"
         )}
       >
-        {plan.cta}
+        <span className="transition-transform duration-300 group-hover/cta:-translate-x-1">
+          {plan.cta}
+        </span>
+        <ArrowRight className="size-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover/cta:translate-x-0 group-hover/cta:opacity-100" />
       </Link>
     </div>
   );
@@ -206,14 +209,14 @@ function PlanCard({ plan }: { plan: Plan }) {
 export function LpPricing() {
   return (
     <section
-      id="pricing"
+      id="precos"
       className="relative border-t border-border bg-card py-24 sm:py-32"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* Header */}
         <div className="mb-14 text-center sm:mb-16">
-          <p className="mb-3 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            Planos
+          <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
+            {"//precos"}
           </p>
           <h2 className="mb-4 text-4xl font-semibold tracking-tight sm:text-5xl">
             Escolha como você quer começar

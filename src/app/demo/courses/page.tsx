@@ -191,8 +191,9 @@ export default function DemoCoursesPage() {
     <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       {/* ═══ TOPBAR ═══ */}
       <header className="flex h-14 items-center justify-between border-b border-border px-6 lg:px-10 shrink-0">
-        <Link href="/demo" className="text-xl font-bold">
-          sinapse.club
+        <Link href="/demo" aria-label="sinapse" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/sinapse.svg" alt="sinapse" className="h-6 w-auto" />
         </Link>
 
         <div className="flex items-center gap-3">

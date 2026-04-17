@@ -136,7 +136,7 @@ export default async function BillingPage({
         ) : (
           <p className="text-sm text-muted-foreground">
             Você ainda não tem um plano ativo.{" "}
-            <Link href="/#pricing" className="font-medium text-foreground underline">
+            <Link href="/#precos" className="font-medium text-foreground underline">
               Ver planos
             </Link>
             .
