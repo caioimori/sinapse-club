@@ -36,6 +36,10 @@ export async function middleware(request: NextRequest) {
   // We pass the modified headers to updateSession by augmenting the request.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  // Next.js renderer reads this from the request to auto-apply the nonce to
+  // its framework scripts and bundles during SSR. Without it, strict-dynamic
+  // blocks every chunk because no script carries the matching nonce.
+  requestHeaders.set("Content-Security-Policy", csp);
 
   // Use NextResponse.next to forward the mutated headers into the Next.js pipeline
   // before auth processing, so layout.tsx can pick up x-nonce via `headers()`.

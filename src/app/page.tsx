@@ -1,4 +1,10 @@
 import type { Metadata } from "next";
+
+// Force dynamic rendering so the per-request CSP nonce can be applied to all
+// framework scripts. Without this the page is statically built and ships HTML
+// with un-nonced <script> tags, which the strict-dynamic CSP then blocks.
+export const dynamic = "force-dynamic";
+
 import { LpNav } from "@/components/landing/lp-nav";
 import { LpHero } from "@/components/landing/lp-hero";
 import { LpFounderStrip } from "@/components/landing/lp-founder-strip";
