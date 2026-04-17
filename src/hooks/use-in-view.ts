@@ -19,7 +19,10 @@ export function useInView<T extends HTMLElement = HTMLDivElement>({
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    if (typeof IntersectionObserver === "undefined") return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -36,7 +39,22 @@ export function useInView<T extends HTMLElement = HTMLDivElement>({
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+
+    // Fallback: IntersectionObserver may skip the initial callback on Next 16 + React 19
+    // when the element is already in viewport at mount. Manually check on next frame.
+    const rafId = requestAnimationFrame(() => {
+      const rect = node.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.top < vh && rect.bottom > 0) {
+        setInView(true);
+        if (once) observer.unobserve(node);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+    };
   }, [rootMargin, threshold, once]);
 
   return { ref, inView };
