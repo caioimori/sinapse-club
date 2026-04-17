@@ -188,7 +188,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 
       {/* CTA: pushed to bottom */}
       <Link
-        href={`/register?plan=${plan.id}`}
+        href={`/subscribe/${plan.id}`}
         className={cn(
           buttonVariants({ size: "lg" }),
           "group/cta mt-auto flex h-12 w-full items-center justify-center gap-2 border-0 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5",
@@ -216,7 +216,7 @@ export function LpPricing() {
         {/* Header */}
         <div className="mb-14 text-center sm:mb-16">
           <p className="mb-3 font-mono text-[13px] tracking-tight text-muted-foreground">
-            {"//precos"}
+            {"//preços"}
           </p>
           <h2 className="mb-4 text-4xl font-semibold tracking-tight sm:text-5xl">
             Escolha como você quer começar

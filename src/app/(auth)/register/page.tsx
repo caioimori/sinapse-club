@@ -181,7 +181,7 @@ export default function RegisterPage() {
     // `next` bounces the user back to /register so the useEffect above can
     // detect the new session and kick off checkout with the chosen plan.
     if (selectedPlan) {
-      const next = encodeURIComponent(`/register?plan=${selectedPlan}`);
+      const next = encodeURIComponent(`/subscribe/${selectedPlan}`);
       return `${base}?next=${next}`;
     }
     return base;
