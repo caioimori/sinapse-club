@@ -22,7 +22,7 @@ export type SubscriptionPlan = "free" | "pro" | "premium" | "mensal" | "semestra
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled" | "unpaid";
 export type EventType = "live" | "office_hours" | "workshop" | "ama";
 export type EventAccess = "free" | "pro" | "premium" | "course";
-export type ReactionType = "like" | "save";
+export type ReactionType = "like" | "save" | "share";
 export type ReactionTarget = "post" | "comment";
 export type RsvpStatus = "confirmed" | "maybe" | "canceled";
 export type ProfessionalCluster = "c-level" | "management" | "specialist" | "operational" | "freelancer" | "entrepreneur" | "student";
@@ -373,6 +373,7 @@ export interface Database {
           reposts_count: number;
           replies_count: number;
           views_count: number;
+          shares_count: number;
           repost_of: string | null;
           quote_of: string | null;
           reply_to: string | null;
