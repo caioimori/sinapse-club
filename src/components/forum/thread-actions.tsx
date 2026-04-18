@@ -35,24 +35,33 @@ export function ThreadActions({
 
   async function handleLike() {
     if (!currentUserId) return;
-    setLiked(!liked);
-    setLikes((l) => (liked ? l - 1 : l + 1));
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikes((l) => (wasLiked ? Math.max(0, l - 1) : l + 1));
 
-    if (!liked) {
-      await (supabase as any).from("reactions").insert({
-        user_id: currentUserId,
-        target_type: "post",
-        target_id: threadId,
-        type: "like",
-      });
-    } else {
-      await (supabase as any)
-        .from("reactions")
-        .delete()
-        .eq("user_id", currentUserId)
-        .eq("target_type", "post")
-        .eq("target_id", threadId)
-        .eq("type", "like");
+    try {
+      if (!wasLiked) {
+        const { error } = await (supabase as any).from("reactions").insert({
+          user_id: currentUserId,
+          target_type: "post",
+          target_id: threadId,
+          type: "like",
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any)
+          .from("reactions")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("target_type", "post")
+          .eq("target_id", threadId)
+          .eq("type", "like");
+        if (error) throw error;
+      }
+    } catch {
+      // Rollback on failure (e.g., bot account, RLS block)
+      setLiked(wasLiked);
+      setLikes((l) => (wasLiked ? l + 1 : Math.max(0, l - 1)));
     }
   }
 
