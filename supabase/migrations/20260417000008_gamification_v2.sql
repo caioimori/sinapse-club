@@ -28,8 +28,11 @@ create table if not exists reputation_events (
 create index if not exists reputation_events_user_created_idx
   on reputation_events(user_id, created_at desc);
 
-create index if not exists reputation_events_donor_day_idx
-  on reputation_events(user_id, donor_id, (created_at::date));
+-- NOTA: indice em (created_at::date) falha com "functions in index expression
+-- must be marked IMMUTABLE" (timestamptz -> date depende do TZ). Usamos um
+-- indice btree em created_at pleno; o planner usa bem pra filtros >= data.
+create index if not exists reputation_events_donor_created_idx
+  on reputation_events(user_id, donor_id, created_at desc);
 
 alter table reputation_events enable row level security;
 
@@ -496,12 +499,14 @@ declare
   r record;
 begin
   -- Agrega XP por user impactado por esse post
+  -- Soma XP LIQUIDO por user (positivos menos reverts ja aplicados via
+  -- cascade de reactions/comments). Se liquido <= 0, ja foi revertido.
   for r in
     select user_id, sum(xp) as total_xp
       from reputation_events
       where source_id = old.id
-        and xp > 0
       group by user_id
+      having sum(xp) > 0
   loop
     if r.total_xp > 0 then
       perform revert_xp(

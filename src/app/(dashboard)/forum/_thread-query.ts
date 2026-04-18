@@ -3,7 +3,7 @@ import type { ThreadData } from "@/components/forum/thread-list-item";
 import type { ProfessionalCluster } from "@/types/database";
 
 export const THREAD_SELECT =
-  "id, title, content_plain, image_url, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)";
+  "id, title, content_plain, image_url, repost_of, is_sticky, is_solved, replies_count, views_count, likes_count, shares_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)";
 
 export const PAGE_SIZE = 20;
 
@@ -91,6 +91,8 @@ export function mapRowToThreadData(
     is_solved: t.is_solved as boolean,
     replies_count: t.replies_count as number,
     views_count: t.views_count as number,
+    likes_count: (t.likes_count as number) ?? 0,
+    shares_count: (t.shares_count as number) ?? 0,
     tags: (t.tags as string[]) ?? [],
     created_at: t.created_at as string,
     last_reply_at: t.last_reply_at as string | null,

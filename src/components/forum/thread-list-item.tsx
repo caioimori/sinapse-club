@@ -86,6 +86,7 @@ export interface ThreadData {
   replies_count: number;
   views_count: number;
   likes_count?: number;
+  shares_count?: number;
   reposts_count?: number;
   is_reposted?: boolean;
   repost_of?: string | null;
