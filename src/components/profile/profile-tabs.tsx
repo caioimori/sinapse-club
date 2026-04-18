@@ -3,37 +3,57 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { GitFork } from "lucide-react";
+import { GitFork, Bookmark } from "lucide-react";
 
-export type ProfileTab = "posts" | "respostas" | "curtidas" | "github";
+export type ProfileTab = "posts" | "respostas" | "curtidas" | "salvos" | "github";
 
-const TABS: { id: ProfileTab; label: React.ReactNode; href: string }[] = [
+const BASE_TABS: { id: ProfileTab; label: React.ReactNode; href: string }[] = [
   { id: "posts", label: "Posts", href: "?tab=posts" },
   { id: "respostas", label: "Respostas", href: "?tab=respostas" },
   { id: "curtidas", label: "Curtidas", href: "?tab=curtidas" },
-  {
-    id: "github",
-    label: (
-      <span className="flex items-center gap-1.5">
-        <GitFork className="h-3.5 w-3.5" />
-        GitHub
-      </span>
-    ),
-    href: "?tab=github",
-  },
 ];
+
+const SALVOS_TAB: { id: ProfileTab; label: React.ReactNode; href: string } = {
+  id: "salvos",
+  label: (
+    <span className="flex items-center gap-1.5">
+      <Bookmark className="h-3.5 w-3.5" />
+      Salvos
+    </span>
+  ),
+  href: "?tab=salvos",
+};
+
+const GITHUB_TAB: { id: ProfileTab; label: React.ReactNode; href: string } = {
+  id: "github",
+  label: (
+    <span className="flex items-center gap-1.5">
+      <GitFork className="h-3.5 w-3.5" />
+      GitHub
+    </span>
+  ),
+  href: "?tab=github",
+};
 
 interface ProfileTabsProps {
   baseHref?: string;
+  showSalvos?: boolean;
 }
 
-export function ProfileTabs({ baseHref = "" }: ProfileTabsProps) {
+export function ProfileTabs({ baseHref = "", showSalvos = false }: ProfileTabsProps) {
   const searchParams = useSearchParams();
   const rawTab = searchParams.get("tab") ?? "posts";
   const activeTab: ProfileTab =
-    rawTab === "respostas" || rawTab === "curtidas" || rawTab === "github"
-      ? rawTab
+    rawTab === "respostas" ||
+    rawTab === "curtidas" ||
+    rawTab === "github" ||
+    (rawTab === "salvos" && showSalvos)
+      ? (rawTab as ProfileTab)
       : "posts";
+
+  const TABS = showSalvos
+    ? [...BASE_TABS, SALVOS_TAB, GITHUB_TAB]
+    : [...BASE_TABS, GITHUB_TAB];
 
   return (
     <div className="flex w-full border-b border-border mt-1">

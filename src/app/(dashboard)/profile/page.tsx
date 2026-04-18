@@ -11,7 +11,7 @@ import { TierBadge } from "@/components/access/tier-badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
 import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
-import { CalendarDays, MapPin, LinkIcon, GitFork, PenLine, MessageCircle, Heart, Settings, Briefcase } from "lucide-react";
+import { CalendarDays, MapPin, LinkIcon, GitFork, PenLine, MessageCircle, Heart, Settings, Briefcase, Bookmark } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
@@ -53,16 +53,18 @@ export default async function ProfilePage({
   // work identically with the /forum feed.
   const postSelect = "id, title, content_plain, image_url, repost_of, is_sticky, is_solved, replies_count, views_count, reposts_count, tags, created_at, last_reply_at, author_id, category_id, subcategory_id, profiles!author_id(username, display_name, avatar_url, reputation, role, professional_role_id, professional_role:professional_roles(name, cluster)), forum_categories!category_id(slug, name, icon, color), forum_subcategories!subcategory_id(slug, name)";
 
-  // Run threads, replies and liked reactions in parallel
-  const [threadsRes, repliesRes, likedReactionsRes] = await Promise.all([
+  // Run threads, replies, liked and saved reactions in parallel
+  const [threadsRes, repliesRes, likedReactionsRes, savedReactionsRes] = await Promise.all([
     (supabase.from("posts").select(postSelect).eq("author_id", user.id).eq("type", "thread").order("created_at", { ascending: false }).limit(30)) as any,
     (supabase.from("comments").select("id, content, created_at, post_id, posts!post_id(id, title, content_plain)").eq("author_id", user.id).order("created_at", { ascending: false }).limit(20)) as any,
     (supabase as any).from("reactions").select("target_id").eq("user_id", user.id).eq("target_type", "post").eq("type", "like").limit(30),
+    (supabase as any).from("reactions").select("target_id, created_at").eq("user_id", user.id).eq("target_type", "post").eq("type", "save").order("created_at", { ascending: false }).limit(50),
   ]);
 
   const threadsData = threadsRes.data;
   const repliesData = repliesRes.data;
   const likedReactions = likedReactionsRes.data;
+  const savedReactions = savedReactionsRes.data;
 
   // Fetch liked posts only if there are reactions (1 round-trip instead of 2)
   let likedRaw: Record<string, unknown>[] = [];
@@ -75,9 +77,19 @@ export default async function ProfilePage({
     likedRaw = lt || [];
   }
 
+  // Fetch saved posts only if there are reactions
+  let savedRaw: Record<string, unknown>[] = [];
+  if (savedReactions?.length) {
+    const { data: st } = await (supabase
+      .from("posts")
+      .select(postSelect)
+      .in("id", savedReactions.map((r: any) => r.target_id))) as any;
+    savedRaw = st || [];
+  }
+
   const { tab: rawTab } = await searchParams;
   const activeTab =
-    rawTab === "respostas" || rawTab === "curtidas" || rawTab === "github"
+    rawTab === "respostas" || rawTab === "curtidas" || rawTab === "salvos" || rawTab === "github"
       ? rawTab
       : "posts";
 
@@ -87,6 +99,9 @@ export default async function ProfilePage({
 
   const likedMapped: ThreadData[] = likedRaw.map((r) => mapRowToThreadData(r, new Set()));
   const likedThreads: ThreadData[] = await hydrateReposts(supabase, likedMapped);
+
+  const savedMapped: ThreadData[] = savedRaw.map((r) => mapRowToThreadData(r, new Set()));
+  const savedThreads: ThreadData[] = await hydrateReposts(supabase, savedMapped);
 
   const replies: any[] = repliesData || [];
   const githubRepos = (profile.github_repos || []) as any[];
@@ -242,7 +257,7 @@ export default async function ProfilePage({
 
       {/* Tabs */}
       <Suspense fallback={<div className="h-14 border-b border-border" />}>
-        <ProfileTabs />
+        <ProfileTabs showSalvos />
       </Suspense>
 
       {/* Tab content */}
@@ -312,6 +327,22 @@ export default async function ProfilePage({
               icon={Heart}
               title="Nenhuma curtida ainda"
               description="Os posts que você curtir aparecem aqui como referência rápida."
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === "salvos" && (
+        <div>
+          {savedThreads.length > 0 ? (
+            savedThreads.map((thread: any) => (
+              <ThreadListItem key={thread.id} thread={thread} showCategory />
+            ))
+          ) : (
+            <EmptyState
+              icon={Bookmark}
+              title="Nenhum post salvo"
+              description="Clique no bookmark pra guardar posts pra ler depois. Eles aparecem aqui."
             />
           )}
         </div>
