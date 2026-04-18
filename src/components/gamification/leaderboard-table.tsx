@@ -16,10 +16,13 @@ export interface LeaderboardEntry {
   role_name: string;
   reputation: number;
   role: string;
+  /** XP ganho na semana (apenas em mode='weekly') */
+  weekly_xp?: number;
 }
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
+  mode?: "all-time" | "weekly";
 }
 
 const RANK_STYLES: Record<number, string> = {
@@ -34,7 +37,8 @@ const RANK_BADGE: Record<number, string> = {
   3: "bg-amber-700/10 text-amber-700 border-amber-700/30",
 };
 
-export function LeaderboardTable({ entries }: LeaderboardTableProps) {
+export function LeaderboardTable({ entries, mode = "all-time" }: LeaderboardTableProps) {
+  const metricLabel = mode === "weekly" ? "XP" : "Rep";
   return (
     <div className="overflow-hidden rounded-lg border border-border">
       {/* Header */}
@@ -43,68 +47,74 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
         <span>Membro</span>
         <span className="hidden sm:block">Cargo</span>
         <span className="text-center">Rank</span>
-        <span className="text-right hidden sm:block">Rep</span>
+        <span className="text-right hidden sm:block">{metricLabel}</span>
       </div>
 
       {/* Rows */}
-      {entries.map((entry) => (
-        <div
-          key={entry.rank}
-          className={cn(
-            "grid grid-cols-[3rem_1fr_auto_auto] items-center gap-4 border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0 sm:grid-cols-[3rem_1fr_auto_6rem_5rem]",
-            RANK_STYLES[entry.rank]
-          )}
-        >
-          {/* Position */}
-          <div className="flex justify-center">
-            {entry.rank <= 3 ? (
-              <span
-                className={cn(
-                  "inline-flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold",
-                  RANK_BADGE[entry.rank]
-                )}
-              >
-                {entry.rank}
-              </span>
-            ) : (
-              <span className="text-sm font-mono text-muted-foreground">
-                {entry.rank}
-              </span>
+      {entries.map((entry) => {
+        const metricValue =
+          mode === "weekly" ? entry.weekly_xp ?? 0 : entry.reputation;
+        return (
+          <div
+            key={entry.rank}
+            className={cn(
+              "grid grid-cols-[3rem_1fr_auto_auto] items-center gap-4 border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 last:border-b-0 sm:grid-cols-[3rem_1fr_auto_6rem_5rem]",
+              RANK_STYLES[entry.rank]
             )}
-          </div>
-
-          {/* Avatar + Name */}
-          <Link href={`/profile/${entry.username}`} className="flex items-center gap-3 min-w-0">
-            <Avatar size="default">
-              {entry.avatar_url ? (
-                <AvatarImage src={entry.avatar_url} alt={entry.display_name} />
-              ) : null}
-              <AvatarFallback>
-                {entry.display_name[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium hover:underline">{entry.display_name}</p>
-              <p className="truncate text-xs text-muted-foreground">@{entry.username}</p>
+          >
+            {/* Position */}
+            <div className="flex justify-center">
+              {entry.rank <= 3 ? (
+                <span
+                  className={cn(
+                    "inline-flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold",
+                    RANK_BADGE[entry.rank]
+                  )}
+                >
+                  {entry.rank}
+                </span>
+              ) : (
+                <span className="text-sm font-mono text-muted-foreground">
+                  {entry.rank}
+                </span>
+              )}
             </div>
-          </Link>
 
-          {/* Cargo Badge */}
-          <div className="hidden sm:block">
-            <CargoBadge cluster={entry.cluster} roleName={entry.role_name} size="sm" />
-          </div>
+            {/* Avatar + Name */}
+            <Link href={`/profile/${entry.username}`} className="flex items-center gap-3 min-w-0">
+              <Avatar size="default">
+                {entry.avatar_url ? (
+                  <AvatarImage src={entry.avatar_url} alt={entry.display_name} />
+                ) : null}
+                <AvatarFallback>
+                  {entry.display_name[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium hover:underline">{entry.display_name}</p>
+                <p className="truncate text-xs text-muted-foreground">@{entry.username}</p>
+              </div>
+            </Link>
 
-          {/* Rank Badge */}
-          <div className="text-center">
-            <UserRankBadge reputation={entry.reputation} role={entry.role} showRep={false} />
-          </div>
+            {/* Cargo Badge */}
+            <div className="hidden sm:block">
+              <CargoBadge cluster={entry.cluster} roleName={entry.role_name} size="sm" />
+            </div>
 
-          {/* Reputation */}
-          <div className="text-right hidden sm:block">
-            <span className="font-mono text-sm tabular-nums">{entry.reputation.toLocaleString("pt-BR")}</span>
+            {/* Rank Badge */}
+            <div className="text-center">
+              <UserRankBadge reputation={entry.reputation} role={entry.role} showRep={false} />
+            </div>
+
+            {/* Metric (rep ou weekly XP) */}
+            <div className="text-right hidden sm:block">
+              <span className="font-mono text-sm tabular-nums">
+                {metricValue.toLocaleString("pt-BR")}
+              </span>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

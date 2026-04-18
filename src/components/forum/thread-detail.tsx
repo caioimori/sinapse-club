@@ -49,6 +49,7 @@ export interface ThreadDetailData {
   likes_count: number;
   replies_count: number;
   views_count: number;
+  shares_count?: number;
   tags: string[];
   created_at: string;
   author: ThreadDetailAuthor;

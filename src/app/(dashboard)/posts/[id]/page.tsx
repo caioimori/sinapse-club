@@ -56,6 +56,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   let isLiked = false;
   let isSaved = false;
   let isFollowingAuthor = false;
+  let likedCommentIds: string[] = [];
   if (user) {
     const { data: reactions } = await supabase
       .from("reactions")
@@ -65,6 +66,19 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       .eq("target_id", id);
     isLiked = (reactions || []).some((r: any) => r.type === "like");
     isSaved = (reactions || []).some((r: any) => r.type === "save");
+
+    // Fetch liked comment ids for this post (flat list)
+    const commentIds = Array.from(commentsMap.keys());
+    if (commentIds.length > 0) {
+      const { data: commentLikes } = await (supabase as any)
+        .from("reactions")
+        .select("target_id")
+        .eq("user_id", user.id)
+        .eq("target_type", "comment")
+        .eq("type", "like")
+        .in("target_id", commentIds);
+      likedCommentIds = (commentLikes || []).map((r: any) => r.target_id);
+    }
 
     // Check if following the post author
     if (post.author?.id) {
@@ -134,7 +148,12 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         </h2>
       </div>
       <div className="px-4 py-4">
-        <CommentSection postId={id} comments={rootComments} />
+        <CommentSection
+          postId={id}
+          comments={rootComments}
+          currentUserId={user?.id}
+          likedCommentIds={likedCommentIds}
+        />
       </div>
     </div>
   );

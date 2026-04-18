@@ -22,7 +22,7 @@ export type SubscriptionPlan = "free" | "pro" | "premium" | "mensal" | "semestra
 export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled" | "unpaid";
 export type EventType = "live" | "office_hours" | "workshop" | "ama";
 export type EventAccess = "free" | "pro" | "premium" | "course";
-export type ReactionType = "like" | "save";
+export type ReactionType = "like" | "save" | "share";
 export type ReactionTarget = "post" | "comment";
 export type RsvpStatus = "confirmed" | "maybe" | "canceled";
 export type ProfessionalCluster = "c-level" | "management" | "specialist" | "operational" | "freelancer" | "entrepreneur" | "student";
@@ -66,12 +66,14 @@ export interface Database {
           replies_count: number;
           reputation: number;
           featured_badge_id: string | null;
+          profile_type: "human" | "curator_bot";
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id: string;
           username: string;
+          profile_type?: "human" | "curator_bot";
           display_name?: string | null;
           avatar_url?: string | null;
           header_url?: string | null;
@@ -120,6 +122,7 @@ export interface Database {
           company?: string | null;
           headline?: string | null;
           featured_badge_id?: string | null;
+          profile_type?: "human" | "curator_bot";
         };
       };
       follows: {
@@ -373,6 +376,7 @@ export interface Database {
           reposts_count: number;
           replies_count: number;
           views_count: number;
+          shares_count: number;
           repost_of: string | null;
           quote_of: string | null;
           reply_to: string | null;

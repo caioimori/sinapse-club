@@ -39,6 +39,7 @@ interface PostAuthor {
   avatar_url: string | null;
   role: string;
   reputation?: number;
+  profile_type?: "human" | "curator_bot";
 }
 
 interface QuotedPost {
@@ -257,12 +258,19 @@ export function PostCard({
             <Link href={`/profile/${author.username}`} className="truncate font-semibold text-sm hover:underline">
               {author.display_name || author.username}
             </Link>
-            {author.role !== "free" && (
+            {author.profile_type === "curator_bot" && (
+              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-border text-muted-foreground">
+                CURADOR
+              </Badge>
+            )}
+            {author.profile_type !== "curator_bot" && author.role !== "free" && (
               <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-border text-muted-foreground">
                 {author.role === "admin" ? "ADMIN" : author.role === "instructor" ? "INST" : "PRO"}
               </Badge>
             )}
-            <UserRankBadge reputation={author.reputation ?? 0} role={author.role} showRep={false} />
+            {author.profile_type !== "curator_bot" && (
+              <UserRankBadge reputation={author.reputation ?? 0} role={author.role} showRep={false} />
+            )}
             <span className="text-sm text-muted-foreground truncate">@{author.username}</span>
             <span className="text-muted-foreground">&middot;</span>
             <Link href={`/posts/${id}`} className="text-sm text-muted-foreground hover:underline whitespace-nowrap">
