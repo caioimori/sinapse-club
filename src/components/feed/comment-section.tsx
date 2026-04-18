@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 
+type SupabaseAny = ReturnType<typeof createClient>;
+
 interface Comment {
   id: string;
   content: string;
@@ -27,14 +29,22 @@ interface Comment {
 interface CommentSectionProps {
   postId: string;
   comments: Comment[];
+  currentUserId?: string;
+  likedCommentIds?: string[];
 }
 
-export function CommentSection({ postId, comments }: CommentSectionProps) {
+export function CommentSection({
+  postId,
+  comments,
+  currentUserId,
+  likedCommentIds = [],
+}: CommentSectionProps) {
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const likedSet = new Set(likedCommentIds);
 
   async function handleSubmit(parentId: string | null = null) {
     if (!text.trim()) return;
@@ -87,6 +97,9 @@ export function CommentSection({ postId, comments }: CommentSectionProps) {
             key={comment.id}
             comment={comment}
             onReply={(id) => { setReplyTo(id); }}
+            currentUserId={currentUserId}
+            initialLiked={likedSet.has(comment.id)}
+            supabase={supabase}
           />
         ))}
       </div>
@@ -98,13 +111,56 @@ function CommentItem({
   comment,
   onReply,
   depth = 0,
+  currentUserId,
+  initialLiked = false,
+  supabase,
 }: {
   comment: Comment;
   onReply: (id: string) => void;
   depth?: number;
+  currentUserId?: string;
+  initialLiked?: boolean;
+  supabase: SupabaseAny;
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(comment.likes_count);
+  const [pending, setPending] = useState(false);
+
+  async function handleLike() {
+    if (!currentUserId || pending) return;
+    const wasLiked = liked;
+    // Otimistic
+    setLiked(!wasLiked);
+    setLikes((l) => (wasLiked ? Math.max(0, l - 1) : l + 1));
+    setPending(true);
+
+    try {
+      if (!wasLiked) {
+        const { error } = await (supabase as any).from("reactions").insert({
+          user_id: currentUserId,
+          target_type: "comment",
+          target_id: comment.id,
+          type: "like",
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any)
+          .from("reactions")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("target_type", "comment")
+          .eq("target_id", comment.id)
+          .eq("type", "like");
+        if (error) throw error;
+      }
+    } catch {
+      // Rollback em erro
+      setLiked(wasLiked);
+      setLikes((l) => (wasLiked ? l + 1 : Math.max(0, l - 1)));
+    } finally {
+      setPending(false);
+    }
+  }
 
   const timeAgo = formatDistanceToNow(new Date(comment.created_at), {
     addSuffix: true,
@@ -128,7 +184,8 @@ function CommentItem({
               variant="ghost"
               size="sm"
               className={cn("h-7 gap-1 text-xs text-muted-foreground px-2", liked && "text-[var(--accent-like)]")}
-              onClick={() => { setLiked(!liked); setLikes(l => liked ? l - 1 : l + 1); }}
+              onClick={handleLike}
+              disabled={!currentUserId || pending}
             >
               <Heart className={cn("h-3 w-3", liked && "fill-current")} />
               {likes > 0 && likes}
@@ -148,7 +205,15 @@ function CommentItem({
 
       {/* Nested replies */}
       {comment.replies?.map((reply) => (
-        <CommentItem key={reply.id} comment={reply} onReply={onReply} depth={depth + 1} />
+        <CommentItem
+          key={reply.id}
+          comment={reply}
+          onReply={onReply}
+          depth={depth + 1}
+          currentUserId={currentUserId}
+          initialLiked={false}
+          supabase={supabase}
+        />
       ))}
     </div>
   );
