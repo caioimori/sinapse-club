@@ -734,6 +734,61 @@ export interface Database {
           threads_created?: number;
         };
       };
+      post_views: {
+        Row: {
+          post_id: string;
+          viewer_id: string;
+          viewed_date: string;
+          created_at: string;
+        };
+        Insert: never; // SECURITY DEFINER only (via increment_post_views RPC)
+        Update: never;
+      };
+      reputation_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          xp: number;
+          event_type: string;
+          source_id: string | null;
+          donor_id: string | null;
+          created_at: string;
+        };
+        Insert: never; // SECURITY DEFINER only
+        Update: never;
+      };
+      xp_daily_caps: {
+        Row: {
+          user_id: string;
+          cap_date: string;
+          posts_count: number;
+        };
+        Insert: never;
+        Update: never;
+      };
+      post_view_milestones: {
+        Row: {
+          post_id: string;
+          milestone: 100 | 500 | 1000;
+          awarded_at: string;
+        };
+        Insert: never;
+        Update: never;
+      };
+    };
+    Views: {
+      v_weekly_leaderboard: {
+        Row: {
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          reputation: number;
+          role: string;
+          professional_role_id: string | null;
+          weekly_xp: number;
+        };
+      };
     };
     Functions: {
       user_has_access: {
@@ -751,6 +806,10 @@ export interface Database {
       user_can_create_thread: {
         Args: Record<string, never>;
         Returns: boolean;
+      };
+      increment_post_views: {
+        Args: { post_id: string };
+        Returns: void;
       };
     };
   };
