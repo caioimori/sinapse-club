@@ -10,6 +10,8 @@ interface ThreadActionsProps {
   threadId: string;
   currentUserId?: string;
   likesCount: number;
+  savesCount?: number;
+  sharesCount?: number;
   isLiked: boolean;
   isSaved: boolean;
 }
@@ -18,12 +20,16 @@ export function ThreadActions({
   threadId,
   currentUserId,
   likesCount,
+  savesCount = 0,
+  sharesCount = 0,
   isLiked: initialLiked,
   isSaved: initialSaved,
 }: ThreadActionsProps) {
   const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(likesCount);
   const [saved, setSaved] = useState(initialSaved);
+  const [saves, setSaves] = useState(savesCount);
+  const [shares, setShares] = useState(sharesCount);
   const [copied, setCopied] = useState(false);
   const supabase = createClient();
 
@@ -52,31 +58,60 @@ export function ThreadActions({
 
   async function handleSave() {
     if (!currentUserId) return;
-    setSaved(!saved);
+    const wasSaved = saved;
+    setSaved(!wasSaved);
+    setSaves((s) => (wasSaved ? Math.max(0, s - 1) : s + 1));
 
-    if (!saved) {
-      await (supabase as any).from("reactions").insert({
-        user_id: currentUserId,
-        target_type: "post",
-        target_id: threadId,
-        type: "save",
-      });
-    } else {
-      await (supabase as any)
-        .from("reactions")
-        .delete()
-        .eq("user_id", currentUserId)
-        .eq("target_type", "post")
-        .eq("target_id", threadId)
-        .eq("type", "save");
+    try {
+      if (!wasSaved) {
+        const { error } = await (supabase as any).from("reactions").insert({
+          user_id: currentUserId,
+          target_type: "post",
+          target_id: threadId,
+          type: "save",
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any)
+          .from("reactions")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("target_type", "post")
+          .eq("target_id", threadId)
+          .eq("type", "save");
+        if (error) throw error;
+      }
+    } catch {
+      setSaved(wasSaved);
+      setSaves((s) => (wasSaved ? s + 1 : Math.max(0, s - 1)));
     }
   }
 
-  function handleShare() {
+  async function handleShare() {
     const url = `${window.location.origin}/forum/thread/${threadId}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // ignora erro de clipboard (browser sem permissao)
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+
+    // Persiste share (idempotente por unique constraint — duplicar nao conta 2x)
+    if (currentUserId) {
+      const prevShares = shares;
+      setShares((s) => s + 1);
+      const { error } = await (supabase as any).from("reactions").insert({
+        user_id: currentUserId,
+        target_type: "post",
+        target_id: threadId,
+        type: "share",
+      });
+      // Se duplicado (unique violation) nao incrementa
+      if (error) {
+        setShares(prevShares);
+      }
+    }
   }
 
   return (
@@ -104,7 +139,7 @@ export function ThreadActions({
         onClick={handleSave}
       >
         <Bookmark className={cn("h-3.5 w-3.5", saved && "fill-current")} />
-        Salvar
+        {saves > 0 ? <span className="tabular-nums">{saves}</span> : "Salvar"}
       </Button>
 
       <Button
@@ -121,7 +156,7 @@ export function ThreadActions({
         ) : (
           <>
             <Share2 className="h-3.5 w-3.5" />
-            Compartilhar
+            {shares > 0 ? <span className="tabular-nums">{shares}</span> : "Compartilhar"}
           </>
         )}
       </Button>

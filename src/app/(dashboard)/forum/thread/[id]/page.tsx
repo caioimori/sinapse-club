@@ -105,6 +105,7 @@ export default async function ForumThreadPage({
     likes_count: thread.likes_count,
     replies_count: thread.replies_count,
     views_count: thread.views_count,
+    shares_count: thread.shares_count ?? 0,
     tags: thread.tags ?? [],
     created_at: thread.created_at,
     author: threadAuthor,
@@ -233,6 +234,7 @@ export default async function ForumThreadPage({
           threadId={threadData.id}
           currentUserId={user?.id}
           likesCount={threadData.likes_count}
+          sharesCount={threadData.shares_count ?? 0}
           isLiked={isLiked}
           isSaved={isSaved}
         />
