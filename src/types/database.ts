@@ -66,12 +66,14 @@ export interface Database {
           replies_count: number;
           reputation: number;
           featured_badge_id: string | null;
+          profile_type: "human" | "curator_bot";
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id: string;
           username: string;
+          profile_type?: "human" | "curator_bot";
           display_name?: string | null;
           avatar_url?: string | null;
           header_url?: string | null;
@@ -120,6 +122,7 @@ export interface Database {
           company?: string | null;
           headline?: string | null;
           featured_badge_id?: string | null;
+          profile_type?: "human" | "curator_bot";
         };
       };
       follows: {
