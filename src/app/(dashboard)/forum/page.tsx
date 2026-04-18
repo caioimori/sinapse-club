@@ -62,19 +62,20 @@ async function ForumFeed({
   const { data: trendingData } = await supabase
     .from("posts")
     .select(
-      "author_id, profiles!author_id(id, username, display_name, avatar_url)",
+      "author_id, profiles!author_id(id, username, display_name, avatar_url, profile_type)",
       { count: "exact" }
     )
     .gte("created_at", oneWeekAgo.toISOString())
     .eq("type", "thread")
     .limit(100) as any;
 
-  // Group by author and count posts
+  // Group by author and count posts (bots nunca aparecem no ranking)
   const authorEngagement: Record<string, { count: number; profile: any }> = {};
   if (trendingData) {
     trendingData.forEach((post: any) => {
-      const authorId = post.author_id;
       const profile = post.profiles;
+      if (profile?.profile_type === "curator_bot") return;
+      const authorId = post.author_id;
       if (!authorEngagement[authorId]) {
         authorEngagement[authorId] = { count: 0, profile };
       }
@@ -139,8 +140,8 @@ async function ForumFeed({
     supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url, headline")
+      .eq("profile_type", "human")
       .neq("id", user?.id ?? "00000000-0000-0000-0000-000000000000")
-      .neq("username", "sinapse-bot")
       .order("level", { ascending: false })
       .limit(6),
     // User reposts — fetched upfront (no thread IDs needed) for O(1) set lookup

@@ -14,6 +14,7 @@ export default async function LeaderboardPage() {
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_roles!professional_role_id(name, cluster)")
+    .eq("profile_type", "human")
     .gt("reputation", 0)
     .order("reputation", { ascending: false })
     .limit(50) as any;
