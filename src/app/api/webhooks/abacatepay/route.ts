@@ -313,6 +313,30 @@ async function processPaidEvent(
       log("warn", "Metadata-driven webhook missing plan def or billing id", details);
       return;
     }
+
+    // Cross-check: se customerEmail presente, garantir que metadataUserId
+    // corresponde ao user do email. Previne privilege escalation por
+    // metadata tampering (atacante passando UUID de vitima no metadata).
+    if (details.customerEmail) {
+      const emailUser = await findUserByEmail(supabaseAdmin, details.customerEmail);
+      if (!emailUser) {
+        log("warn", "Metadata-driven webhook: user not found for customerEmail", {
+          ...details,
+          customerEmail: maskEmail(details.customerEmail),
+        });
+        return;
+      }
+      if (emailUser.id !== details.metadataUserId) {
+        log("error", "Metadata tampering detected: metadataUserId does not match customerEmail owner", {
+          metadataUserId: maskId(details.metadataUserId),
+          emailUserId: maskId(emailUser.id),
+          customerEmail: maskEmail(details.customerEmail),
+          billingId,
+        });
+        return;
+      }
+    }
+
     await activatePlan(
       supabaseAdmin,
       details.metadataUserId,
