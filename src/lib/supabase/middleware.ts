@@ -125,10 +125,23 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const proGatedRoutes = ["/marketplace", "/benefits", "/tools"];
-    const isProGated = proGatedRoutes.some((route) => pathname.startsWith(route));
+    // Hard paywall: rotas pagas (forum + affins) exigem tier pro+.
+    // PAYWALL-2: /forum, /feed, /posts, /spaces, /courses, /calendar
+    // /marketplace, /benefits, /tools ja estavam no gate pro (TIERS-2) — consolidado aqui.
+    const paidGatedRoutes = [
+      "/forum",
+      "/feed",
+      "/posts",
+      "/spaces",
+      "/courses",
+      "/calendar",
+      "/marketplace",
+      "/benefits",
+      "/tools",
+    ];
+    const isPaidGated = paidGatedRoutes.some((route) => pathname.startsWith(route));
 
-    if (isProGated && profile) {
+    if (isPaidGated && profile) {
       const userRank = getRoleRank(profile.role);
       if (userRank < 20) {
         const url = request.nextUrl.clone();
