@@ -29,7 +29,10 @@ export async function GET(
   } = await supabase.auth.getUser();
 
   if (!user || !user.email) {
-    return NextResponse.redirect(new URL(`/register?plan=${plan.id}`, baseUrl));
+    // PAYWALL-5: anonymous visitors go to the new signup-after-payment flow
+    // (/checkout/[plano]). They can still use the OAuth shortcut from there
+    // to land back here with a session.
+    return NextResponse.redirect(new URL(`/checkout/${plan.id}`, baseUrl));
   }
 
   const displayName =

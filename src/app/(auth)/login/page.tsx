@@ -141,12 +141,20 @@ function LoginForm() {
           </form>
 
           {/* Footer */}
-          <p className="text-center text-sm text-muted-foreground">
-            Não tem conta?{" "}
-            <Link href="/register" className="font-medium text-foreground hover:underline">
-              Criar conta
-            </Link>
-          </p>
+          <div className="space-y-2 text-center text-sm">
+            <p className="text-muted-foreground">
+              Ainda nao tem conta?{" "}
+              <Link href="/#precos" className="font-medium text-foreground hover:underline">
+                Ver planos
+              </Link>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Ou{" "}
+              <Link href="/register" className="text-foreground hover:underline">
+                criar conta com senha
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
       <AuthSideVisual />

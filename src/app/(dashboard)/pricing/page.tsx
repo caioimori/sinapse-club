@@ -1,10 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Check, Zap, Crown, Sparkles, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CheckoutButton } from "./checkout-button";
 import type { BillingCycle } from "@/lib/abacatepay";
+
+/**
+ * For anonymous visitors we route to /checkout/[plano] (signup-after-payment
+ * flow). Logged-in users keep using the legacy CheckoutButton -> server
+ * action -> AbacatePay path because they already have a session and a userId.
+ */
 
 export const metadata = {
   title: "Planos — sinapse.club",
@@ -187,12 +194,26 @@ export default async function PricingPage({
                 <Button variant="outline" className="w-full" disabled>
                   Plano ativo
                 </Button>
-              ) : (
+              ) : user ? (
                 <CheckoutButton
                   cycle={plan.cycle}
                   highlighted={plan.popular}
                   label={plan.cta}
                 />
+              ) : (
+                <Link
+                  href={`/checkout/${plan.cycle}`}
+                  className={cn(
+                    buttonVariants({
+                      variant: plan.popular ? "default" : "outline",
+                    }),
+                    "w-full",
+                    plan.popular &&
+                      "bg-foreground text-background [a]:hover:bg-foreground/90",
+                  )}
+                >
+                  {plan.cta}
+                </Link>
               )}
             </div>
           </div>

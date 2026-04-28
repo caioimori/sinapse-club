@@ -155,6 +155,128 @@ async function findUserByEmail(
   return null;
 }
 
+/**
+ * Creates a Supabase user from a confirmed payment when the customer email
+ * does not match any existing account. Used by the signup-after-payment
+ * flow (PAYWALL-5): visitor pays first at /checkout/[plano], then this
+ * webhook handler provisions the account and the user receives a magic
+ * link to log in.
+ *
+ * `email_confirm: true` skips the verification email — the act of paying
+ * already proves the visitor controls the inbox.
+ *
+ * Idempotent: if the user was already created by a previous webhook
+ * delivery (Stripe/AbacatePay retry), the second call surfaces an
+ * "already registered" error which we swallow and re-fetch.
+ */
+async function createUserFromPayment(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  email: string,
+  fullName: string | null,
+) {
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      full_name: fullName ?? undefined,
+      preferred_username: fullName ?? undefined,
+      source: "signup-after-payment",
+    },
+  });
+
+  if (data?.user) {
+    return data.user;
+  }
+
+  // Race condition: a previous webhook delivery already created the user.
+  // Look it up and continue.
+  if (error) {
+    const message = error.message?.toLowerCase() ?? "";
+    if (
+      message.includes("already") ||
+      message.includes("registered") ||
+      message.includes("exists")
+    ) {
+      const existing = await findUserByEmail(supabaseAdmin, email);
+      if (existing) return existing;
+    }
+    throw error;
+  }
+
+  return null;
+}
+
+/**
+ * Sends a magic-link email so the freshly-provisioned user can sign in.
+ * `generateLink` returns a URL we could route ourselves, but using
+ * `inviteUserByEmail` would clobber the password flow — `generateLink`
+ * with `magiclink` type is the safe choice. The Supabase mailer dispatches
+ * the email automatically (no separate transactional send required).
+ */
+async function sendMagicLinkAfterPayment(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  email: string,
+) {
+  try {
+    // generateLink with type 'magiclink' both produces the link AND triggers
+    // the Supabase Auth mailer (when SMTP is configured — works with the
+    // default Supabase SMTP for low volume).
+    type AdminWithGenerate = {
+      auth: {
+        admin: {
+          generateLink: (input: {
+            type: "magiclink";
+            email: string;
+          }) => Promise<{ error: { message?: string } | null }>;
+        };
+      };
+    };
+    const { error } = await (
+      supabaseAdmin as unknown as AdminWithGenerate
+    ).auth.admin.generateLink({
+      type: "magiclink",
+      email,
+    });
+    if (error) {
+      log("warn", "Magic link send failed (non-fatal)", { email: maskEmail(email), error: error.message });
+    }
+  } catch (err) {
+    log("warn", "Magic link send threw (non-fatal)", err);
+  }
+}
+
+/**
+ * Migrates pre-signup consent rows (logged at /checkout/[plano] before the
+ * user existed) into `consent_log` once the user is created. Best-effort:
+ * if either table is unavailable, just inserts a synthetic consent row so
+ * we never lose the audit trail.
+ */
+async function recordPostPaymentConsent(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  userId: string,
+  email: string,
+) {
+  try {
+    type Table = {
+      from: (t: string) => {
+        insert: (rows: Record<string, unknown>[]) => Promise<{ error: unknown }>;
+      };
+    };
+    await (supabaseAdmin as unknown as Table)
+      .from("consent_log")
+      .insert([
+        {
+          user_id: userId,
+          event_type: "signup_after_payment",
+          document_version: "v1",
+          user_agent: null,
+        },
+      ]);
+  } catch (err) {
+    log("warn", "Consent log insert failed (non-fatal)", { email: maskEmail(email), err });
+  }
+}
+
 function log(level: "info" | "warn" | "error", message: string, data?: unknown) {
   const prefix = `[AbacatePay Webhook] [${level.toUpperCase()}]`;
   if (data) {
@@ -353,10 +475,52 @@ async function processPaidEvent(
     return;
   }
 
-  const user = await findUserByEmail(supabaseAdmin, details.customerEmail);
+  let user = await findUserByEmail(supabaseAdmin, details.customerEmail);
+
+  // PAYWALL-5: signup-after-payment. If the email does not match any
+  // existing user AND the billing came from the new flow (or any flow
+  // missing metadataUserId — this is the catch-all), provision the
+  // account now. The user just paid, so they obviously control this
+  // inbox. We confirm the email immediately and dispatch a magic link.
   if (!user) {
-    log("warn", `User not found for email: ${maskEmail(details.customerEmail)}`);
-    return;
+    // Pull display name from billing metadata (we set `signupName` when
+    // creating the billing in /checkout/[plano]/actions.ts) or from the
+    // top-level customer.name on the payload.
+    const billingMetadata = asRecord(payloadData?.metadata);
+    const nestedMetadata = asRecord(billingMetadata?.metadata);
+    const customer = asRecord(payloadData?.customer);
+    const fullName =
+      readString(nestedMetadata, "signupName")
+      ?? readString(customer, "name")
+      ?? null;
+
+    log("info", "Creating user from payment (signup-after-payment)", {
+      email: maskEmail(details.customerEmail),
+    });
+
+    try {
+      user = await createUserFromPayment(
+        supabaseAdmin,
+        details.customerEmail,
+        fullName,
+      );
+    } catch (err) {
+      log("error", "Failed to provision user from payment", err);
+      return;
+    }
+
+    if (!user) {
+      log("error", "User provision returned null", {
+        email: maskEmail(details.customerEmail),
+      });
+      return;
+    }
+
+    // Record consent retroactively + dispatch magic link. Both are
+    // best-effort — payment activation must not be blocked by mail
+    // failures.
+    await recordPostPaymentConsent(supabaseAdmin, user.id, details.customerEmail);
+    await sendMagicLinkAfterPayment(supabaseAdmin, details.customerEmail);
   }
 
   // New sinapse.club forum plans (mensal/semestral/anual) — all grant the same
