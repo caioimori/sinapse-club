@@ -15,7 +15,7 @@ const faqs = [
   },
   {
     q: "Como funciona o pagamento dos planos semestral e anual?",
-    a: "Os planos semestral e anual são cobrados em pagamento único: R$ 203,40 (semestral) ou R$ 358,80 (anual). Você pode parcelar no cartão de crédito em até 12x. Se preferir pagar mês a mês sem se comprometer, escolha o plano mensal.",
+    a: "Os planos semestral e anual são cobrados em pagamento único: R$ 203,40 (semestral) ou R$ 358,80 (anual). Se preferir pagar mês a mês sem se comprometer, escolha o plano mensal.",
   },
   {
     q: "Posso cancelar a qualquer momento?",

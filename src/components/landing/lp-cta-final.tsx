@@ -29,7 +29,7 @@ export function LpCtaFinal() {
             <ArrowRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
           <p className="mt-5 text-xs text-background/50">
-            7 dias de garantia · cancele quando quiser · pix, cartão ou boleto
+            7 dias de garantia · cancele quando quiser
           </p>
         </div>
       </div>
