@@ -54,6 +54,15 @@ export async function GET(request: Request) {
     }
   }
 
-  // Auth error — redirect to login with error
+  // Auth error — se usuario veio do checkout (next=/subscribe/<plano>),
+  // volta pra tela de checkout daquele plano em vez de mandar pro login,
+  // pra nao deixar visitante orfao se cancelar OAuth no popup.
+  const subscribeMatch = next.match(/^\/subscribe\/([a-z]+)/i);
+  if (subscribeMatch) {
+    const plano = subscribeMatch[1];
+    return NextResponse.redirect(
+      `${origin}/checkout/${plano}?canceled=oauth`,
+    );
+  }
   return NextResponse.redirect(`${origin}/login?error=auth_failed`);
 }

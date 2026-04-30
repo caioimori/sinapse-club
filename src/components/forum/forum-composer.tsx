@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Image as ImageIcon, X, Smile, BarChart2, Loader2 } from "lucide-react";
+import { Image as ImageIcon, X, Smile, BarChart2, Loader2, Lock } from "lucide-react";
 import Image from "next/image";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
@@ -12,6 +13,8 @@ import { ComposerPoll, type PollData } from "@/components/forum/composer-poll";
 import { MarkdownContent } from "@/components/forum/markdown-content";
 import { publishBurst } from "@/lib/celebration";
 import type { Database } from "@/types/database";
+
+const PAID_ROLES = new Set(["pro", "premium", "instructor", "admin"]);
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
 
@@ -33,7 +36,49 @@ export function ForumComposer({
   userAvatar,
   userName = "Você",
   userId,
+  userRole,
 }: ForumComposerProps) {
+  const isPaid = userRole ? PAID_ROLES.has(userRole) : false;
+  // Cenario B: free LOGADO ve banner de upgrade no lugar do composer.
+  if (!isPaid) {
+    return (
+      <div className="border-b border-[var(--border-subtle)] px-4 py-4 bg-muted/20">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-background">
+            <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              Pra publicar no forum, voce precisa assinar.
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Veja como funciona explorando os posts abaixo. Quando quiser entrar na conversa, e so escolher um plano.
+            </p>
+            <Link
+              href="/pricing?upgrade=pro&from=/forum"
+              className="mt-2 inline-flex items-center rounded-full bg-foreground px-4 py-1.5 text-xs font-semibold text-background hover:bg-foreground/90 transition-colors"
+            >
+              Ver planos
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <ForumComposerInner
+      userAvatar={userAvatar}
+      userName={userName}
+      userId={userId}
+    />
+  );
+}
+
+function ForumComposerInner({
+  userAvatar,
+  userName = "Você",
+  userId,
+}: Omit<ForumComposerProps, "userRole">) {
   const router = useRouter();
   const supabase = createClient();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -168,8 +213,21 @@ export function ForumComposer({
 
     setLoading(false);
     if (error) {
-      setPublishError("Erro ao publicar. Tente novamente.");
-      toast.error("Não foi possível publicar seu post");
+      // Se for erro de RLS/paywall (RLS bloqueia free), mostra copy explicito.
+      const msg = (error as { message?: string }).message ?? "";
+      const isPaywall = /paywall|policy|permission|forbidden|tier/i.test(msg);
+      if (isPaywall) {
+        setPublishError("Voce precisa assinar pra publicar no forum.");
+        toast.error("Voce precisa assinar pra publicar.", {
+          action: {
+            label: "Ver planos",
+            onClick: () => { window.location.href = "/pricing?upgrade=pro&from=/forum"; },
+          },
+        });
+      } else {
+        setPublishError("Nao foi possivel publicar agora. Tente em alguns segundos.");
+        toast.error("Nao foi possivel publicar seu post");
+      }
       return;
     }
     handleCancel();

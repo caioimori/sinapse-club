@@ -74,7 +74,7 @@ export default async function CheckoutPage({
         <div className="space-y-6">
           <div className="space-y-2">
             <Link
-              href="/#precos"
+              href="/pricing"
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               ← Trocar de plano

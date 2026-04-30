@@ -11,6 +11,7 @@ interface InfiniteThreadFeedProps {
   categorySlug?: string;
   showCategory: boolean;
   pageSize: number;
+  previewMode?: boolean;
 }
 
 export function InfiniteThreadFeed({
@@ -20,6 +21,7 @@ export function InfiniteThreadFeed({
   categorySlug,
   showCategory,
   pageSize,
+  previewMode = false,
 }: InfiniteThreadFeedProps) {
   const [threads, setThreads] = useState<ThreadData[]>(initialThreads);
   const [page, setPage] = useState(1);
@@ -64,7 +66,12 @@ export function InfiniteThreadFeed({
   return (
     <div>
       {threads.map((thread) => (
-        <ThreadListItem key={thread.id} thread={thread} showCategory={showCategory} />
+        <ThreadListItem
+          key={thread.id}
+          thread={thread}
+          showCategory={showCategory}
+          previewMode={previewMode}
+        />
       ))}
       <div ref={sentinelRef} className="h-10" aria-hidden />
       {loading && (

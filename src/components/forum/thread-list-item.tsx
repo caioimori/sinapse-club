@@ -22,6 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CargoBadge } from "@/components/profile/cargo-badge";
 import { UserRankBadge } from "@/components/user-rank-badge";
 import { heartBurst, originFromEvent } from "@/lib/celebration";
+import { PaywallModal, showPaywallToast } from "@/components/access";
 import type { ProfessionalCluster } from "@/types/database";
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/g;
@@ -110,16 +111,22 @@ export interface ThreadData {
 interface ThreadListItemProps {
   thread: ThreadData;
   showCategory?: boolean;
+  /**
+   * Cenario B: usuario nao-pagante ve listing mas conteudo e truncado,
+   * click abre paywall modal e acoes disparam toast paywall.
+   */
+  previewMode?: boolean;
 }
 
 const PREVIEW_LENGTH = 600;
+const PREVIEW_MODE_LENGTH = 140;
 
 function formatCount(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "K";
   return n > 0 ? String(n) : "";
 }
 
-export function ThreadListItem({ thread, showCategory = false }: ThreadListItemProps) {
+export function ThreadListItem({ thread, showCategory = false, previewMode = false }: ThreadListItemProps) {
   const router = useRouter();
   const supabase = createClient();
   const [expanded, setExpanded] = useState(false);
@@ -128,14 +135,23 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
   const [reposted, setReposted] = useState(thread.is_reposted ?? false);
   const [repostsCount, setRepostsCount] = useState(thread.reposts_count ?? 0);
   const [copied, setCopied] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const handleExpand = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    if (previewMode) {
+      setPaywallOpen(true);
+      return;
+    }
     setExpanded(true);
-  }, []);
+  }, [previewMode]);
 
   async function handleLike(e: React.MouseEvent) {
     e.stopPropagation();
+    if (previewMode) {
+      showPaywallToast("curtir posts");
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("Entre para curtir");
@@ -180,6 +196,10 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
   async function handleRepost(e: React.MouseEvent) {
     e.stopPropagation();
+    if (previewMode) {
+      showPaywallToast("repostar");
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("Entre para repostar");
@@ -224,6 +244,10 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
   async function handleShare(e: React.MouseEvent) {
     e.stopPropagation();
+    if (previewMode) {
+      showPaywallToast("compartilhar");
+      return;
+    }
     const url = `${window.location.origin}/forum/thread/${thread.id}`;
     const title = thread.title || "Post no sinapse.club";
     const shareText = thread.content_plain
@@ -250,6 +274,10 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
 
   function handleReply(e: React.MouseEvent) {
     e.stopPropagation();
+    if (previewMode) {
+      showPaywallToast("comentar");
+      return;
+    }
     router.push(`/forum/thread/${thread.id}#reply`);
   }
 
@@ -268,14 +296,26 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
     content &&
     !content.startsWith(thread.title.substring(0, 50));
 
-  const needsExpansion = content.length > PREVIEW_LENGTH;
+  // Em previewMode, corta no PREVIEW_MODE_LENGTH (mais agressivo) e adiciona fade.
+  const effectiveLimit = previewMode ? PREVIEW_MODE_LENGTH : PREVIEW_LENGTH;
+  const needsExpansion = content.length > effectiveLimit;
   const displayContent =
-    expanded || !needsExpansion ? content : content.substring(0, PREVIEW_LENGTH);
+    !previewMode && (expanded || !needsExpansion)
+      ? content
+      : content.substring(0, effectiveLimit);
+
+  function handleCardClick() {
+    if (previewMode) {
+      setPaywallOpen(true);
+      return;
+    }
+    router.push(`/forum/thread/${thread.id}`);
+  }
 
   return (
     <article
       data-thread-id={thread.id}
-      onClick={() => router.push(`/forum/thread/${thread.id}`)}
+      onClick={handleCardClick}
       className="border-b border-[var(--border-subtle)] hover:bg-accent/30 transition-colors duration-150 cursor-pointer"
     >
       {thread.repost_of && (
@@ -286,30 +326,56 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
       )}
       <div className="flex items-start gap-3 px-4 py-3">
         {/* Avatar */}
-        <Link
-          href={`/profile/${thread.author.username}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex-shrink-0 mt-0.5"
-        >
-          <Avatar className="h-10 w-10">
-            {thread.author.avatar_url ? (
-              <AvatarImage src={thread.author.avatar_url} alt={authorName} />
-            ) : null}
-            <AvatarFallback>{authorInitial}</AvatarFallback>
-          </Avatar>
-        </Link>
+        {previewMode ? (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setPaywallOpen(true); }}
+            className="flex-shrink-0 mt-0.5"
+            aria-label="Assine pra ver perfis"
+          >
+            <Avatar className="h-10 w-10">
+              {thread.author.avatar_url ? (
+                <AvatarImage src={thread.author.avatar_url} alt={authorName} />
+              ) : null}
+              <AvatarFallback>{authorInitial}</AvatarFallback>
+            </Avatar>
+          </button>
+        ) : (
+          <Link
+            href={`/profile/${thread.author.username}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-shrink-0 mt-0.5"
+          >
+            <Avatar className="h-10 w-10">
+              {thread.author.avatar_url ? (
+                <AvatarImage src={thread.author.avatar_url} alt={authorName} />
+              ) : null}
+              <AvatarFallback>{authorInitial}</AvatarFallback>
+            </Avatar>
+          </Link>
+        )}
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center gap-1.5 flex-wrap text-sm leading-snug">
-            <Link
-              href={`/profile/${thread.author.username}`}
-              onClick={(e) => e.stopPropagation()}
-              className="font-bold text-foreground hover:underline"
-            >
-              {authorName}
-            </Link>
+            {previewMode ? (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setPaywallOpen(true); }}
+                className="font-bold text-foreground hover:underline"
+              >
+                {authorName}
+              </button>
+            ) : (
+              <Link
+                href={`/profile/${thread.author.username}`}
+                onClick={(e) => e.stopPropagation()}
+                className="font-bold text-foreground hover:underline"
+              >
+                {authorName}
+              </Link>
+            )}
             {thread.author.professional_role && (
               <span onClick={(e) => e.stopPropagation()}>
                 <CargoBadge
@@ -357,17 +423,35 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
           {/* Body */}
           {content && (
             <div className="mt-0.5">
-              <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap break-words">
-                {renderTextWithLinks(displayContent)}
-                {needsExpansion && !expanded && "…"}
-              </p>
-              {needsExpansion && !expanded && (
+              <div className={cn("relative", previewMode && needsExpansion && "max-h-32 overflow-hidden")}>
+                <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap break-words">
+                  {renderTextWithLinks(displayContent)}
+                  {needsExpansion && !expanded && !previewMode && "…"}
+                </p>
+                {/* Fade overlay em previewMode */}
+                {previewMode && needsExpansion && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background to-transparent"
+                  />
+                )}
+              </div>
+              {needsExpansion && !expanded && !previewMode && (
                 <span
                   onClick={handleExpand}
                   className="mt-0.5 inline-block text-sm text-muted-foreground hover:underline cursor-pointer transition-colors"
                 >
                   Mostrar mais
                 </span>
+              )}
+              {previewMode && needsExpansion && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setPaywallOpen(true); }}
+                  className="mt-1 inline-block text-sm font-medium text-foreground hover:underline cursor-pointer transition-colors"
+                >
+                  Assine pra ler completo
+                </button>
               )}
             </div>
           )}
@@ -478,6 +562,15 @@ export function ThreadListItem({ thread, showCategory = false }: ThreadListItemP
           </div>
         </div>
       </div>
+
+      {/* Paywall modal — preview mode (free user) */}
+      {previewMode && (
+        <PaywallModal
+          open={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          fromPath={`/forum/thread/${thread.id}`}
+        />
+      )}
     </article>
   );
 }

@@ -15,6 +15,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { ComposerEmojiPicker } from "@/components/forum/composer-emoji-picker";
 import { ComposerPoll, type PollData } from "@/components/forum/composer-poll";
+import { showPaywallToast } from "@/components/access/paywall-toast";
+
+const PAID_ROLES = new Set(["pro", "premium", "instructor", "admin"]);
 
 const CHAR_LIMIT = 2000;
 
@@ -63,7 +66,7 @@ export function ComposeModal() {
     setUserId(user.id);
     const { data: profile } = await (supabase as any)
       .from("profiles")
-      .select("display_name, username, avatar_url")
+      .select("display_name, username, avatar_url, role")
       .eq("id", user.id)
       .single();
     if (profile) {
@@ -74,10 +77,24 @@ export function ComposeModal() {
   }, [profileLoaded, supabase]);
 
   const openModal = useCallback(async () => {
+    // Cenario B: free nao pode abrir o modal de publicacao.
+    // Bloqueia antes de abrir, mostra toast paywall.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const role = (profile?.role as string) ?? "free";
+    if (!PAID_ROLES.has(role)) {
+      showPaywallToast("publicar no forum");
+      return;
+    }
     setIsOpen(true);
     await loadProfile();
     setTimeout(() => textareaRef.current?.focus(), 80);
-  }, [loadProfile]);
+  }, [loadProfile, supabase]);
 
   useEffect(() => {
     window.addEventListener("open-compose-modal", openModal);
@@ -192,7 +209,17 @@ export function ComposeModal() {
       });
 
     setLoading(false);
-    if (insertError) { setError("Erro ao publicar. Tente novamente."); return; }
+    if (insertError) {
+      const msg = (insertError as { message?: string }).message ?? "";
+      const isPaywall = /paywall|policy|permission|forbidden|tier/i.test(msg);
+      if (isPaywall) {
+        setError("Voce precisa assinar pra publicar no forum.");
+        showPaywallToast("publicar no forum");
+      } else {
+        setError("Nao foi possivel publicar agora. Tente em alguns segundos.");
+      }
+      return;
+    }
     handleClose();
     router.refresh();
   }

@@ -125,11 +125,11 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Hard paywall: rotas pagas (forum + affins) exigem tier pro+.
-    // PAYWALL-2: /forum, /feed, /posts, /spaces, /courses, /calendar
-    // /marketplace, /benefits, /tools ja estavam no gate pro (TIERS-2) — consolidado aqui.
+    // Hard paywall: rotas pagas exigem tier pro+.
+    // /forum FOI REMOVIDO desta lista (Cenario B: preview limitado pra free).
+    // Free pode ver listing, mas mutations sao bloqueadas no server (RLS + actions)
+    // e detail pages redirecionam (forum/thread/[id]/page.tsx).
     const paidGatedRoutes = [
-      "/forum",
       "/feed",
       "/posts",
       "/spaces",

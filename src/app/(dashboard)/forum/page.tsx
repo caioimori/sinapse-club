@@ -12,6 +12,7 @@ import { Sparkles, UserPlus } from "lucide-react";
 import { EmptyState, EmptyStateLinkCta } from "@/components/shared/empty-state";
 import { EmptyStateComposeCta } from "@/components/shared/empty-state-compose-cta";
 import type { Database } from "@/types/database";
+import { isProOrAbove } from "@/lib/access";
 import { PAGE_SIZE, THREAD_SELECT, mapRowToThreadData, hydrateReposts } from "./_thread-query";
 
 type ForumCategory = Database["public"]["Tables"]["forum_categories"]["Row"];
@@ -202,6 +203,10 @@ async function ForumFeed({
   // Hydrate repost rows with the original post's content/author/media.
   const threads: ThreadData[] = await hydrateReposts(supabase, rawMapped);
 
+  // Cenario B: free LOGADO ve listing em previewMode (conteudo cortado,
+  // click abre paywall, acoes disparam toast paywall).
+  const previewMode = !isProOrAbove(userRole);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
       {/* Main feed — border lateral cobre composer + lista */}
@@ -276,6 +281,7 @@ async function ForumFeed({
               categorySlug={categorySlug}
               showCategory={!categorySlug}
               pageSize={PAGE_SIZE}
+              previewMode={previewMode}
             />
           )}
         </div>
