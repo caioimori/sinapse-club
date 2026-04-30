@@ -87,7 +87,7 @@ export async function GET() {
     consent_history: consentRes?.data ?? [],
     _notice:
       "Este arquivo contém todos os seus dados pessoais tratados por sinapse.club. " +
-      "Em caso de dúvidas ou solicitações LGPD adicionais, contate dpo@sinapse.club.",
+      "Em caso de dúvidas ou solicitações LGPD adicionais, contate contato@sinapse.club.",
   };
 
   const filename = `sinapse-export-${user.id}-${Date.now()}.json`;

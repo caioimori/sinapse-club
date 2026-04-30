@@ -34,8 +34,8 @@ export default function PrivacidadePage() {
             </p>
             <p className="text-foreground/80 mt-2">
               <strong className="text-foreground">Contato:</strong>{" "}
-              <a href="mailto:privacidade@sinapse.club" className="text-foreground underline hover:opacity-70">
-                privacidade@sinapse.club
+              <a href="mailto:contato@sinapse.club" className="text-foreground underline hover:opacity-70">
+                contato@sinapse.club
               </a>
             </p>
           </section>
@@ -178,8 +178,8 @@ export default function PrivacidadePage() {
             <ul className="list-disc list-inside space-y-2 text-foreground/80 pl-2">
               <li>
                 Enviar e-mail para{" "}
-                <a href="mailto:privacidade@sinapse.club" className="text-foreground underline hover:opacity-70">
-                  privacidade@sinapse.club
+                <a href="mailto:contato@sinapse.club" className="text-foreground underline hover:opacity-70">
+                  contato@sinapse.club
                 </a>{" "}
                 com o assunto &quot;Direitos LGPD — [seu pedido]&quot;
               </li>
@@ -237,8 +237,8 @@ export default function PrivacidadePage() {
               <p className="text-foreground/80"><strong className="text-foreground">Nome:</strong> Caio Imori</p>
               <p className="text-foreground/80 mt-1">
                 <strong className="text-foreground">E-mail:</strong>{" "}
-                <a href="mailto:privacidade@sinapse.club" className="text-foreground underline hover:opacity-70">
-                  privacidade@sinapse.club
+                <a href="mailto:contato@sinapse.club" className="text-foreground underline hover:opacity-70">
+                  contato@sinapse.club
                 </a>
               </p>
               <p className="text-foreground/80 mt-1"><strong className="text-foreground">Designado em:</strong> 11 de abril de 2026</p>
@@ -258,8 +258,8 @@ export default function PrivacidadePage() {
             <Link href="/termos" className="text-muted-foreground hover:text-foreground transition-colors">
               Termos de Uso
             </Link>
-            <a href="mailto:privacidade@sinapse.club" className="text-muted-foreground hover:text-foreground transition-colors">
-              privacidade@sinapse.club
+            <a href="mailto:contato@sinapse.club" className="text-muted-foreground hover:text-foreground transition-colors">
+              contato@sinapse.club
             </a>
             <Link href="/forum" className="text-muted-foreground hover:text-foreground transition-colors">
               Voltar à plataforma

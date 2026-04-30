@@ -68,7 +68,7 @@ export async function DELETE() {
     console.error('[DELETE /api/account/delete] error:', err);
     return NextResponse.json(
       {
-        error: 'Erro ao excluir conta. Tente novamente ou contate privacidade@sinapse.club',
+        error: 'Erro ao excluir conta. Tente novamente ou contate contato@sinapse.club',
       },
       { status: 500 }
     );

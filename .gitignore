@@ -73,3 +73,7 @@ Thumbs.db
 supabase/.temp/
 
 .vercel
+
+# Runtime scratchpad and lockfiles (never commit)
+.sinapse/scratchpad/
+.claude/scheduled_tasks.lock
