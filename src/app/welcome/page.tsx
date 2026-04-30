@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CheckCircle, Mail } from "lucide-react";
+import { ArrowLeft, CheckCircle, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ResendLink } from "./resend-link";
 
@@ -30,7 +30,16 @@ export default async function WelcomePage({
   const cleanEmail = email?.trim().toLowerCase() ?? null;
 
   return (
-    <div className="min-h-dvh bg-background flex items-center justify-center px-4 py-12">
+    <div className="min-h-dvh bg-background flex items-center justify-center px-4 py-12 relative">
+      <div className="absolute top-6 left-6">
+        <Link
+          href="/pricing"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Voltar pra escolher outro plano
+        </Link>
+      </div>
       <div className="w-full max-w-md space-y-6 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-foreground/5 border border-foreground/10">
           <CheckCircle className="h-7 w-7" aria-hidden="true" />

@@ -1,25 +1,29 @@
 import { redirect } from "next/navigation";
-import { checkPaidTier, PAYWALL_ERROR_CODES } from "@/lib/access/paywall";
+import { createClient } from "@/lib/supabase/server";
 
 /**
- * Layout do forum — defense in depth (layer 3).
- * Camada 1: middleware redireciona free antes de renderizar.
- * Camada 2: RLS do Supabase (user_is_paid_member) bloqueia query.
- * Camada 3 (este arquivo): fallback caso middleware falhe (edge cases de routing),
- * previne flash de UI vazia para users free que driblem o middleware.
+ * Layout do forum — Cenario B (preview limitado pra free).
+ *
+ * Free LOGADO: pode ver listing do forum, mas detail pages redirecionam
+ * pra /pricing e mutations sao bloqueadas no server (paywall.ts + RLS).
+ * Anonimo: redireciona pra login (precisa de auth pra abrir o forum).
+ *
+ * Defesa em profundidade:
+ * - Middleware: exige auth, nao bloqueia mais por tier em /forum.
+ * - Layout (aqui): exige auth.
+ * - Server actions (forum/actions.ts): requirePaidUser() em mutations.
+ * - Thread detail page: redirect free pra /pricing.
  */
 export default async function ForumLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const result = await checkPaidTier();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!result.ok) {
-    if (result.reason === PAYWALL_ERROR_CODES.UNAUTHENTICATED) {
-      redirect("/login?redirect=/forum");
-    }
-    redirect("/pricing?upgrade=pro&from=/forum");
+  if (!user) {
+    redirect("/login?redirect=/forum");
   }
 
   return <>{children}</>;

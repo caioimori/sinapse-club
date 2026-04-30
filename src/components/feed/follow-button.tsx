@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { showPaywallToast } from "@/components/access/paywall-toast";
+
+const PAID_ROLES = new Set(["pro", "premium", "instructor", "admin"]);
 
 interface FollowButtonProps {
   targetUserId: string;
@@ -21,6 +24,19 @@ export function FollowButton({ targetUserId, isFollowing: initial, className }: 
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
+
+    // Cenario B: free nao pode seguir pessoas.
+    const { data: profile } = await (supabase as any)
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const role = (profile?.role as string) ?? "free";
+    if (!PAID_ROLES.has(role)) {
+      setLoading(false);
+      showPaywallToast("seguir pessoas");
+      return;
+    }
 
     if (following) {
       await (supabase as any)

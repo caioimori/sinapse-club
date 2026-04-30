@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { isProOrAbove } from "@/lib/access";
 import { ThreadDetail } from "@/components/forum/thread-detail";
 import type { ThreadDetailData, ThreadDetailAuthor } from "@/components/forum/thread-detail";
 import { ThreadReply } from "@/components/forum/thread-reply";
@@ -47,6 +48,12 @@ export default async function ForumThreadPage({
       .eq("id", user.id)
       .single();
     currentUserRole = profileData?.role ?? undefined;
+  }
+
+  // Cenario B: free pode ver listing do forum mas NAO o conteudo completo
+  // de uma thread. Redireciona pra pricing com contexto de origem.
+  if (!isProOrAbove(currentUserRole ?? "free")) {
+    redirect(`/pricing?upgrade=pro&from=${encodeURIComponent(`/forum/thread/${id}`)}`);
   }
 
   // Fetch thread and comments in parallel — professional_roles embedded in joins

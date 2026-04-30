@@ -55,7 +55,7 @@ const plans: PlanCard[] = [
     label: "Semestral",
     tagline: "O mais escolhido",
     monthlyPrice: 33.9,
-    billingNote: "R$ 203,40 a cada 6 meses · parcelável",
+    billingNote: "R$ 203,40 a cada 6 meses",
     savings: "Economize R$ 24",
     popular: true,
     cta: "Assinar semestral",
@@ -66,7 +66,7 @@ const plans: PlanCard[] = [
     label: "Anual",
     tagline: "Maior economia do plano",
     monthlyPrice: 29.9,
-    billingNote: "R$ 358,80 por ano · parcelável",
+    billingNote: "R$ 358,80 por ano",
     savings: "Economize R$ 96",
     popular: false,
     cta: "Assinar anual",
@@ -88,7 +88,7 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ upgrade?: string; from?: string; reason?: string; success?: string }>;
 }) {
-  const { upgrade, from, reason, success } = await searchParams;
+  const { from, success } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -124,17 +124,6 @@ export default async function PricingPage({
           </div>
         )}
 
-        {!success && (upgrade || reason) && (
-          <div className="mx-auto mt-4 max-w-md rounded-lg border border-border bg-muted/50 px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              {reason === "pro-required"
-                ? "Essa funcionalidade requer um plano ativo."
-                : upgrade
-                  ? `Para acessar ${from || "essa área"}, você precisa de um plano ativo.`
-                  : null}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Plan cards */}
@@ -221,7 +210,7 @@ export default async function PricingPage({
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Pagamento seguro via PIX pelo AbacatePay.
+        Pagamento seguro via AbacatePay.
         <br />
         Cancele a qualquer momento. Sem compromisso.
       </p>

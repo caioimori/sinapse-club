@@ -74,7 +74,7 @@ export default async function CheckoutPage({
         <div className="space-y-6">
           <div className="space-y-2">
             <Link
-              href="/#precos"
+              href="/pricing"
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               ← Trocar de plano
@@ -86,7 +86,7 @@ export default async function CheckoutPage({
               {plan.id === "mensal" &&
                 "Cobrado todo mes. Cancele quando quiser."}
               {plan.id === "semestral" &&
-                "Cobrado a cada 6 meses. Parcelavel no cartao."}
+                "Cobrado a cada 6 meses."}
               {plan.id === "anual" &&
                 "Cobrado uma vez por ano. Maior economia."}
             </p>

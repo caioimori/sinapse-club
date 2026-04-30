@@ -217,7 +217,7 @@ export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">
-          Pagamento seguro via PIX pelo AbacatePay. Sua conta e criada
+          Pagamento seguro via AbacatePay. Sua conta e criada
           automaticamente apos a confirmacao.
         </p>
       </form>
