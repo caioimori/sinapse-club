@@ -43,7 +43,7 @@ const plans: Plan[] = [
     label: "Semestral",
     tagline: "O mais escolhido",
     monthlyPrice: 33.9,
-    billingNote: "R$ 203,40 a cada 6 meses · parcelável",
+    billingNote: "R$ 203,40 a cada 6 meses",
     savings: "Economize R$ 24",
     popular: true,
     cta: "Assinar semestral",
@@ -54,7 +54,7 @@ const plans: Plan[] = [
     label: "Anual",
     tagline: "Maior economia do plano",
     monthlyPrice: 29.9,
-    billingNote: "R$ 358,80 por ano · parcelável",
+    billingNote: "R$ 358,80 por ano",
     savings: "Economize R$ 96",
     popular: false,
     cta: "Assinar anual",
@@ -234,10 +234,6 @@ export function LpPricing() {
           ))}
         </div>
 
-        {/* Payment methods row */}
-        <p className="mt-10 text-center text-xs text-muted-foreground">
-          Pix · Cartão de crédito (até 12x) · Boleto · Cancele quando quiser
-        </p>
       </div>
     </section>
   );

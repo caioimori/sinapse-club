@@ -86,7 +86,7 @@ export default async function CheckoutPage({
               {plan.id === "mensal" &&
                 "Cobrado todo mes. Cancele quando quiser."}
               {plan.id === "semestral" &&
-                "Cobrado a cada 6 meses. Parcelavel no cartao."}
+                "Cobrado a cada 6 meses."}
               {plan.id === "anual" &&
                 "Cobrado uma vez por ano. Maior economia."}
             </p>
