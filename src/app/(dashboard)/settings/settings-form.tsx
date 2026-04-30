@@ -120,7 +120,7 @@ export function SettingsForm({
     if (res.ok) {
       window.location.href = '/';
     } else {
-      alert('Erro ao excluir conta. Tente novamente ou contate privacidade@sinapse.club');
+      alert('Erro ao excluir conta. Tente novamente ou contate contato@sinapse.club');
     }
   }
 

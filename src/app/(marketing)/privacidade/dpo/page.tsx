@@ -39,10 +39,10 @@ export default function DpoPage() {
             <li>
               <strong>Email:</strong>{" "}
               <a
-                href="mailto:dpo@sinapse.club"
+                href="mailto:contato@sinapse.club"
                 className="underline hover:text-foreground"
               >
-                dpo@sinapse.club
+                contato@sinapse.club
               </a>
             </li>
             <li>
@@ -95,10 +95,10 @@ export default function DpoPage() {
             Se você identificar um incidente de segurança envolvendo seus dados
             pessoais, por favor entre em contato imediatamente em{" "}
             <a
-              href="mailto:dpo@sinapse.club?subject=Incidente%20de%20seguran%C3%A7a"
+              href="mailto:contato@sinapse.club?subject=Incidente%20de%20seguran%C3%A7a"
               className="underline hover:text-foreground"
             >
-              dpo@sinapse.club
+              contato@sinapse.club
             </a>
             . Temos o compromisso de notificar a ANPD e os titulares afetados em
             prazo razoável, conforme o Art. 48 da LGPD.

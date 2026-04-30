@@ -183,8 +183,8 @@ export default function TermosPage() {
             </p>
             <p className="text-foreground/80 mt-1">
               Para assuntos relacionados à privacidade e LGPD:{" "}
-              <a href="mailto:privacidade@sinapse.club" className="text-foreground underline hover:opacity-70">
-                privacidade@sinapse.club
+              <a href="mailto:contato@sinapse.club" className="text-foreground underline hover:opacity-70">
+                contato@sinapse.club
               </a>
             </p>
           </section>
