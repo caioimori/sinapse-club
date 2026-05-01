@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getPlan } from "@/lib/abacatepay";
+import { getPaymentProvider } from "@/lib/payment-provider";
 import { CheckoutForm } from "./checkout-form";
+import { StripeCheckoutForm } from "./stripe-checkout-form";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +126,15 @@ export default async function CheckoutPage({
         {/* Form */}
         <div className="lg:pt-12">
           <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-            <CheckoutForm plano={plan.id} planLabel={plan.label} />
+            {getPaymentProvider() === "stripe" ? (
+              <StripeCheckoutForm
+                plano={plan.id}
+                planLabel={plan.label}
+                priceCents={plan.priceCents}
+              />
+            ) : (
+              <CheckoutForm plano={plan.id} planLabel={plan.label} />
+            )}
           </div>
         </div>
       </div>
