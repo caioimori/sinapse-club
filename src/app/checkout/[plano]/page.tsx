@@ -1,9 +1,11 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getPlan } from "@/lib/abacatepay";
+import { getPlan, PLANS } from "@/lib/abacatepay";
 import { getPaymentProvider } from "@/lib/payment-provider";
+import {
+  OrderSummaryDesktop,
+  OrderSummaryMobile,
+} from "@/components/checkout/order-summary";
 import { CheckoutForm } from "./checkout-form";
 import { StripeCheckoutForm } from "./stripe-checkout-form";
 
@@ -17,17 +19,57 @@ const planFeatures = [
   "7 dias de garantia incondicional",
 ];
 
+const planTaglines: Record<string, string> = {
+  mensal: "Cobrado todo mes. Cancele quando quiser.",
+  semestral: "Cobrado uma vez a cada 6 meses.",
+  anual: "Cobrado uma vez por ano. Maior economia.",
+};
+
+const planPeriods: Record<string, string> = {
+  mensal: "/ mes",
+  semestral: "/ 6 meses",
+  anual: "/ ano",
+};
+
 function formatBRL(cents: number): string {
-  return (cents / 100)
-    .toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-    .replace(/\s/g, " ");
+  return (cents / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 }
 
-function periodLabel(plano: string): string {
-  if (plano === "mensal") return "por mes";
-  if (plano === "semestral") return "a cada 6 meses";
-  if (plano === "anual") return "por ano";
-  return "";
+/**
+ * Builds the savings copy by comparing the chosen plan against the monthly
+ * baseline (mensal x 6 or x 12). Returns nothing for the monthly plan.
+ */
+function buildSavingsCopy(planId: string): {
+  baselineCents?: number;
+  savingsCopy?: string;
+} {
+  const monthly = PLANS.mensal.priceCents;
+  if (planId === "semestral") {
+    const baseline = monthly * 6;
+    const perMonth = PLANS.semestral.priceCents / 6;
+    const savedReais = (monthly - perMonth) / 100;
+    return {
+      baselineCents: baseline,
+      savingsCopy: `Equivale a ${formatBRL(Math.round(perMonth))} / mes — economia de R$ ${savedReais
+        .toFixed(2)
+        .replace(".", ",")} / mes`,
+    };
+  }
+  if (planId === "anual") {
+    const baseline = monthly * 12;
+    const perMonth = PLANS.anual.priceCents / 12;
+    const savedReais = (monthly - perMonth) / 100;
+    return {
+      baselineCents: baseline,
+      savingsCopy: `Equivale a ${formatBRL(Math.round(perMonth))} / mes — economia de R$ ${savedReais
+        .toFixed(2)
+        .replace(".", ",")} / mes`,
+    };
+  }
+  return {};
 }
 
 export async function generateMetadata({
@@ -69,63 +111,46 @@ export default async function CheckoutPage({
     redirect(`/subscribe/${plan.id}`);
   }
 
+  const { baselineCents, savingsCopy } = buildSavingsCopy(plan.id);
+
+  const summaryProps = {
+    planLabel: plan.label,
+    planTagline: planTaglines[plan.id] ?? "",
+    priceCents: plan.priceCents,
+    pricePeriod: planPeriods[plan.id] ?? "",
+    baselineCents,
+    savingsCopy,
+    features: planFeatures,
+    canceledNotice: Boolean(canceled),
+  };
+
   return (
-    <div className="min-h-dvh bg-background py-12 px-4 sm:px-6">
-      <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:gap-16">
-        {/* Plan summary */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Link
-              href="/pricing"
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              ← Trocar de plano
-            </Link>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {plan.label}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {plan.id === "mensal" &&
-                "Cobrado todo mes. Cancele quando quiser."}
-              {plan.id === "semestral" &&
-                "Cobrado a cada 6 meses."}
-              {plan.id === "anual" &&
-                "Cobrado uma vez por ano. Maior economia."}
-            </p>
-          </div>
+    <div className="min-h-dvh bg-background">
+      {/* Mobile-only collapsible summary sits full-width at the top */}
+      <OrderSummaryMobile {...summaryProps} />
 
-          <div className="rounded-2xl border border-border p-6">
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold">
-                {formatBRL(plan.priceCents)}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {periodLabel(plan.id)}
-              </span>
-            </div>
-            <ul className="mt-6 space-y-3">
-              {planFeatures.map((feat) => (
-                <li
-                  key={feat}
-                  className="flex items-center gap-2 text-sm text-foreground"
-                >
-                  <Check className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                  {feat}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {canceled && (
-            <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-              Pagamento cancelado. Voce pode tentar novamente quando quiser.
-            </div>
-          )}
+      <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        {/* LEFT — sticky order summary (desktop only). Subtle right divider
+            mirrors the standard "checkout sheet" pattern (Stripe / Lemon). */}
+        <div className="hidden lg:block lg:border-r lg:border-border lg:bg-card/40 lg:px-8 lg:py-12 xl:px-16 xl:py-16">
+          <OrderSummaryDesktop {...summaryProps} />
         </div>
 
-        {/* Form */}
-        <div className="lg:pt-12">
-          <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+        {/* RIGHT — payment form */}
+        <div className="px-4 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-16 xl:px-20">
+          <div className="mx-auto w-full max-w-md space-y-6">
+            <div className="space-y-2">
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Pagamento
+              </p>
+              <h2 className="text-2xl font-semibold leading-tight tracking-tight sm:text-[28px]">
+                Crie sua conta e pague
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Acesso liberado imediatamente apos a confirmacao do pagamento.
+              </p>
+            </div>
+
             {getPaymentProvider() === "stripe" ? (
               <StripeCheckoutForm
                 plano={plan.id}
