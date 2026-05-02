@@ -130,25 +130,26 @@ export default async function CheckoutPage({
       <OrderSummaryMobile {...summaryProps} />
 
       <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        {/* LEFT — sticky order summary (desktop only). Subtle right divider
-            mirrors the standard "checkout sheet" pattern (Stripe / Lemon). */}
-        <div className="hidden lg:block lg:border-r lg:border-border lg:bg-card/40 lg:px-8 lg:py-12 xl:px-16 xl:py-16">
+        {/* LEFT — sticky order summary (desktop only). Single hairline divider,
+            no fill — pure typographic hierarchy. */}
+        <div className="hidden lg:block lg:border-r lg:border-border lg:px-12 lg:py-16 xl:px-20 xl:py-20">
           <OrderSummaryDesktop {...summaryProps} />
         </div>
 
-        {/* RIGHT — payment form */}
-        <div className="px-4 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-16 xl:px-20">
-          <div className="mx-auto w-full max-w-md space-y-6">
-            <div className="space-y-2">
+        {/* RIGHT — payment form. Width fluid via CSS clamp; container padding
+            also scales with viewport to stay legible on every breakpoint. */}
+        <div className="px-[clamp(1.25rem,5vw,4rem)] py-12 lg:py-20">
+          <div
+            className="mx-auto w-full space-y-10"
+            style={{ maxWidth: "clamp(20rem, 40vw, 32rem)" }}
+          >
+            <div className="space-y-3">
               <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                 Pagamento
               </p>
-              <h2 className="text-2xl font-semibold leading-tight tracking-tight sm:text-[28px]">
+              <h2 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[30px]">
                 Crie sua conta e pague
               </h2>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                Acesso liberado imediatamente apos a confirmacao do pagamento.
-              </p>
             </div>
 
             {getPaymentProvider() === "stripe" ? (

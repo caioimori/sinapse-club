@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, ChevronDown, Lock, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronDown } from "lucide-react";
 
 export interface OrderSummaryProps {
   planLabel: string;
@@ -26,12 +26,6 @@ function formatBRL(cents: number): string {
   });
 }
 
-const trustItems = [
-  { icon: Lock, label: "Pagamento seguro" },
-  { icon: RefreshCw, label: "Cancele quando quiser" },
-  { icon: ShieldCheck, label: "7 dias de garantia" },
-];
-
 /**
  * Mobile order summary — collapsible accordion that pins to the top of the
  * checkout page on small screens. Hidden on lg+ (desktop uses the sidebar).
@@ -45,7 +39,7 @@ export function OrderSummaryMobile(props: OrderSummaryProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between border-b border-border bg-card px-4 py-3.5 text-left transition-colors hover:bg-muted/40"
+        className="flex w-full items-center justify-between border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-muted/30"
         aria-expanded={open}
         aria-controls="order-summary-mobile-body"
       >
@@ -55,18 +49,16 @@ export function OrderSummaryMobile(props: OrderSummaryProps) {
             aria-hidden="true"
           />
           <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            {open ? "Ocultar resumo" : "Ver resumo do pedido"}
+            {open ? "Ocultar" : "Ver pedido"}
           </span>
         </div>
-        <span className="font-mono text-sm tabular-nums text-foreground">
-          {totalLabel}
-        </span>
+        <span className="font-mono text-sm tabular-nums">{totalLabel}</span>
       </button>
 
       {open && (
         <div
           id="order-summary-mobile-body"
-          className="border-b border-border bg-card px-4 py-6"
+          className="border-b border-border px-4 py-8"
         >
           <SummaryBody {...props} compact />
         </div>
@@ -82,7 +74,7 @@ export function OrderSummaryMobile(props: OrderSummaryProps) {
 export function OrderSummaryDesktop(props: OrderSummaryProps) {
   return (
     <aside className="hidden lg:block">
-      <div className="sticky top-8">
+      <div className="sticky top-12">
         <SummaryBody {...props} />
       </div>
     </aside>
@@ -107,7 +99,7 @@ function SummaryBody({
   const totalLabel = formatBRL(priceCents);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Breadcrumb — desktop only */}
       {!compact && (
         <Link
@@ -115,108 +107,83 @@ function SummaryBody({
           className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-          Trocar de plano
+          Trocar plano
         </Link>
       )}
 
-      {/* Plan title block */}
-      <div className="space-y-2">
+      {/* Plan name — pure typography hierarchy */}
+      <div className="space-y-3">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          Resumo do pedido
+          Plano
         </p>
         <h1
           className={
             compact
-              ? "text-[22px] font-semibold leading-tight tracking-tight"
-              : "text-[clamp(1.75rem,3vw,3rem)] font-semibold leading-[1.05] tracking-tight"
+              ? "text-[26px] font-semibold leading-[1.05] tracking-tight"
+              : "text-[clamp(3.75rem,7vw,7.5rem)] font-semibold leading-[0.95] tracking-tight"
           }
         >
           {planLabel}
         </h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">{planTagline}</p>
+        <p className="text-[15px] leading-relaxed text-muted-foreground">
+          {planTagline}
+        </p>
       </div>
 
-      <div className="h-px w-full bg-border" />
+      {/* Price — the visual anchor */}
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          Total
+        </p>
+        <div className="flex items-baseline gap-3">
+          <span
+            className={
+              compact
+                ? "text-[56px] font-semibold leading-none tabular-nums tracking-tight"
+                : "text-[clamp(3.5rem,6vw,6rem)] font-semibold leading-none tabular-nums tracking-tight"
+            }
+          >
+            {totalLabel}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {pricePeriod}
+          </span>
+        </div>
+        {baselineCents && baselineCents > priceCents && (
+          <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
+            <span className="line-through">{formatBRL(baselineCents)}</span>
+            {savingsCopy ? <> · {savingsCopy}</> : null}
+          </p>
+        )}
+        {!baselineCents && savingsCopy && (
+          <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
+            {savingsCopy}
+          </p>
+        )}
+      </div>
 
-      {/* Features — line by line */}
-      <ul className="space-y-3">
+      {/* Features — minimal list, no icons */}
+      <ul className="space-y-2.5 border-t border-border pt-8">
         {features.map((feat) => (
-          <li key={feat} className="flex items-start gap-3 text-[13px] leading-relaxed">
-            <Check
-              className="mt-0.5 h-4 w-4 flex-shrink-0 text-foreground"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-            <span className="text-foreground/85">{feat}</span>
+          <li
+            key={feat}
+            className="text-[14px] leading-relaxed text-foreground/80"
+          >
+            {feat}
           </li>
         ))}
       </ul>
 
-      <div className="h-px w-full bg-border" />
-
-      {/* Subtotal block */}
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-mono tabular-nums text-foreground/85">
-            {totalLabel}
-          </span>
-        </div>
-
-        {baselineCents && baselineCents > priceCents && (
-          <div className="flex items-baseline justify-between text-xs text-muted-foreground">
-            <span>Valor cheio (mensal x periodo)</span>
-            <span className="font-mono tabular-nums line-through">
-              {formatBRL(baselineCents)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Double divider sets the total apart */}
-      <div className="space-y-1">
-        <div className="h-px w-full bg-border" />
-        <div className="h-px w-full bg-border" />
-      </div>
-
-      {/* Total — prominent */}
-      <div className="space-y-1.5">
-        <div className="flex items-baseline justify-between gap-4">
-          <span className="text-sm font-medium uppercase tracking-wider text-foreground">
-            Total
-          </span>
-          <div className="text-right">
-            <span className="font-mono text-2xl font-semibold tabular-nums text-foreground sm:text-[28px]">
-              {totalLabel}
-            </span>
-            <span className="ml-1.5 font-mono text-xs text-muted-foreground">
-              {pricePeriod}
-            </span>
-          </div>
-        </div>
-        {savingsCopy && (
-          <p className="text-right text-xs text-muted-foreground">{savingsCopy}</p>
-        )}
-      </div>
-
       {canceledNotice && (
-        <div className="border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
-          Pagamento cancelado. Voce pode tentar novamente quando quiser.
-        </div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          Pagamento anterior cancelado. Sem cobranca.
+        </p>
       )}
 
-      {/* Trust block */}
-      <div className="space-y-2 border-t border-border pt-5">
-        {trustItems.map(({ icon: Icon, label }) => (
-          <div
-            key={label}
-            className="flex items-center gap-2.5 text-xs text-muted-foreground"
-          >
-            <Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
+      {/* Single microcopy replaces 3-icon trust block */}
+      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        7 dias de garantia · cancele quando quiser
+      </p>
     </div>
   );
 }

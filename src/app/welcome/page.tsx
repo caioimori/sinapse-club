@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, CheckCircle, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ResendLink } from "./resend-link";
 
@@ -30,80 +30,88 @@ export default async function WelcomePage({
   const cleanEmail = email?.trim().toLowerCase() ?? null;
 
   return (
-    <div className="min-h-dvh bg-background flex items-center justify-center px-4 py-12 relative">
-      <div className="absolute top-6 left-6">
+    <div className="min-h-dvh bg-background text-foreground">
+      <div className="absolute left-6 top-6 lg:left-12 lg:top-12">
         <Link
           href="/pricing"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Voltar pra escolher outro plano
+          <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+          Trocar plano
         </Link>
       </div>
-      <div className="w-full max-w-md space-y-6 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-foreground/5 border border-foreground/10">
-          <CheckCircle className="h-7 w-7" aria-hidden="true" />
-        </div>
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Pagamento confirmado!</h1>
-          <p className="text-sm text-muted-foreground">
+      <div className="mx-auto grid min-h-dvh w-full max-w-screen-2xl grid-cols-1 items-center px-[clamp(1.25rem,5vw,4rem)] py-24 lg:grid-cols-12 lg:gap-16">
+        <div
+          className="space-y-10 lg:col-span-7 lg:col-start-2"
+          style={{ maxWidth: "clamp(20rem, 60vw, 44rem)" }}
+        >
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            Pagamento confirmado
+          </p>
+
+          <h1 className="text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.95] tracking-tight">
+            Bem-vindo.
+          </h1>
+
+          <p className="text-[15px] leading-relaxed text-muted-foreground">
             {plan ? (
               <>
-                Seu plano <strong className="text-foreground">{plan}</strong> ja
-                esta ativo.
+                Plano <span className="text-foreground">{plan}</span> ativo.{" "}
+                {cleanEmail ? (
+                  <>
+                    Enviamos um link de acesso para{" "}
+                    <span className="text-foreground">{cleanEmail}</span>. Clique
+                    nele pra entrar.
+                  </>
+                ) : (
+                  "Faca login pra entrar na plataforma."
+                )}
+              </>
+            ) : cleanEmail ? (
+              <>
+                Enviamos um link de acesso para{" "}
+                <span className="text-foreground">{cleanEmail}</span>. Clique
+                nele pra entrar.
               </>
             ) : (
-              "Seu plano ja esta ativo."
+              "Faca login pra entrar na plataforma."
             )}
           </p>
-        </div>
 
-        {cleanEmail && (
-          <div className="rounded-lg border border-border bg-muted/30 p-4 text-left text-sm space-y-2">
-            <p className="flex items-start gap-2 text-foreground">
-              <Mail
-                className="mt-0.5 h-4 w-4 flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span>
-                Enviamos um link magico para{" "}
-                <strong>{cleanEmail}</strong>. Clique nele para entrar na
-                plataforma.
-              </span>
-            </p>
-            <p className="text-xs text-muted-foreground pl-6">
-              Nao chegou em 1 minuto? Verifique a caixa de spam ou promocoes.
+          {cleanEmail && (
+            <div className="space-y-3 border-t border-border pt-8">
+              <ResendLink email={cleanEmail} />
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Nao chegou? Verifique spam ou promocoes.
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2 border-t border-border pt-8 text-[13px]">
+            <Link
+              href={`/register${plan ? `?plan=${plan}${cleanEmail ? `&email=${encodeURIComponent(cleanEmail)}&prefilled=1` : ""}` : ""}`}
+              className="block text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Prefere criar uma senha?
+            </Link>
+            <Link
+              href="/login"
+              className="block text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Ja tenho conta — fazer login
+            </Link>
+            <p className="pt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              Suporte ·{" "}
+              <a
+                href="mailto:contato@sinapse.club"
+                className="text-foreground underline"
+              >
+                contato@sinapse.club
+              </a>
             </p>
           </div>
-        )}
-
-        {cleanEmail && <ResendLink email={cleanEmail} />}
-
-        <div className="pt-2 space-y-2 text-sm">
-          <Link
-            href={`/register${plan ? `?plan=${plan}${cleanEmail ? `&email=${encodeURIComponent(cleanEmail)}&prefilled=1` : ""}` : ""}`}
-            className="block text-muted-foreground hover:text-foreground"
-          >
-            Prefere criar uma senha?
-          </Link>
-          <Link
-            href="/login"
-            className="block text-muted-foreground hover:text-foreground"
-          >
-            Ja tenho conta — fazer login
-          </Link>
         </div>
-
-        <p className="text-xs text-muted-foreground pt-4">
-          Problemas? Mande um email para{" "}
-          <a
-            href="mailto:contato@sinapse.club"
-            className="text-foreground underline"
-          >
-            contato@sinapse.club
-          </a>
-        </p>
       </div>
     </div>
   );

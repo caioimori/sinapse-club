@@ -17,58 +17,60 @@ export default async function PagamentoFalhouPage({
   const retryHref = plan ? `/checkout/${plan}` : "/pricing";
 
   return (
-    <div className="min-h-dvh bg-background text-foreground py-16 px-6">
-      <div className="mx-auto max-w-2xl space-y-10">
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
+      <div className="mx-auto grid min-h-dvh w-full max-w-screen-2xl grid-cols-1 items-center px-[clamp(1.25rem,5vw,4rem)] py-24 lg:grid-cols-12 lg:gap-16">
+        <div
+          className="space-y-10 lg:col-span-7 lg:col-start-2"
+          style={{ maxWidth: "clamp(20rem, 60vw, 44rem)" }}
+        >
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
             Status · transacao
           </p>
-          <h1
-            className="font-bold tracking-tight"
-            style={{ fontSize: "clamp(3rem, 6vw, 5rem)", lineHeight: 1 }}
-          >
-            Pagamento nao completou
+
+          <h1 className="text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.95] tracking-tight">
+            Pagamento
+            <br />
+            nao completou.
           </h1>
+
           {error && (
-            <p className="text-base text-foreground/80 border-l-2 border-destructive pl-4">
+            <p className="border-l-2 border-destructive pl-4 text-[15px] leading-relaxed text-foreground/80">
               {decodeURIComponent(error)}
             </p>
           )}
-        </div>
 
-        <div className="space-y-3">
-          <h2 className="text-xs uppercase tracking-wider text-muted-foreground">
-            O que pode ter acontecido
-          </h2>
-          <ul className="space-y-2 text-sm text-foreground/80">
-            <li>— Cartao recusado pela operadora</li>
-            <li>— Limite insuficiente ou cartao bloqueado pra compras online</li>
-            <li>— Dados do cartao incorretos (numero, validade ou CVV)</li>
-            <li>— Antifraude do banco bloqueou a transacao</li>
-          </ul>
-        </div>
+          <div className="space-y-3 border-t border-border pt-8">
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              O que pode ter acontecido
+            </p>
+            <ul className="space-y-1.5 text-[14px] leading-relaxed text-foreground/80">
+              <li>Cartao recusado pela operadora</li>
+              <li>Limite insuficiente ou bloqueio pra compras online</li>
+              <li>Dados incorretos (numero, validade ou CVV)</li>
+              <li>Antifraude do banco bloqueou a transacao</li>
+            </ul>
+          </div>
 
-        <div className="space-y-3 pt-4">
-          <Link
-            href={retryHref}
-            className="block w-full bg-foreground text-background hover:bg-foreground/90 rounded-none h-12 flex items-center justify-center text-sm uppercase tracking-wider font-medium"
-          >
-            Tentar novamente
-          </Link>
-          <Link
-            href="/"
-            className="block w-full text-center text-sm text-muted-foreground hover:text-foreground"
-          >
-            Voltar pro inicio
-          </Link>
-        </div>
+          <div className="space-y-3 pt-2">
+            <Link
+              href={retryHref}
+              className="flex h-12 w-full items-center justify-center bg-foreground text-sm font-medium uppercase tracking-wider text-background transition-colors hover:bg-foreground/90"
+            >
+              Tentar novamente
+            </Link>
+            <Link
+              href="/"
+              className="block w-full text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Voltar pro inicio
+            </Link>
+          </div>
 
-        <div className="pt-6 border-t border-border">
-          <p className="text-sm text-muted-foreground">
-            Precisa de ajuda?{" "}
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            Suporte ·{" "}
             <a
               href="mailto:contato@sinapse.club"
-              className="text-foreground underline hover:opacity-70"
+              className="text-foreground underline"
             >
               contato@sinapse.club
             </a>
