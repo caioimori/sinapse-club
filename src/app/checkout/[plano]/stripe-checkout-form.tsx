@@ -8,13 +8,15 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { createStripeSubscriptionForVisitor } from "./actions";
 
 interface StripeCheckoutFormProps {
   plano: string;
   planLabel: string;
   priceCents: number;
+  /** "/ mes", "/ 6 meses", "/ ano" — used in the CTA microcopy */
+  pricePeriod: string;
 }
 
 const stripePromise = (() => {
@@ -36,7 +38,7 @@ const appearance = {
     colorDanger: "#EF4444",
     colorSuccess: "#22C55E",
     fontFamily: "Inter, system-ui, sans-serif",
-    fontSizeBase: "14px",
+    fontSizeBase: "15px",
     borderRadius: "0px",
     spacingUnit: "4px",
   },
@@ -44,7 +46,7 @@ const appearance = {
     ".Input": {
       border: "1px solid #27272A",
       backgroundColor: "#0A0A0A",
-      padding: "12px 14px",
+      padding: "14px 14px",
       boxShadow: "none",
       transition: "border-color 150ms ease",
     },
@@ -59,9 +61,9 @@ const appearance = {
     ".Label": {
       fontSize: "11px",
       textTransform: "uppercase",
-      letterSpacing: "0.05em",
+      letterSpacing: "0.14em",
       fontWeight: "500",
-      marginBottom: "6px",
+      marginBottom: "8px",
       color: "#A1A1AA",
     },
     ".Tab": {
@@ -85,18 +87,33 @@ function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
 export function StripeCheckoutForm({
   plano,
   planLabel,
   priceCents,
+  pricePeriod,
 }: StripeCheckoutFormProps) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
+
+  // Inline validation — only show errors after the field was touched (CRO §02)
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const supabase = createClient();
+
+  const emailValid = isValidEmail(email);
+  const nameValid = name.trim().length >= 2;
+  const emailError = emailTouched && !emailValid && email.length > 0;
+  const nameError = nameTouched && !nameValid && name.length > 0;
 
   function buildOAuthRedirect(): string {
     const base = `${window.location.origin}/auth/callback`;
@@ -125,6 +142,11 @@ export function StripeCheckoutForm({
   function handleStartPayment(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // Force-touch all fields on submit so missing-field errors render
+    setEmailTouched(true);
+    setNameTouched(true);
+    if (!emailValid || !nameValid || !consent) return;
+
     startTransition(async () => {
       const result = await createStripeSubscriptionForVisitor({
         plano,
@@ -153,6 +175,8 @@ export function StripeCheckoutForm({
       </div>
     );
   }
+
+  const ctaLabel = `Pagar ${formatBRL(priceCents)} ${pricePeriod}`.replace(/\s+/g, " ").trim();
 
   return (
     <div className="space-y-8">
@@ -195,34 +219,66 @@ export function StripeCheckoutForm({
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      {/* Stage 1: collect email/name/consent. Stage 2: render Payment Element. */}
+      {/* Stage 1: collect name/email/consent. Stage 2: render Payment Element. */}
       {!clientSecret && (
-        <form onSubmit={handleStartPayment} className="space-y-5">
+        <form onSubmit={handleStartPayment} className="space-y-5" noValidate>
           <div className="space-y-2">
             <Label htmlFor="name">Nome</Label>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              minLength={2}
-              disabled={isPending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isPending}
-            />
+            <div className="relative">
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setNameTouched(true)}
+                autoComplete="name"
+                required
+                minLength={2}
+                disabled={isPending}
+                aria-invalid={nameError || undefined}
+                className="h-12 pr-10 text-[15px]"
+              />
+              {nameTouched && nameValid && (
+                <Check
+                  className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/60"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+            {nameError && (
+              <p className="text-[12px] text-destructive">Informe seu nome (minimo 2 letras).</p>
+            )}
           </div>
 
-          <div className="flex items-start gap-2">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setEmailTouched(true)}
+                autoComplete="email"
+                inputMode="email"
+                required
+                disabled={isPending}
+                aria-invalid={emailError || undefined}
+                className="h-12 pr-10 text-[15px]"
+              />
+              {emailTouched && emailValid && (
+                <Check
+                  className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/60"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+            {emailError && (
+              <p className="text-[12px] text-destructive">Email invalido.</p>
+            )}
+          </div>
+
+          <div className="flex items-start gap-2 pt-1">
             <input
               type="checkbox"
               id="consent"
@@ -248,21 +304,22 @@ export function StripeCheckoutForm({
             <p className="text-sm text-destructive" role="alert">{error}</p>
           )}
 
-          <Button
-            type="submit"
-            className="h-12 w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Preparando...</>
-            ) : (
-              `Continuar — ${formatBRL(priceCents)}`
-            )}
-          </Button>
-
-          <p className="font-mono text-center text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            Stripe · 7 dias de garantia
-          </p>
+          <div className="space-y-2.5 pt-2">
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
+              ) : (
+                ctaLabel
+              )}
+            </Button>
+            <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
+              ✓ 7 dias de garantia · devolvemos 100%
+            </p>
+          </div>
         </form>
       )}
 
@@ -272,6 +329,7 @@ export function StripeCheckoutForm({
             planLabel={planLabel}
             plano={plano}
             priceCents={priceCents}
+            pricePeriod={pricePeriod}
             onReset={() => {
               setClientSecret(null);
               setError(null);
@@ -294,11 +352,13 @@ function StripePaymentInner({
   planLabel,
   plano,
   priceCents,
+  pricePeriod,
   onReset,
 }: {
   planLabel: string;
   plano: string;
   priceCents: number;
+  pricePeriod: string;
   onReset: () => void;
 }) {
   const stripe = useStripe();
@@ -333,6 +393,8 @@ function StripePaymentInner({
     // Se sucesso, Stripe redireciona automatico pro return_url.
   }
 
+  const ctaLabel = `Pagar ${(priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} ${pricePeriod}`.replace(/\s+/g, " ").trim();
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -347,17 +409,24 @@ function StripePaymentInner({
       {paymentError && (
         <p className="text-sm text-destructive" role="alert">{paymentError}</p>
       )}
-      <Button
-        type="submit"
-        className="h-12 w-full rounded-none bg-foreground text-background font-medium uppercase tracking-wider hover:bg-foreground/90"
-        disabled={!stripe || submitting}
-      >
-        {submitting ? (
-          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
-        ) : (
-          `Pagar ${formatBRL(priceCents)}`
-        )}
-      </Button>
+
+      <div className="space-y-2.5 pt-2">
+        <Button
+          type="submit"
+          className="h-12 w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
+          disabled={!stripe || submitting}
+        >
+          {submitting ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
+          ) : (
+            ctaLabel
+          )}
+        </Button>
+        <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
+          ✓ 7 dias de garantia · devolvemos 100%
+        </p>
+      </div>
+
       <button
         type="button"
         onClick={onReset}

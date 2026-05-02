@@ -6,21 +6,38 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 import { createCheckoutForVisitor } from "./actions";
 
 interface CheckoutFormProps {
   plano: string;
   planLabel: string;
+  priceCents: number;
+  pricePeriod: string;
 }
 
-export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
+function formatBRL(cents: number): string {
+  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+export function CheckoutForm({ plano, planLabel, priceCents, pricePeriod }: CheckoutFormProps) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const supabase = createClient();
+
+  const emailValid = isValidEmail(email);
+  const nameValid = name.trim().length >= 2;
+  const emailError = emailTouched && !emailValid && email.length > 0;
+  const nameError = nameTouched && !nameValid && name.length > 0;
 
   function buildOAuthRedirect(): string {
     const base = `${window.location.origin}/auth/callback`;
@@ -52,6 +69,10 @@ export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setEmailTouched(true);
+    setNameTouched(true);
+    if (!emailValid || !nameValid || !consent) return;
+
     startTransition(async () => {
       const result = await createCheckoutForVisitor({
         plano,
@@ -67,6 +88,11 @@ export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
       window.location.href = result.url;
     });
   }
+
+  const ctaLabel = `Pagar ${formatBRL(priceCents)} ${pricePeriod}`.replace(/\s+/g, " ").trim();
+  // Reference planLabel via aria-label so existing prop is consumed without
+  // duplicating it in visible copy (label already shown in the order summary).
+  const ctaAriaLabel = `${ctaLabel} — plano ${planLabel}`;
 
   return (
     <div className="space-y-8">
@@ -110,32 +136,63 @@ export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
       </div>
 
       {/* Direct-pay form (flow A) */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div className="space-y-2">
           <Label htmlFor="name">Nome</Label>
-          <Input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            minLength={2}
-            disabled={isPending}
-          />
+          <div className="relative">
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
+              autoComplete="name"
+              required
+              minLength={2}
+              disabled={isPending}
+              aria-invalid={nameError || undefined}
+              className="h-12 pr-10 text-[15px]"
+            />
+            {nameTouched && nameValid && (
+              <Check
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/60"
+                aria-hidden="true"
+              />
+            )}
+          </div>
+          {nameError && (
+            <p className="text-[12px] text-destructive">Informe seu nome (minimo 2 letras).</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={isPending}
-          />
+          <div className="relative">
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
+              autoComplete="email"
+              inputMode="email"
+              required
+              disabled={isPending}
+              aria-invalid={emailError || undefined}
+              className="h-12 pr-10 text-[15px]"
+            />
+            {emailTouched && emailValid && (
+              <Check
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/60"
+                aria-hidden="true"
+              />
+            )}
+          </div>
+          {emailError && (
+            <p className="text-[12px] text-destructive">Email invalido.</p>
+          )}
         </div>
 
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2 pt-1">
           <input
             type="checkbox"
             id="consent"
@@ -161,21 +218,23 @@ export function CheckoutForm({ plano, planLabel }: CheckoutFormProps) {
           <p className="text-sm text-destructive" role="alert">{error}</p>
         )}
 
-        <Button
-          type="submit"
-          className="h-12 w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
-          disabled={isPending}
-        >
-          {isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Redirecionando...</>
-          ) : (
-            `Pagar — ${planLabel}`
-          )}
-        </Button>
-
-        <p className="font-mono text-center text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          AbacatePay · 7 dias de garantia
-        </p>
+        <div className="space-y-2.5 pt-2">
+          <Button
+            type="submit"
+            className="h-12 w-full rounded-none bg-foreground text-background hover:bg-foreground/90"
+            disabled={isPending}
+            aria-label={ctaAriaLabel}
+          >
+            {isPending ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
+            ) : (
+              ctaLabel
+            )}
+          </Button>
+          <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
+            ✓ 7 dias de garantia · devolvemos 100%
+          </p>
+        </div>
       </form>
 
       <p className="text-center text-[13px] text-muted-foreground">

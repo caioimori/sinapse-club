@@ -14,6 +14,10 @@ export interface OrderSummaryProps {
   baselineCents?: number;
   /** Optional savings copy below the total */
   savingsCopy?: string;
+  /** Optional "equivalent monthly" copy emphasized as anchor (CRO) */
+  equivalentMonthlyCopy?: string;
+  /** Optional total-savings copy ("Economize R$ X / ano vs mensal") */
+  totalSavingsCopy?: string;
   features: string[];
   /** Optional canceled-payment notice */
   canceledNotice?: boolean;
@@ -92,14 +96,17 @@ function SummaryBody({
   pricePeriod,
   baselineCents,
   savingsCopy,
+  equivalentMonthlyCopy,
+  totalSavingsCopy,
   features,
   canceledNotice,
   compact,
 }: SummaryBodyProps) {
   const totalLabel = formatBRL(priceCents);
+  const hasAnchor = Boolean(equivalentMonthlyCopy || totalSavingsCopy);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Breadcrumb — desktop only */}
       {!compact && (
         <Link
@@ -111,63 +118,81 @@ function SummaryBody({
         </Link>
       )}
 
-      {/* Plan name — pure typography hierarchy */}
-      <div className="space-y-3">
+      {/* Plan name — Sora, hierarquia extrema (rule 05: 60-180px desktop) */}
+      <div className="space-y-4">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
           Plano
         </p>
         <h1
           className={
             compact
-              ? "text-[26px] font-semibold leading-[1.05] tracking-tight"
-              : "text-[clamp(3.75rem,7vw,7.5rem)] font-semibold leading-[0.95] tracking-tight"
+              ? "text-[clamp(3rem,12vw,4.5rem)] font-semibold leading-[0.9] tracking-[-0.02em]"
+              : "text-[clamp(3.75rem,8vw,8rem)] font-semibold leading-[0.88] tracking-[-0.025em]"
           }
         >
           {planLabel}
         </h1>
-        <p className="text-[15px] leading-relaxed text-muted-foreground">
+        <p className="text-[14px] leading-relaxed text-muted-foreground">
           {planTagline}
         </p>
       </div>
 
-      {/* Price — the visual anchor */}
-      <div className="space-y-2">
+      {/* Price — JetBrains Mono, peso visual real (rule 05: 80-120px) */}
+      <div className="space-y-3">
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
           Total
         </p>
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-baseline gap-2.5">
           <span
             className={
               compact
-                ? "text-[56px] font-semibold leading-none tabular-nums tracking-tight"
-                : "text-[clamp(3.5rem,6vw,6rem)] font-semibold leading-none tabular-nums tracking-tight"
+                ? "font-mono text-[clamp(3.5rem,14vw,5rem)] font-medium leading-[0.85] tabular-nums tracking-[-0.04em]"
+                : "font-mono text-[clamp(4.5rem,9vw,7.5rem)] font-medium leading-[0.85] tabular-nums tracking-[-0.04em]"
             }
           >
             {totalLabel}
           </span>
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="text-[14px] text-muted-foreground">
             {pricePeriod}
           </span>
         </div>
-        {baselineCents && baselineCents > priceCents && (
-          <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
-            <span className="line-through">{formatBRL(baselineCents)}</span>
-            {savingsCopy ? <> · {savingsCopy}</> : null}
-          </p>
+
+        {/* Anchor pricing block (CRO loss-aversion) — only for semestral/anual */}
+        {hasAnchor && (
+          <div className="space-y-1.5 pt-2">
+            {equivalentMonthlyCopy && (
+              <p className="text-[14px] text-foreground">
+                {equivalentMonthlyCopy}
+              </p>
+            )}
+            {totalSavingsCopy && (
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                {totalSavingsCopy}
+              </p>
+            )}
+            {baselineCents && baselineCents > priceCents && (
+              <p className="font-mono text-[11px] tabular-nums text-muted-foreground/70">
+                <span className="line-through">{formatBRL(baselineCents)}</span>
+                <span className="ml-1.5">vs mensal</span>
+              </p>
+            )}
+          </div>
         )}
-        {!baselineCents && savingsCopy && (
+
+        {/* Mensal: no anchor — just optional savings copy */}
+        {!hasAnchor && savingsCopy && (
           <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
             {savingsCopy}
           </p>
         )}
       </div>
 
-      {/* Features — minimal list, no icons */}
-      <ul className="space-y-2.5 border-t border-border pt-8">
+      {/* Features — investment moment (Hooked): "o que voce ganha" */}
+      <ul className="space-y-3 border-t border-border pt-10">
         {features.map((feat) => (
           <li
             key={feat}
-            className="text-[14px] leading-relaxed text-foreground/80"
+            className="text-[15px] leading-relaxed text-foreground/85"
           >
             {feat}
           </li>
@@ -179,11 +204,6 @@ function SummaryBody({
           Pagamento anterior cancelado. Sem cobranca.
         </p>
       )}
-
-      {/* Single microcopy replaces 3-icon trust block */}
-      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-        7 dias de garantia · cancele quando quiser
-      </p>
     </div>
   );
 }

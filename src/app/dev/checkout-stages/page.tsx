@@ -30,8 +30,9 @@ export default function CheckoutStagesPreview() {
     planTagline: "Cobrado uma vez por ano. Maior economia.",
     priceCents: 35880,
     pricePeriod: "/ ano",
-    baselineCents: 71880,
-    savingsCopy: "Equivale a R$ 29,90 / mes",
+    baselineCents: 45480,
+    equivalentMonthlyCopy: "Equivale a R$ 29,90 / mes",
+    totalSavingsCopy: "Economize R$ 96,00 / ano",
     features: [
       "Acesso completo ao forum",
       "Curadoria diaria IA + negocios",
@@ -172,14 +173,14 @@ function FakeCheckoutShell({ summaryProps, children }: SummaryShellProps) {
   return (
     <>
       <OrderSummaryMobile {...summaryProps} />
-      <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <div className="hidden lg:block lg:border-r lg:border-border lg:px-12 lg:py-16 xl:px-20 xl:py-20">
+      <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
+        <div className="hidden lg:block lg:border-r lg:border-border lg:px-12 lg:py-16 xl:px-16 xl:py-20">
           <OrderSummaryDesktop {...summaryProps} />
         </div>
         <div className="px-[clamp(1.25rem,5vw,4rem)] py-12 lg:py-20">
           <div
             className="mx-auto w-full space-y-10"
-            style={{ maxWidth: "clamp(20rem, 40vw, 32rem)" }}
+            style={{ maxWidth: "clamp(20rem, 38vw, 30rem)" }}
           >
             <div className="space-y-3">
               <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -244,10 +245,10 @@ function Stage1Form() {
           className="h-12 w-full rounded-none bg-foreground text-background"
           disabled
         >
-          Pagar — Anual
+          Pagar R$ 358,80 / ano
         </Button>
-        <p className="font-mono text-center text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-          Stripe · 7 dias de garantia
+        <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
+          ✓ 7 dias de garantia · devolvemos 100%
         </p>
       </div>
     </div>
@@ -286,11 +287,14 @@ function Stage2Form() {
         </p>
       </div>
       <Button
-        className="h-12 w-full rounded-none bg-foreground text-background uppercase tracking-wider"
+        className="h-12 w-full rounded-none bg-foreground text-background"
         disabled
       >
-        Pagar R$ 358,80
+        Pagar R$ 358,80 / ano
       </Button>
+      <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
+        ✓ 7 dias de garantia · devolvemos 100%
+      </p>
       <button className="w-full text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
         Trocar dados
       </button>
