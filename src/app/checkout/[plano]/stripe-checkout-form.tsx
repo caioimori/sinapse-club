@@ -17,6 +17,12 @@ interface StripeCheckoutFormProps {
   priceCents: number;
   /** "/ mes", "/ 6 meses", "/ ano" — used in the CTA microcopy */
   pricePeriod: string;
+  /** Pre-fill do email vindo da sessao Supabase (user logado). */
+  defaultEmail?: string;
+  /** Pre-fill do nome (full_name | preferred_username | local-part do email). */
+  defaultName?: string;
+  /** Quando true, esconde OAuth e trava email/nome em read-only. */
+  isAuthenticated?: boolean;
 }
 
 const stripePromise = (() => {
@@ -96,10 +102,14 @@ export function StripeCheckoutForm({
   planLabel,
   priceCents,
   pricePeriod,
+  defaultEmail,
+  defaultName,
+  isAuthenticated = false,
 }: StripeCheckoutFormProps) {
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [email, setEmail] = useState(defaultEmail ?? "");
+  const [name, setName] = useState(defaultName ?? "");
+  // User logado ja aceitou termos no signup — pre-marca consent.
+  const [consent, setConsent] = useState(isAuthenticated);
 
   // Inline validation — only show errors after the field was touched (CRO §02)
   const [emailTouched, setEmailTouched] = useState(false);
@@ -180,7 +190,8 @@ export function StripeCheckoutForm({
 
   return (
     <div className="space-y-8">
-      {/* OAuth shortcut */}
+      {/* OAuth shortcut — escondido quando user ja esta logado */}
+      {!isAuthenticated && (
       <div className="space-y-2">
         <Button
           type="button"
@@ -210,7 +221,9 @@ export function StripeCheckoutForm({
           Continuar com GitHub
         </Button>
       </div>
+      )}
 
+      {!isAuthenticated && (
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
         <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
@@ -218,6 +231,7 @@ export function StripeCheckoutForm({
         </span>
         <span className="h-px flex-1 bg-border" />
       </div>
+      )}
 
       {/* Stage 1: collect name/email/consent. Stage 2: render Payment Element. */}
       {!clientSecret && (
@@ -235,6 +249,7 @@ export function StripeCheckoutForm({
                 required
                 minLength={2}
                 disabled={isPending}
+                readOnly={isAuthenticated}
                 aria-invalid={nameError || undefined}
                 className="h-12 pr-10 text-[15px]"
               />
@@ -263,6 +278,7 @@ export function StripeCheckoutForm({
                 inputMode="email"
                 required
                 disabled={isPending}
+                readOnly={isAuthenticated}
                 aria-invalid={emailError || undefined}
                 className="h-12 pr-10 text-[15px]"
               />
@@ -278,27 +294,29 @@ export function StripeCheckoutForm({
             )}
           </div>
 
-          <div className="flex items-start gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="consent"
-              checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
-              required
-              className="mt-1 h-4 w-4 border-border accent-foreground"
-            />
-            <label htmlFor="consent" className="text-[13px] leading-relaxed text-muted-foreground">
-              Concordo com os{" "}
-              <Link href="/termos" target="_blank" rel="noopener noreferrer" className="text-foreground underline">
-                Termos
-              </Link>{" "}
-              e{" "}
-              <Link href="/privacidade" target="_blank" rel="noopener noreferrer" className="text-foreground underline">
-                Privacidade
-              </Link>
-              .
-            </label>
-          </div>
+          {!isAuthenticated && (
+            <div className="flex items-start gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="consent"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                required
+                className="mt-1 h-4 w-4 border-border accent-foreground"
+              />
+              <label htmlFor="consent" className="text-[13px] leading-relaxed text-muted-foreground">
+                Concordo com os{" "}
+                <Link href="/termos" target="_blank" rel="noopener noreferrer" className="text-foreground underline">
+                  Termos
+                </Link>{" "}
+                e{" "}
+                <Link href="/privacidade" target="_blank" rel="noopener noreferrer" className="text-foreground underline">
+                  Privacidade
+                </Link>
+                .
+              </label>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm text-destructive" role="alert">{error}</p>
@@ -338,12 +356,14 @@ export function StripeCheckoutForm({
         </Elements>
       )}
 
-      <p className="text-center text-[13px] text-muted-foreground">
-        Ja tem conta?{" "}
-        <Link href={`/login?plan=${plano}`} className="text-foreground underline">
-          Fazer login
-        </Link>
-      </p>
+      {!isAuthenticated && (
+        <p className="text-center text-[13px] text-muted-foreground">
+          Ja tem conta?{" "}
+          <Link href={`/login?plan=${plano}`} className="text-foreground underline">
+            Fazer login
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

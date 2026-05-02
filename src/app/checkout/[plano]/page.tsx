@@ -1,12 +1,10 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPlan, PLANS } from "@/lib/abacatepay";
-import { getPaymentProvider } from "@/lib/payment-provider";
 import {
   OrderSummaryDesktop,
   OrderSummaryMobile,
 } from "@/components/checkout/order-summary";
-import { CheckoutForm } from "./checkout-form";
 import { StripeCheckoutForm } from "./stripe-checkout-form";
 
 export const dynamic = "force-dynamic";
@@ -110,15 +108,19 @@ export default async function CheckoutPage({
     notFound();
   }
 
-  // Already-logged-in visitors should use the legacy auto-checkout flow.
-  // This avoids creating a duplicate user via the webhook path.
+  // Prefill do form quando o usuario ja esta logado (vindo do OAuth ou de
+  // /subscribe/...). Webhook do Stripe vincula a subscription ao user
+  // existente via lookup por email, entao nao ha duplicacao.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) {
-    redirect(`/subscribe/${plan.id}`);
-  }
+
+  const defaultEmail = user?.email ?? undefined;
+  const defaultName =
+    (user?.user_metadata?.full_name as string | undefined)
+    ?? (user?.user_metadata?.preferred_username as string | undefined)
+    ?? (user?.email ? user.email.split("@")[0] : undefined);
 
   const { baselineCents, equivalentMonthlyCopy, totalSavingsCopy, savingsCopy } =
     buildAnchorCopy(plan.id);
@@ -175,25 +177,19 @@ export default async function CheckoutPage({
                   Pagamento
                 </p>
                 <h2 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[30px]">
-                  Crie sua conta e pague
+                  {user ? "Confirme e pague" : "Crie sua conta e pague"}
                 </h2>
               </div>
 
-              {getPaymentProvider() === "stripe" ? (
-                <StripeCheckoutForm
-                  plano={plan.id}
-                  planLabel={plan.label}
-                  priceCents={plan.priceCents}
-                  pricePeriod={planPeriods[plan.id] ?? ""}
-                />
-              ) : (
-                <CheckoutForm
-                  plano={plan.id}
-                  planLabel={plan.label}
-                  priceCents={plan.priceCents}
-                  pricePeriod={planPeriods[plan.id] ?? ""}
-                />
-              )}
+              <StripeCheckoutForm
+                plano={plan.id}
+                planLabel={plan.label}
+                priceCents={plan.priceCents}
+                pricePeriod={planPeriods[plan.id] ?? ""}
+                defaultEmail={defaultEmail}
+                defaultName={defaultName}
+                isAuthenticated={Boolean(user)}
+              />
             </div>
           </div>
         </div>
