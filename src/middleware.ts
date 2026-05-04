@@ -12,7 +12,7 @@ function buildCsp(nonce: string): string {
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
       "font-src 'self' fonts.gstatic.com",
       "img-src 'self' blob: data: https:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com https://api.stripe.com https://maps.stripe.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://maps.stripe.com",
       "frame-src https://js.stripe.com https://hooks.stripe.com",
       "frame-ancestors 'none'",
     ].join("; ");
@@ -23,7 +23,7 @@ function buildCsp(nonce: string): string {
     "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
     "font-src 'self' fonts.gstatic.com",
     "img-src 'self' blob: data: https:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com https://api.stripe.com https://maps.stripe.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://maps.stripe.com",
     "frame-src https://js.stripe.com https://hooks.stripe.com",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",

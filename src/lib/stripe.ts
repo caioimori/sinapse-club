@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import type { BillingCycle } from "@/lib/abacatepay";
+import type { BillingCycle } from "@/lib/plans";
 
 /**
  * Stripe SDK singleton.

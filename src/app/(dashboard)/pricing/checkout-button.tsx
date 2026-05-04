@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { createCheckout } from "./actions";
-import type { BillingCycle } from "@/lib/abacatepay";
+import type { BillingCycle } from "@/lib/plans";
 
 interface CheckoutButtonProps {
   cycle: BillingCycle;

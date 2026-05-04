@@ -5,7 +5,7 @@ import { Check, Zap, Crown, Sparkles, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { CheckoutButton } from "./checkout-button";
-import type { BillingCycle } from "@/lib/abacatepay";
+import type { BillingCycle } from "@/lib/plans";
 
 /**
  * For anonymous visitors we route to /checkout/[plano] (signup-after-payment
@@ -210,7 +210,7 @@ export default async function PricingPage({
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Pagamento seguro via AbacatePay.
+        Pagamento seguro via Stripe.
         <br />
         Cancele a qualquer momento. Sem compromisso.
       </p>

@@ -112,7 +112,7 @@ export default function TermosPage() {
               </div>
             </div>
             <p className="text-muted-foreground text-sm mt-4">
-              Pagamentos são processados pela AbacatePay. Em caso de cancelamento, o acesso premium permanece ativo até o fim do período pago. Não realizamos reembolso de mensalidades já cobradas, salvo determinação legal.
+              Pagamentos são processados pela Stripe. Em caso de cancelamento, o acesso premium permanece ativo até o fim do período pago. Não realizamos reembolso de mensalidades já cobradas, salvo determinação legal.
             </p>
           </section>
 

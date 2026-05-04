@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PLANS, type BillingCycle } from "@/lib/abacatepay";
+import { PLANS, type BillingCycle } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 

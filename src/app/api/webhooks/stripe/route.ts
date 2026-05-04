@@ -5,7 +5,7 @@ import { getStripe, getPlanCycleFromPriceId } from "@/lib/stripe";
 import { getSupabaseAdminConfig } from "@/lib/supabase/admin-config";
 import type { Database } from "@/types/database";
 import { rateLimiters, checkRateLimit } from "@/lib/rate-limit";
-import { getPlan, type BillingCycle } from "@/lib/abacatepay";
+import { getPlan, type BillingCycle } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
