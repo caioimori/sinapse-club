@@ -129,7 +129,7 @@ export function CheckoutFlow({
           </div>
           <div className="h-[3px] w-full bg-border">
             <div
-              className="h-full bg-foreground transition-all duration-300 ease-out"
+              className="h-full bg-foreground motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>

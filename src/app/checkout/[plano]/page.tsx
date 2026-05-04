@@ -145,7 +145,8 @@ export default async function CheckoutPage({
               width={120}
               height={16}
               priority
-              className="h-4 w-auto dark:invert"
+              style={{ height: "auto" }}
+              className="w-auto dark:invert"
             />
           </Link>
         </div>

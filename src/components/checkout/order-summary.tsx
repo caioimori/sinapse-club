@@ -260,14 +260,19 @@ function SummaryBody({
 }
 
 /* ---------------------- Card brand SVGs --------------------------- */
-/* Logos oficiais em wordmark — reconheciveis, escala h-6 (24px). */
+/* Logos oficiais em wordmark — reconheciveis, escala h-6 (24px).
+ *
+ * NOTA BRANDBOOK: bandeiras de cartão usam suas cores oficiais (Visa azul-marinho,
+ * Mastercard vermelho/laranja, Pix turquesa, etc.) — exceção consciente à rule 01
+ * (paleta B&W absoluta). Justificativa: trust signal de pagamento é função
+ * (reconhecimento instantâneo) > estética. Padrão de indústria em checkout. */
 
 const brandWrap =
   "inline-flex h-6 items-center justify-center rounded-sm border border-border/60 bg-background px-2";
 
 function CardBrandVisa() {
   return (
-    <span className={brandWrap} aria-label="Visa">
+    <span className={brandWrap} role="img" aria-label="Visa">
       <svg viewBox="0 0 48 16" className="h-3.5 w-auto" aria-hidden="true">
         <text
           x="0"
@@ -288,7 +293,7 @@ function CardBrandVisa() {
 
 function CardBrandMastercard() {
   return (
-    <span className={brandWrap} aria-label="Mastercard">
+    <span className={brandWrap} role="img" aria-label="Mastercard">
       <svg viewBox="0 0 32 20" className="h-4 w-auto" aria-hidden="true">
         <circle cx="12" cy="10" r="7" fill="#EB001B" />
         <circle cx="20" cy="10" r="7" fill="#F79E1B" />
@@ -303,7 +308,7 @@ function CardBrandMastercard() {
 
 function CardBrandElo() {
   return (
-    <span className={brandWrap} aria-label="Elo">
+    <span className={brandWrap} role="img" aria-label="Elo">
       <svg viewBox="0 0 36 16" className="h-3.5 w-auto" aria-hidden="true">
         <text
           x="0"
@@ -326,7 +331,7 @@ function CardBrandElo() {
 
 function CardBrandAmex() {
   return (
-    <span className={brandWrap} aria-label="American Express">
+    <span className={brandWrap} role="img" aria-label="American Express">
       <svg viewBox="0 0 40 16" className="h-3.5 w-auto" aria-hidden="true">
         <rect width="40" height="16" fill="#2E77BC" />
         <text
@@ -348,7 +353,7 @@ function CardBrandAmex() {
 
 function CardBrandPix() {
   return (
-    <span className={brandWrap} aria-label="Pix">
+    <span className={brandWrap} role="img" aria-label="Pix">
       <svg viewBox="0 0 32 32" className="h-4 w-auto" aria-hidden="true">
         <path
           d="M9.6 22.4 6.4 19.2a4.5 4.5 0 0 1 0-6.4l3.2-3.2L13 13l-3.2 3.2a.5.5 0 0 0 0 .8l3.2 3.2-3.4 2.2Z"

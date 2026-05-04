@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
+import { loadStripe, type Stripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,15 +25,13 @@ interface StripeCheckoutFormProps {
   isAuthenticated?: boolean;
 }
 
-const stripePromise = (() => {
-  const key =
-    typeof window !== "undefined"
-      ? process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-      : undefined;
-  if (!key) return null;
-  return loadStripe(key);
-})();
+/* loadStripe é client-only (depende de window). Carregamos via useEffect
+ * pra evitar SSR/client mismatch (rule a11y + Lighthouse hydration). */
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
+/* Cores hardcoded — Stripe Elements API recebe valores literais via objeto
+ * appearance (não suporta CSS variables). Mantém alinhamento visual com
+ * brandbook (rule 02 #0A0A0A vanta, foreground #FAFAFA bone). */
 const appearance = {
   theme: "night" as const,
   variables: {
@@ -118,7 +116,14 @@ export function StripeCheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const supabase = createClient();
+
+  // Client-only Stripe.js load — evita hydration mismatch
+  useEffect(() => {
+    if (!PUBLISHABLE_KEY) return;
+    setStripePromise(loadStripe(PUBLISHABLE_KEY));
+  }, []);
 
   const emailValid = isValidEmail(email);
   const nameValid = name.trim().length >= 2;
@@ -178,7 +183,10 @@ export function StripeCheckoutForm({
     return { clientSecret, appearance };
   }, [clientSecret]);
 
-  if (!stripePromise) {
+  // Falta publishable key — só renderiza warning quando confirmado client-side
+  // (sem essa checagem, dispara hydration mismatch porque PUBLISHABLE_KEY é
+  // process.env e fica resolvido no SSR também).
+  if (!PUBLISHABLE_KEY) {
     return (
       <div className="rounded-none border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
         Pagamento indisponivel: chave publica do Stripe nao configurada. Avise o suporte.
@@ -342,7 +350,7 @@ export function StripeCheckoutForm({
         </form>
       )}
 
-      {clientSecret && elementsOptions && (
+      {clientSecret && elementsOptions && stripePromise && (
         <Elements stripe={stripePromise} options={elementsOptions}>
           <StripePaymentInner
             planLabel={planLabel}
