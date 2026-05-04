@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { getPlan, type BillingCycle } from "@/lib/abacatepay";
+import { getPlan, type BillingCycle } from "@/lib/plans";
 import { StripeCheckoutForm } from "./stripe-checkout-form";
 import {
   OrderSummaryDesktop,

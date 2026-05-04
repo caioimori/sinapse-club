@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PrivacidadePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+      <div className="mx-auto w-full max-w-screen-md px-[clamp(1.25rem,4vw,2.5rem)] py-16">
         {/* Header */}
         <div className="mb-12">
           <Link
@@ -18,7 +18,7 @@ export default function PrivacidadePage() {
           >
             ← Voltar
           </Link>
-          <h1 className="text-3xl font-bold mb-3 text-foreground">Política de Privacidade</h1>
+          <h1 className="font-display text-[clamp(3.5rem,7vw,5.5rem)] font-light leading-[0.95] tracking-tight mb-3 text-foreground">Política de Privacidade</h1>
           <p className="text-muted-foreground text-sm">
             Última atualização: 11 de abril de 2026 &nbsp;·&nbsp; Vigência imediata
           </p>
@@ -52,7 +52,7 @@ export default function PrivacidadePage() {
               <li><strong className="text-foreground">Conteúdo publicado:</strong> posts, comentários, enquetes, imagens enviadas pelo usuário</li>
               <li><strong className="text-foreground">Dados de uso:</strong> páginas visitadas, interações com conteúdo, timestamps de acesso</li>
               <li><strong className="text-foreground">Dados de perfil (opcionais):</strong> headline, bio, localização, empresa, website, username do GitHub</li>
-              <li><strong className="text-foreground">Dados de pagamento:</strong> processados exclusivamente pela Stripe (cartão de crédito/débito) ou pela AbacatePay (PIX/cartão, em fase de descontinuação) — não armazenamos dados de cartão em nossos servidores</li>
+              <li><strong className="text-foreground">Dados de pagamento:</strong> processados exclusivamente pela Stripe (cartão de crédito/débito, PIX) — não armazenamos dados de cartão em nossos servidores</li>
             </ul>
           </section>
 
@@ -118,12 +118,6 @@ export default function PrivacidadePage() {
                     <td className="px-4 py-3">Processamento de pagamentos com cartão de crédito/débito e gestão de assinaturas (Customer Portal, dunning, invoices)</td>
                     <td className="px-4 py-3">EUA / Irlanda</td>
                     <td className="px-4 py-3">DPA + SCCs (GDPR/LGPD)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3">AbacatePay</td>
-                    <td className="px-4 py-3">Processamento de pagamentos e assinaturas (em fase de descontinuação)</td>
-                    <td className="px-4 py-3">Brasil</td>
-                    <td className="px-4 py-3">LGPD</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Google OAuth</td>
