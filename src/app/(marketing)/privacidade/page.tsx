@@ -52,7 +52,7 @@ export default function PrivacidadePage() {
               <li><strong className="text-foreground">Conteúdo publicado:</strong> posts, comentários, enquetes, imagens enviadas pelo usuário</li>
               <li><strong className="text-foreground">Dados de uso:</strong> páginas visitadas, interações com conteúdo, timestamps de acesso</li>
               <li><strong className="text-foreground">Dados de perfil (opcionais):</strong> headline, bio, localização, empresa, website, username do GitHub</li>
-              <li><strong className="text-foreground">Dados de pagamento:</strong> processados exclusivamente pela AbacatePay — não armazenamos dados de cartão</li>
+              <li><strong className="text-foreground">Dados de pagamento:</strong> processados exclusivamente pela Stripe (cartão de crédito/débito) ou pela AbacatePay (PIX/cartão, em fase de descontinuação) — não armazenamos dados de cartão em nossos servidores</li>
             </ul>
           </section>
 
@@ -114,8 +114,14 @@ export default function PrivacidadePage() {
                     <td className="px-4 py-3">SCCs (GDPR)</td>
                   </tr>
                   <tr>
+                    <td className="px-4 py-3">Stripe Inc. / Stripe Payments Europe Ltd.</td>
+                    <td className="px-4 py-3">Processamento de pagamentos com cartão de crédito/débito e gestão de assinaturas (Customer Portal, dunning, invoices)</td>
+                    <td className="px-4 py-3">EUA / Irlanda</td>
+                    <td className="px-4 py-3">DPA + SCCs (GDPR/LGPD)</td>
+                  </tr>
+                  <tr>
                     <td className="px-4 py-3">AbacatePay</td>
-                    <td className="px-4 py-3">Processamento de pagamentos e assinaturas</td>
+                    <td className="px-4 py-3">Processamento de pagamentos e assinaturas (em fase de descontinuação)</td>
                     <td className="px-4 py-3">Brasil</td>
                     <td className="px-4 py-3">LGPD</td>
                   </tr>

@@ -3,24 +3,28 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 function buildCsp(nonce: string): string {
   const isDev = process.env.NODE_ENV === "development";
+  // Stripe requer js.stripe.com (script), hooks.stripe.com + js.stripe.com (frames),
+  // api.stripe.com (XHR). Vercel Analytics: va.vercel-scripts.com.
   if (isDev) {
     return [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com",
       "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
       "font-src 'self' fonts.gstatic.com",
       "img-src 'self' blob: data: https:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com https://api.stripe.com https://maps.stripe.com",
+      "frame-src https://js.stripe.com https://hooks.stripe.com",
       "frame-ancestors 'none'",
     ].join("; ");
   }
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
     "font-src 'self' fonts.gstatic.com",
     "img-src 'self' blob: data: https:",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.abacatepay.com https://api.stripe.com https://maps.stripe.com",
+    "frame-src https://js.stripe.com https://hooks.stripe.com",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
   ].join("; ");
