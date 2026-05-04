@@ -120,12 +120,6 @@ export default function PrivacidadePage() {
                     <td className="px-4 py-3">DPA + SCCs (GDPR/LGPD)</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-3">AbacatePay</td>
-                    <td className="px-4 py-3">Processamento de pagamentos e assinaturas (em fase de descontinuação)</td>
-                    <td className="px-4 py-3">Brasil</td>
-                    <td className="px-4 py-3">LGPD</td>
-                  </tr>
-                  <tr>
                     <td className="px-4 py-3">Google OAuth</td>
                     <td className="px-4 py-3">Autenticação via conta Google (opcional)</td>
                     <td className="px-4 py-3">EUA</td>
