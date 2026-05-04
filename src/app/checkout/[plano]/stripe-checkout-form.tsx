@@ -186,7 +186,8 @@ export function StripeCheckoutForm({
     );
   }
 
-  const ctaLabel = `Pagar ${formatBRL(priceCents)} ${pricePeriod}`.replace(/\s+/g, " ").trim();
+  const stage1Cta = "Continuar";
+  const priceLine = `${formatBRL(priceCents)} ${pricePeriod}`.replace(/\s+/g, " ").trim();
 
   return (
     <div className="space-y-8">
@@ -261,7 +262,7 @@ export function StripeCheckoutForm({
               )}
             </div>
             {nameError && (
-              <p className="text-[12px] text-destructive">Informe seu nome (minimo 2 letras).</p>
+              <p className="text-[12px] text-destructive">Falta o nome.</p>
             )}
           </div>
 
@@ -290,7 +291,7 @@ export function StripeCheckoutForm({
               )}
             </div>
             {emailError && (
-              <p className="text-[12px] text-destructive">Email invalido.</p>
+              <p className="text-[12px] text-destructive">Email não parece certo.</p>
             )}
           </div>
 
@@ -331,11 +332,11 @@ export function StripeCheckoutForm({
               {isPending ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
               ) : (
-                ctaLabel
+                stage1Cta
               )}
             </Button>
             <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
-              ✓ 7 dias de garantia · devolvemos 100%
+              {priceLine} · 7 dias de garantia
             </p>
           </div>
         </form>
@@ -400,7 +401,17 @@ function StripePaymentInner({
     });
 
     if (confirmError) {
-      const msg = confirmError.message ?? "Falha ao processar pagamento.";
+      const rawMsg = confirmError.message ?? "Cartão recusado. Tente outro.";
+      // Yampi-style microcopy: erros diretos e acionáveis
+      const msg = confirmError.code === "card_declined"
+        ? "Cartão recusado. Tente outro ou outro cartão."
+        : confirmError.code === "expired_card"
+        ? "Cartão expirado."
+        : confirmError.code === "incorrect_cvc"
+        ? "CVV não confere. Confira atrás do cartão."
+        : confirmError.code === "insufficient_funds"
+        ? "Saldo insuficiente. Tente outro cartão."
+        : rawMsg;
       setPaymentError(msg);
       setSubmitting(false);
 
@@ -413,7 +424,7 @@ function StripePaymentInner({
     // Se sucesso, Stripe redireciona automatico pro return_url.
   }
 
-  const ctaLabel = `Pagar ${(priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} ${pricePeriod}`.replace(/\s+/g, " ").trim();
+  const finalPriceLine = `${(priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} ${pricePeriod}`.replace(/\s+/g, " ").trim();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -439,11 +450,11 @@ function StripePaymentInner({
           {submitting ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processando...</>
           ) : (
-            ctaLabel
+            "Assinar agora"
           )}
         </Button>
         <p className="font-mono text-center text-[11px] tracking-[0.04em] text-muted-foreground">
-          ✓ 7 dias de garantia · devolvemos 100%
+          {finalPriceLine} · 7 dias de garantia
         </p>
       </div>
 
@@ -453,7 +464,7 @@ function StripePaymentInner({
         disabled={submitting}
         className="w-full text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
       >
-        Trocar dados
+        Voltar
       </button>
     </form>
   );

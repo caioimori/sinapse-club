@@ -121,6 +121,32 @@ Apos staging OK:
 
 ---
 
+## Recursos de recovery — ativar pra subir conversao (CRITICO)
+
+Apos criar a conta e ANTES de divulgar, ativar esses 3 toggles no dashboard Stripe. Sao gratis e recuperam 10-25% dos pagamentos que iam falhar.
+
+### 1. Smart Retries (recupera cartao recusado)
+- **Caminho:** Settings -> Billing -> Subscriptions and emails -> Smart retries
+- **Acao:** ativar
+- **O que faz:** Stripe tenta o cartao novamente em horarios otimizados quando ha falha temporaria (saldo, limite). Recupera 10-15% sem cliente fazer nada.
+- **Custo:** zero. Embutido no plano.
+
+### 2. Card Updater (atualiza cartao expirado/trocado)
+- **Caminho:** Settings -> Billing -> Card updater
+- **Acao:** ativar
+- **O que faz:** quando bandeira do cartao avisa que cliente trocou de cartao (expirou, perdeu, foi roubado), Stripe atualiza automatico sem o cliente precisar fazer nada.
+- **Custo:** ~$0.25 por atualizacao bem-sucedida. Vale sempre a pena.
+
+### 3. Recovery Emails (recupera carrinho abandonado)
+- **Caminho:** Settings -> Billing -> Subscriptions and emails -> Customer emails
+- **Acao:** ativar todos os toggles relevantes:
+  - "Send emails about expiring credit cards"
+  - "Send emails when card payments fail"
+  - "Send finalization emails"
+- **O que faz:** Stripe manda email automatico em ingles quando algo falha. (Versao em portugues + branding nosso vem na Sprint 2 via Resend + webhook custom.)
+
+---
+
 ## Rollback
 
 Se algo quebrar pos-cutover:

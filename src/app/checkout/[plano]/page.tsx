@@ -1,33 +1,38 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { getPlan, PLANS } from "@/lib/abacatepay";
+import { getPlan, type BillingCycle } from "@/lib/abacatepay";
+import { StripeCheckoutForm } from "./stripe-checkout-form";
 import {
   OrderSummaryDesktop,
   OrderSummaryMobile,
+  type OrderSummaryProps,
 } from "@/components/checkout/order-summary";
-import { StripeCheckoutForm } from "./stripe-checkout-form";
 
 export const dynamic = "force-dynamic";
 
-const planFeatures = [
-  "Acesso completo ao forum",
-  "Curadoria diaria IA + negocios",
-  "Ferramentas e marketplace",
-  "Gamificacao, ranks e leaderboard",
-  "7 dias de garantia incondicional",
-];
-
-const planTaglines: Record<string, string> = {
-  mensal: "Cobrado todo mes. Cancele quando quiser.",
-  semestral: "Cobrado uma vez a cada 6 meses.",
-  anual: "Cobrado uma vez por ano. Maior economia.",
-};
-
-const planPeriods: Record<string, string> = {
-  mensal: "/ mes",
+const planPeriods: Record<BillingCycle, string> = {
+  mensal: "/ mês",
   semestral: "/ 6 meses",
   anual: "/ ano",
 };
+
+const planTaglines: Record<BillingCycle, string> = {
+  mensal: "Cobrado todo mês. Cancele quando quiser.",
+  semestral: "Cobrado uma vez a cada 6 meses. Mais economia.",
+  anual: "Cobrado uma vez por ano. Maior economia.",
+};
+
+const PLAN_FEATURES: string[] = [
+  "Acesso completo ao fórum",
+  "Curadoria diária IA + negócios",
+  "Ferramentas e marketplace",
+  "Gamificação, ranks e leaderboard",
+  "7 dias de garantia incondicional",
+];
+
+const MONTHLY_PRICE_CENTS = 3790;
 
 function formatBRL(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", {
@@ -36,47 +41,42 @@ function formatBRL(cents: number): string {
   });
 }
 
-/**
- * Builds anchor-pricing copy for CRO loss-aversion (research §02).
- *
- * - "Equivale a R$ X / mes" — strong anchor that reframes the larger total
- *   into the same mental scale as the monthly plan.
- * - "Economize R$ Y / ano vs mensal" — explicit total savings (loss aversion).
- *
- * Mensal returns nothing — pure ticket, no anchor.
- */
-function buildAnchorCopy(planId: string): {
-  baselineCents?: number;
-  equivalentMonthlyCopy?: string;
-  totalSavingsCopy?: string;
-  savingsCopy?: string;
-} {
-  const monthly = PLANS.mensal.priceCents;
-  if (planId === "semestral") {
-    const baseline = monthly * 6;
-    const perMonthCents = Math.round(PLANS.semestral.priceCents / 6);
-    const totalSavedReais = (baseline - PLANS.semestral.priceCents) / 100;
-    return {
-      baselineCents: baseline,
-      equivalentMonthlyCopy: `Equivale a ${formatBRL(perMonthCents)} / mes`,
-      totalSavingsCopy: `Economize R$ ${totalSavedReais
-        .toFixed(2)
-        .replace(".", ",")} no semestre`,
-    };
+function shortPlanLabel(label: string): string {
+  // "SINAPSE - Acesso anual" -> "Anual"
+  const cleaned = label.replace(/^SINAPSE\s*-\s*Acesso\s+/i, "").trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function buildSummaryProps(
+  cycle: BillingCycle,
+  priceCents: number,
+  label: string,
+): OrderSummaryProps {
+  const base: OrderSummaryProps = {
+    planLabel: shortPlanLabel(label),
+    planTagline: planTaglines[cycle],
+    priceCents,
+    pricePeriod: planPeriods[cycle],
+    features: PLAN_FEATURES,
+  };
+
+  if (cycle === "mensal") {
+    return base;
   }
-  if (planId === "anual") {
-    const baseline = monthly * 12;
-    const perMonthCents = Math.round(PLANS.anual.priceCents / 12);
-    const totalSavedReais = (baseline - PLANS.anual.priceCents) / 100;
-    return {
-      baselineCents: baseline,
-      equivalentMonthlyCopy: `Equivale a ${formatBRL(perMonthCents)} / mes`,
-      totalSavingsCopy: `Economize R$ ${totalSavedReais
-        .toFixed(2)
-        .replace(".", ",")} / ano`,
-    };
-  }
-  return {};
+
+  // semestral / anual — anchor pricing for loss-aversion CRO
+  const months = cycle === "semestral" ? 6 : 12;
+  const baselineCents = MONTHLY_PRICE_CENTS * months;
+  const monthlyEquivalentCents = Math.round(priceCents / months);
+  const savingsCents = baselineCents - priceCents;
+  const periodNoun = cycle === "semestral" ? "/ 6 meses" : "/ ano";
+
+  return {
+    ...base,
+    baselineCents,
+    equivalentMonthlyCopy: `Equivale a ${formatBRL(monthlyEquivalentCents)} / mês`,
+    totalSavingsCopy: `Economize ${formatBRL(savingsCents)} ${periodNoun} vs mensal`,
+  };
 }
 
 export async function generateMetadata({
@@ -88,29 +88,23 @@ export async function generateMetadata({
   const plan = getPlan(plano.toLowerCase());
   if (!plan) return { title: "Checkout — sinapse.club" };
   return {
-    title: `Checkout ${plan.label} — sinapse.club`,
-    description: "Pague e crie sua conta em seguida. Acesso imediato ao forum.",
+    title: `${plan.label} — sinapse.club`,
+    description: "Pague e crie sua conta em seguida. Acesso imediato ao fórum.",
   };
 }
 
 export default async function CheckoutPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ plano: string }>;
-  searchParams: Promise<{ canceled?: string }>;
 }) {
   const { plano } = await params;
-  const { canceled } = await searchParams;
   const plan = getPlan(plano.toLowerCase());
 
   if (!plan) {
     notFound();
   }
 
-  // Prefill do form quando o usuario ja esta logado (vindo do OAuth ou de
-  // /subscribe/...). Webhook do Stripe vincula a subscription ao user
-  // existente via lookup por email, entao nao ha duplicacao.
   const supabase = await createClient();
   const {
     data: { user },
@@ -122,29 +116,14 @@ export default async function CheckoutPage({
     ?? (user?.user_metadata?.preferred_username as string | undefined)
     ?? (user?.email ? user.email.split("@")[0] : undefined);
 
-  const { baselineCents, equivalentMonthlyCopy, totalSavingsCopy, savingsCopy } =
-    buildAnchorCopy(plan.id);
-
-  const summaryProps = {
-    planLabel: plan.label,
-    planTagline: planTaglines[plan.id] ?? "",
-    priceCents: plan.priceCents,
-    pricePeriod: planPeriods[plan.id] ?? "",
-    baselineCents,
-    equivalentMonthlyCopy,
-    totalSavingsCopy,
-    savingsCopy,
-    features: planFeatures,
-    canceledNotice: Boolean(canceled),
-  };
+  const summaryProps = buildSummaryProps(plan.id, plan.priceCents, plan.label);
 
   return (
-    <div className="relative min-h-dvh bg-background">
-      {/* Grain layer — brandbook rule 03/11. Sutil, nao-interativo, fixo no viewport.
-          Garante que o checkout nao pareca template generico mesmo sem grain global. */}
+    <main className="relative h-dvh overflow-hidden bg-background text-foreground">
+      {/* Grain — brandbook rule 03/11 (sempre ativo, opacidade baixa) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.035] mix-blend-multiply dark:mix-blend-screen dark:opacity-[0.06]"
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.035] mix-blend-multiply"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
@@ -152,35 +131,55 @@ export default async function CheckoutPage({
         }}
       />
 
-      <div className="relative z-10">
-        {/* Mobile-only collapsible summary sits full-width at the top */}
+      <div className="relative z-10 flex h-dvh flex-col">
+        {/* Brand mark — top-left, persistente */}
+        <div className="border-b border-border/60 px-[clamp(1.5rem,5vw,4rem)] py-3">
+          <Link
+            href="/"
+            className="inline-flex items-center transition-opacity hover:opacity-70"
+            aria-label="sinapse.club"
+          >
+            <Image
+              src="/brand/sinapse-club.svg"
+              alt="sinapse.club"
+              width={120}
+              height={16}
+              priority
+              className="h-4 w-auto dark:invert"
+            />
+          </Link>
+        </div>
+
+        {/* Mobile order summary — accordion no topo, hidden em lg+ */}
         <OrderSummaryMobile {...summaryProps} />
 
-        {/* Assimetria deliberada (rule 06): 4/8 desktop. Esquerda compacta com
-            peso tipografico gigante; direita ampla pra form respirar. */}
-        <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
-          {/* LEFT — sticky order summary (desktop only). Single hairline divider,
-              no fill — pura hierarquia tipografica. */}
-          <div className="hidden lg:block lg:border-r lg:border-border lg:px-12 lg:py-16 xl:px-16 xl:py-20">
-            <OrderSummaryDesktop {...summaryProps} />
-          </div>
+        {/*
+          Grid principal — assimétrico (rule 06).
+          Desktop: sidebar esquerda peso visual ~5/12 (preço gigante) +
+          form direita ~28rem fixo. Gap fluido 80-120px (rule 05/06).
+          Mobile: stack vertical, accordion já renderizado acima.
+        */}
+        <div
+          className="mx-auto grid w-full max-w-screen-2xl min-h-0 flex-1 grid-cols-1 px-[clamp(1.5rem,5vw,4rem)] py-6 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:py-8"
+          style={{ columnGap: "clamp(2.5rem, 6vw, 6rem)" }}
+        >
+          {/* Form esquerda — flex column com testimonial fixado no bottom */}
+          <div className="order-2 flex h-full w-full max-w-[30rem] flex-col justify-self-start lg:order-1">
+            <div className="space-y-2">
+              <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="inline-block h-px w-6 bg-foreground/40" aria-hidden="true" />
+                Falta pouco
+              </p>
+              <h2 className="whitespace-nowrap font-display text-[clamp(3.0625rem,4vw,3.5rem)] font-light leading-[1] tracking-[-0.04em]">
+                Acesso imediato.
+              </h2>
+              <p className="max-w-[24rem] text-[13px] leading-relaxed text-muted-foreground">
+                Pague, crie sua conta e entre no fórum em segundos.
+                Garantia de 7 dias — devolvemos 100% se não curtir.
+              </p>
+            </div>
 
-          {/* RIGHT — payment form. Width fluid via CSS clamp; container padding
-              tambem escala com viewport pra legibilidade em qualquer breakpoint. */}
-          <div className="px-[clamp(1.25rem,5vw,4rem)] py-12 lg:py-20">
-            <div
-              className="mx-auto w-full space-y-10"
-              style={{ maxWidth: "clamp(20rem, 38vw, 30rem)" }}
-            >
-              <div className="space-y-3">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Pagamento
-                </p>
-                <h2 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[30px]">
-                  {user ? "Confirme e pague" : "Crie sua conta e pague"}
-                </h2>
-              </div>
-
+            <div className="mt-5">
               <StripeCheckoutForm
                 plano={plan.id}
                 planLabel={plan.label}
@@ -191,9 +190,15 @@ export default async function CheckoutPage({
                 isAuthenticated={Boolean(user)}
               />
             </div>
+
+          </div>
+
+          {/* Sidebar direita — flex col, trust row pinned bottom */}
+          <div className="order-1 hidden lg:order-2 lg:flex lg:h-full lg:w-full lg:max-w-[30rem] lg:flex-col lg:justify-self-end">
+            <OrderSummaryDesktop {...summaryProps} />
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
