@@ -14,6 +14,37 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.githubusercontent.com" },
     ],
   },
+  /**
+   * Proxy reverso transparente do Supabase via nosso domínio.
+   *
+   * Substitui `udwpovojufbpzrexvkcc.supabase.co` por `forum.sinapse.club/sb/*`
+   * em TODAS as chamadas client-side e na URL da barra do navegador durante
+   * o OAuth flow. Mantém branding limpo no plano Free do Supabase (sem
+   * precisar do add-on Custom Domain de $10/mês).
+   *
+   * Como funciona:
+   * - NEXT_PUBLIC_SUPABASE_URL = "https://forum.sinapse.club/sb"
+   * - Cliente JS chama `/sb/auth/v1/...`, `/sb/rest/v1/...`, etc.
+   * - Vercel/Edge faz proxy transparente pro real Supabase URL
+   * - Browser nunca vê o subdomain `*.supabase.co`
+   *
+   * IMPORTANTE pro OAuth (Google/GitHub):
+   * - "Site URL" e "Redirect URLs" no Supabase Dashboard devem apontar
+   *   pra `https://forum.sinapse.club/sb`
+   * - Authorized Redirect URI no Google Console / GitHub OAuth App deve
+   *   ser `https://forum.sinapse.club/sb/auth/v1/callback`
+   */
+  async rewrites() {
+    const supabaseUpstream =
+      process.env.SUPABASE_PROXY_UPSTREAM ??
+      "https://udwpovojufbpzrexvkcc.supabase.co";
+    return [
+      {
+        source: "/sb/:path*",
+        destination: `${supabaseUpstream}/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
