@@ -106,6 +106,19 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Bloqueia user com email NÃO confirmado de acessar áreas internas.
+  // OAuth (Google/GitHub) sempre vem com email_confirmed_at setado;
+  // só afeta cadastro email/senha sem clicar no link de confirmação.
+  if (user && !user.email_confirmed_at && isDashboardRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("error", "unconfirmed");
+    url.searchParams.set("email", user.email ?? "");
+    // Sign out the half-formed session pra evitar loop.
+    await supabase.auth.signOut();
+    return NextResponse.redirect(url);
+  }
+
   if (user && isDashboardRoute && !pathname.startsWith("/onboarding")) {
     const { data: profile } = await supabase
       .from("profiles")
