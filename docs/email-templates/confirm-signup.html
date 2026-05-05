@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirme sua conta — sinapse.club</title>
+</head>
+<body style="margin:0;padding:0;background:#0A0A0A;font-family:'Inter',Helvetica,Arial,sans-serif;color:#F5F5F0;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#0A0A0A;">
+          <!-- Brand mark -->
+          <tr>
+            <td style="padding-bottom:48px;border-bottom:1px solid rgba(245,245,240,0.12);">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(245,245,240,0.5);">
+                sinapse.club
+              </span>
+            </td>
+          </tr>
+
+          <!-- Eyebrow -->
+          <tr>
+            <td style="padding-top:48px;">
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(245,245,240,0.5);">
+                — Falta um passo
+              </p>
+            </td>
+          </tr>
+
+          <!-- Headline editorial -->
+          <tr>
+            <td style="padding-top:12px;padding-bottom:24px;">
+              <h1 style="margin:0;font-size:56px;line-height:0.95;letter-spacing:-0.025em;font-weight:300;color:#F5F5F0;">
+                Confirme sua conta.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(245,245,240,0.75);">
+                Você acabou de criar uma conta no sinapse.club. Pra liberar o acesso e começar
+                a participar do fórum, confirma seu email clicando no botão abaixo.
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <a href="{{ .ConfirmationURL }}"
+                 style="display:inline-block;background:#F5F5F0;color:#0A0A0A;text-decoration:none;padding:14px 28px;font-size:14px;font-weight:500;letter-spacing:0.01em;">
+                Confirmar minha conta
+              </a>
+            </td>
+          </tr>
+
+          <!-- Fallback link -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <p style="margin:0 0 8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(245,245,240,0.4);">
+                Ou cole no navegador
+              </p>
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;color:rgba(245,245,240,0.55);word-break:break-all;">
+                {{ .ConfirmationURL }}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Microcopy garantia -->
+          <tr>
+            <td style="padding-top:24px;border-top:1px solid rgba(245,245,240,0.12);">
+              <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(245,245,240,0.5);">
+                Se você não criou essa conta, ignora esse email. Nenhuma cobrança vai ser feita
+                sem confirmação.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:32px;">
+              <p style="margin:0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(245,245,240,0.35);">
+                sinapse.club · comunidade de IA aplicada
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
