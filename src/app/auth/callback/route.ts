@@ -35,13 +35,18 @@ async function syncGithubUsernameFromIdentity(
     .eq("id", userId);
 }
 
+type EmailOtpType = "signup" | "email_change" | "recovery" | "invite" | "magiclink" | "email";
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const tokenHash = searchParams.get("token_hash");
+  const otpType = searchParams.get("type") as EmailOtpType | null;
   const rawNext = searchParams.get("next") ?? "/forum";
   // Only allow same-origin relative paths: must start with "/" but NOT "//"
   const next = /^\/(?!\/)[A-Za-z0-9/_\-?=&%.]*$/.test(rawNext) ? rawNext : "/forum";
 
+  // Caminho 1 — PKCE (OAuth + same-device email). Cookie code_verifier necessário.
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -50,7 +55,30 @@ export async function GET(request: Request) {
       if (userData?.user) {
         await syncGithubUsernameFromIdentity(supabase, userData.user.id);
       }
-      return NextResponse.redirect(`${origin}${next}`);
+      const target = otpType === "signup"
+        ? `${next}${next.includes("?") ? "&" : "?"}welcome=1`
+        : next;
+      return NextResponse.redirect(`${origin}${target}`);
+    }
+  }
+
+  // Caminho 2 — token_hash (cross-device). Funciona quando usuário abre o
+  // email num browser/device diferente do que cadastrou. Resolve o drop de
+  // 80% no email signup identificado na auditoria UX S2.
+  if (tokenHash && otpType) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: otpType,
+    });
+    if (!error) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        await syncGithubUsernameFromIdentity(supabase, userData.user.id);
+      }
+      const welcomeFlag = otpType === "signup" ? "?welcome=1" : "";
+      const sep = next.includes("?") ? "&" : welcomeFlag.replace("?", "&");
+      return NextResponse.redirect(`${origin}${next}${welcomeFlag ? sep + "welcome=1" : ""}`);
     }
   }
 
