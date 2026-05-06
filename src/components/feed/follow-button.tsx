@@ -15,14 +15,30 @@ interface FollowButtonProps {
   className?: string;
 }
 
-// Cache do role do usuário atual em memória pra não fazer round-trip
-// a cada click. Vive enquanto a aba estiver aberta.
-let cachedUserRole: { userId: string; role: string } | null = null;
+// Cache do role do usuário com TTL pra não fazer round-trip a cada click,
+// mas invalidar rápido o suficiente pra detectar upgrade pós-checkout.
+const ROLE_CACHE_TTL_MS = 60_000;
+let cachedUserRole: { userId: string; role: string; cachedAt: number } | null = null;
+
+/**
+ * Invalida o cache de role manualmente. Chame após eventos que mudam role
+ * (ex: checkout success, downgrade, mudança de plano).
+ */
+export function clearUserRoleCache() {
+  cachedUserRole = null;
+}
 
 async function getUserRole(supabase: ReturnType<typeof createClient>): Promise<{ userId: string; role: string } | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  if (cachedUserRole?.userId === user.id) return cachedUserRole;
+
+  const now = Date.now();
+  if (
+    cachedUserRole?.userId === user.id &&
+    now - cachedUserRole.cachedAt < ROLE_CACHE_TTL_MS
+  ) {
+    return { userId: cachedUserRole.userId, role: cachedUserRole.role };
+  }
 
   const { data: profile } = await (supabase as any)
     .from("profiles")
@@ -30,8 +46,8 @@ async function getUserRole(supabase: ReturnType<typeof createClient>): Promise<{
     .eq("id", user.id)
     .single();
   const role = (profile?.role as string) ?? "free";
-  cachedUserRole = { userId: user.id, role };
-  return cachedUserRole;
+  cachedUserRole = { userId: user.id, role, cachedAt: now };
+  return { userId: cachedUserRole.userId, role };
 }
 
 export function FollowButton({ targetUserId, isFollowing: initial, className }: FollowButtonProps) {
