@@ -47,12 +47,19 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
         {/* Home */}
         <Link
           href="/forum"
+          aria-current={isHome && !categoriesOpen ? "page" : undefined}
           className={cn(
             "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors relative",
-            isHome && !categoriesOpen ? "text-foreground" : "text-muted-foreground"
+            isHome && !categoriesOpen ? "text-foreground font-semibold" : "text-muted-foreground"
           )}
         >
-          <Home className="h-5 w-5" />
+          {isHome && !categoriesOpen && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-foreground"
+            />
+          )}
+          <Home className="h-5 w-5" aria-hidden="true" />
           <span>Home</span>
         </Link>
 
@@ -60,12 +67,21 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
         <button
           type="button"
           onClick={() => setCategoriesOpen(true)}
+          aria-label="Abrir categorias do fórum"
+          aria-expanded={categoriesOpen}
+          aria-haspopup="dialog"
           className={cn(
-            "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors",
-            categoriesOpen ? "text-foreground" : "text-muted-foreground"
+            "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors relative",
+            categoriesOpen ? "text-foreground font-semibold" : "text-muted-foreground"
           )}
         >
-          <MessageSquare className="h-5 w-5" />
+          {categoriesOpen && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-foreground"
+            />
+          )}
+          <MessageSquare className="h-5 w-5" aria-hidden="true" />
           <span>Forum</span>
         </button>
 
@@ -73,32 +89,47 @@ export function MobileNav({ categories = [], className }: MobileNavProps) {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new CustomEvent("open-compose-modal"))}
+          aria-label="Criar nova publicação"
           className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background -mt-3 shadow-md transition-transform active:scale-95"
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="h-5 w-5" aria-hidden="true" />
         </button>
 
         {/* Notifications */}
         <Link
           href="/notificacoes"
+          aria-current={isNotifications ? "page" : undefined}
           className={cn(
             "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors relative",
-            isNotifications ? "text-foreground" : "text-muted-foreground"
+            isNotifications ? "text-foreground font-semibold" : "text-muted-foreground"
           )}
         >
-          <Bell className="h-5 w-5" />
+          {isNotifications && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-foreground"
+            />
+          )}
+          <Bell className="h-5 w-5" aria-hidden="true" />
           <span>Notifs</span>
         </Link>
 
         {/* Profile */}
         <Link
           href="/profile"
+          aria-current={isProfile ? "page" : undefined}
           className={cn(
-            "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors",
-            isProfile ? "text-foreground" : "text-muted-foreground"
+            "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors relative",
+            isProfile ? "text-foreground font-semibold" : "text-muted-foreground"
           )}
         >
-          <User className="h-5 w-5" />
+          {isProfile && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-foreground"
+            />
+          )}
+          <User className="h-5 w-5" aria-hidden="true" />
           <span>Perfil</span>
         </Link>
       </nav>
