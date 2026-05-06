@@ -1,82 +1,38 @@
 // Supabase Edge Function: curate-rss
-// MISSION: sinapse.club e um HUB AI-first para negocios, marketing e
-// empreendedorismo. Todo item publicado precisa mencionar IA E uma das
-// frentes de aplicacao (marketing, ads, SEO/GEO, growth, automacao/n8n,
-// ecommerce, infoproduto, copy, empreendedorismo).
+// MISSION: sinapse.club é um HUB AI-first para negócios, marketing e
+// empreendedorismo, 100% em português brasileiro.
+//
+// MVP é PT-only nativo: zero tradução. Curamos APENAS conteúdo já em
+// português, vindo de fontes brasileiras de qualidade.
 //
 // pg_cron: every hour
+//
+// Fontes em 2 tiers:
+//  - tier 'ai':       fonte é foco em IA → aceita tudo (sem exigir token AI)
+//  - tier 'business': fonte é business/marketing geral BR → exige menção AI
+//                     (filtra ~5-15% mais relevantes)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ─── RSS Sources — AI applied to business & marketing ──────────────
-const RSS_FEEDS = [
-  // ── AI labs & product blogs (sempre com foco em aplicacao) ─────
-  { url: "https://openai.com/blog/rss/", category: "llms-agentes" },
-  { url: "https://www.anthropic.com/feed", category: "llms-agentes" },
-  { url: "https://www.perplexity.ai/changelog.rss", category: "ferramentas-reviews" },
-  { url: "https://www.producthunt.com/feed?category=ai", category: "ferramentas-reviews" },
-  { url: "https://www.producthunt.com/feed?category=marketing", category: "ferramentas-reviews" },
-  { url: "https://www.producthunt.com/feed?category=sales", category: "ferramentas-reviews" },
+type Tier = "ai" | "business";
+type Feed = { url: string; category: string; tier: Tier };
 
-  // ── Automation / no-code (AI + workflows) ──────────────────────
-  { url: "https://blog.n8n.io/rss/", category: "automacao-no-code" },
-  { url: "https://zapier.com/blog/feeds/latest/", category: "automacao-no-code" },
-  { url: "https://www.make.com/en/blog/feed", category: "automacao-no-code" },
+// ─── RSS Sources — 100% Brasil ─────────────────────────────────────
+const RSS_FEEDS: Feed[] = [
+  // ── Tier AI: fonte já é especializada em IA → aceita sem filtro ──
+  { url: "https://canaltech.com.br/rss/inteligencia-artificial/", category: "llms-agentes", tier: "ai" },
 
-  // ── Marketing / SEO / Growth / Ads ─────────────────────────────
-  { url: "https://searchengineland.com/feed", category: "ai-para-seo" },
-  { url: "https://www.searchenginejournal.com/feed/", category: "ai-para-seo" },
-  { url: "https://moz.com/blog/feed", category: "ai-para-seo" },
-  { url: "https://ahrefs.com/blog/feed/", category: "ai-para-seo" },
-  { url: "https://backlinko.com/feed", category: "ai-para-seo" },
-  { url: "https://neilpatel.com/blog/feed/", category: "ai-para-seo" },
-  { url: "https://blog.hubspot.com/marketing/rss.xml", category: "ai-para-seo" },
-  { url: "https://contentmarketinginstitute.com/feed/", category: "ai-para-seo" },
-  { url: "https://copyblogger.com/feed/", category: "ai-copywriting" },
-
-  // ── Business / strategy / startups ─────────────────────────────
-  { url: "https://www.lennysnewsletter.com/feed", category: "negocios-estrategia" },
-  { url: "https://www.oneusefulthing.org/feed", category: "negocios-estrategia" },
-  { url: "https://hbr.org/topic/technology/rss", category: "negocios-estrategia" },
-  { url: "https://www.inc.com/tag/artificial-intelligence.rss", category: "negocios-estrategia" },
-  { url: "https://www.forbes.com/innovation/ai/feed/", category: "negocios-estrategia" },
-  { url: "https://venturebeat.com/category/ai/feed/", category: "negocios-estrategia" },
-
-  // ── US tech media filtrado por AI ──────────────────────────────
-  { url: "https://techcrunch.com/category/artificial-intelligence/feed/", category: "llms-agentes" },
-
-  // ── BR tech media focado em IA ─────────────────────────────────
-  { url: "https://canaltech.com.br/rss/inteligencia-artificial/", category: "llms-agentes" },
-  { url: "https://exame.com/tecnologia/inteligencia-artificial/feed/", category: "negocios-estrategia" },
-
-  // ── Reddit AI tools / apps (alto sinal de casos praticos) ──────
-  { url: "https://www.reddit.com/r/ChatGPT/hot.rss", category: "ferramentas-reviews" },
-  { url: "https://www.reddit.com/r/ClaudeAI/hot.rss", category: "ferramentas-reviews" },
-  { url: "https://www.reddit.com/r/OpenAI/hot.rss", category: "llms-agentes" },
-  { url: "https://www.reddit.com/r/AItools/hot.rss", category: "ferramentas-reviews" },
-  { url: "https://www.reddit.com/r/PromptEngineering/hot.rss", category: "llms-agentes" },
-  { url: "https://www.reddit.com/r/n8n/hot.rss", category: "automacao-no-code" },
-  { url: "https://www.reddit.com/r/automation/hot.rss", category: "automacao-no-code" },
-  { url: "https://www.reddit.com/r/nocode/hot.rss", category: "automacao-no-code" },
-  { url: "https://www.reddit.com/r/AIBusiness/hot.rss", category: "negocios-estrategia" },
-  { url: "https://www.reddit.com/r/AI_Agents/hot.rss", category: "llms-agentes" },
-
-  // ── Reddit business / marketing com filtro AI na query ─────────
-  { url: "https://www.reddit.com/r/marketing/search.rss?q=AI+OR+ChatGPT+OR+automation&sort=new&restrict_sr=on", category: "ai-para-seo" },
-  { url: "https://www.reddit.com/r/SEO/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-seo" },
-  { url: "https://www.reddit.com/r/PPC/search.rss?q=AI+OR+automation&sort=new&restrict_sr=on", category: "ai-para-ads" },
-  { url: "https://www.reddit.com/r/FacebookAds/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-ads" },
-  { url: "https://www.reddit.com/r/GoogleAds/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-ads" },
-  { url: "https://www.reddit.com/r/TikTokMarketing/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-ads" },
-  { url: "https://www.reddit.com/r/ecommerce/search.rss?q=AI+OR+ChatGPT+OR+automation&sort=new&restrict_sr=on", category: "ai-para-ecommerce" },
-  { url: "https://www.reddit.com/r/shopify/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-ecommerce" },
-  { url: "https://www.reddit.com/r/dropshipping/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-ecommerce" },
-  { url: "https://www.reddit.com/r/copywriting/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-copywriting" },
-  { url: "https://www.reddit.com/r/Entrepreneur/search.rss?q=AI+OR+ChatGPT+OR+automation&sort=new&restrict_sr=on", category: "negocios-estrategia" },
-  { url: "https://www.reddit.com/r/smallbusiness/search.rss?q=AI+OR+ChatGPT+OR+automation&sort=new&restrict_sr=on", category: "negocios-estrategia" },
-  { url: "https://www.reddit.com/r/SaaS/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "negocios-estrategia" },
-  { url: "https://www.reddit.com/r/startups/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "negocios-estrategia" },
-  { url: "https://www.reddit.com/r/digital_marketing/search.rss?q=AI+OR+ChatGPT&sort=new&restrict_sr=on", category: "ai-para-seo" },
+  // ── Tier business: BR business/tech/marketing → exige menção a IA ──
+  { url: "https://canaltech.com.br/rss/empreendedorismo/", category: "negocios-estrategia", tier: "business" },
+  { url: "https://olhardigital.com.br/feed/", category: "ferramentas-reviews", tier: "business" },
+  { url: "https://neofeed.com.br/feed/", category: "negocios-estrategia", tier: "business" },
+  { url: "https://braziljournal.com/feed/", category: "negocios-estrategia", tier: "business" },
+  { url: "https://tiinside.com.br/feed/", category: "ferramentas-reviews", tier: "business" },
+  { url: "https://digitalks.com.br/feed/", category: "ai-para-seo", tier: "business" },
+  { url: "https://www.adnews.com.br/feed/", category: "ai-para-ads", tier: "business" },
+  { url: "https://www.meioemensagem.com.br/feed", category: "ai-para-ads", tier: "business" },
+  { url: "https://www.b9.com.br/feed/", category: "negocios-estrategia", tier: "business" },
+  { url: "https://abradi.com.br/feed/", category: "ai-para-seo", tier: "business" },
 ];
 
 // ─── Keyword-based category refinement ─────────────────────────────
@@ -88,9 +44,9 @@ const CATEGORY_KEYWORDS: Array<{ keywords: string[]; category: string }> = [
   { keywords: ["copywriting", "copy", "headline", "persuasão", "cta", "sales page", "vsl"], category: "ai-copywriting" },
   { keywords: ["seo", "content marketing", "search engine", "otimização", "ranking"], category: "ai-para-seo" },
   { keywords: ["n8n", "zapier", "make.com", "no-code", "automação", "automation", "workflow", "integração"], category: "automacao-no-code" },
-  { keywords: ["stable diffusion", "midjourney", "dall-e", "image generation", "text-to-image", "generative art", "ai art"], category: "ai-generativa" },
+  { keywords: ["stable diffusion", "midjourney", "dall-e", "image generation", "text-to-image", "generative art", "ai art", "sora"], category: "ai-generativa" },
   { keywords: ["career", "carreira", "job", "emprego", "skill", "learning", "course", "aprender"], category: "carreira-ai" },
-  { keywords: ["llm", "gpt", "claude", "gemini", "llama", "mistral", "agent", "agente", "transformer", "openai", "anthropic"], category: "llms-agentes" },
+  { keywords: ["llm", "gpt", "claude", "gemini", "llama", "mistral", "agent", "agente", "transformer", "openai", "anthropic", "codex"], category: "llms-agentes" },
   { keywords: ["tool", "ferramenta", "review", "produto", "software", "app", "saas", "platform"], category: "ferramentas-reviews" },
   { keywords: ["business", "empresa", "negócio", "strategy", "roi", "revenue", "startup", "empreend"], category: "negocios-estrategia" },
 ];
@@ -105,65 +61,61 @@ function detectCategory(title: string, description: string, defaultCategory: str
   return defaultCategory;
 }
 
-// ─── Dual relevance gate ───────────────────────────────────────────
-// Every published item must mention BOTH:
-//   (a) at least one AI token, AND
-//   (b) at least one business / marketing / automation token
-// This is the core filter that keeps sinapse.club an AI-first HUB for
-// negocios e marketing — pesquisa pura, arquitetura, papers e curiosidade
-// tech geral sao cortados antes de entrar em curated_content.
-
+// ─── AI relevance gate (only applied to 'business' tier feeds) ─────
+// Tier 'ai' feeds bypass this — they're already AI-only by source.
+//
+// CUIDADO: o token genérico "ia " (com espaço) matcha qualquer palavra PT
+// terminada em -ia (diretoria, agência, tecnologia, história, estratégia,
+// categoria...). Por isso NÃO usamos "ia " solto — apenas com preposições
+// claras na frente, ou casos com pontuação adjacente (" ia,", " ia.", etc).
 const AI_TOKENS = [
-  "ai ", "a.i.", "artificial intelligence", "inteligencia artificial", "ia ",
-  "llm", "llms", "gpt", "chatgpt", "claude", "gemini", "llama", "mistral",
-  "anthropic", "openai", "copilot", "cursor", "windsurf", "codex",
-  "agent", "agents", "agente", "agentes", "prompt", "prompting",
-  "n8n", "zapier", "make.com", "automation", "automacao", "automação",
-  "rag", "retrieval augmented", "embedding", "fine-tuning", "finetuning",
-  "generative ai", "generativa", "midjourney", "stable diffusion", "dall-e",
-  "sora", "runway", "hugging face", "huggingface", "perplexity",
-  "workflow ai", "mcp", "model context protocol",
+  // Sigla IA explícita com pontuação adjacente
+  " ia,", " ia.", " ia:", " ia;", " ia—", " ia-", " ia)", " ia/",
+  // Sigla IA precedida de preposição (cobre uso natural em PT)
+  " da ia", " de ia", " em ia", " usar ia", " essa ia", " esta ia",
+  " para ia", " sobre ia", " com ia", " pela ia", " pelo ia", " usando ia",
+  " como ia", " nas ias", " nos ias", " sua ia", " seu ia", " minha ia",
+  " a ia ", " uma ia ", " na ia", " no ia",
+  // Forma extensa
+  "artificial intelligence", "inteligência artificial", "inteligencia artificial",
+  "a.i.",
+  // LLMs específicos
+  "llm", "llms", "gpt-", "chatgpt", "claude", "gemini", "llama", "mistral",
+  "anthropic", "openai", "copilot", "cursor.com", "windsurf", "codex",
+  // Agents (com qualificação pra evitar "agente comercial/imobiliário")
+  "ai agent", "agente ia", "agentes ia", "ai agents", "agentic",
+  // Prompt
+  "prompt engineer", "prompt engineering", "engenharia de prompt", "prompts ",
+  // Automação no-code AI
+  "n8n", "zapier", "make.com",
+  // Conceitos técnicos AI
+  "rag pipeline", "retrieval augmented", "embedding", "fine-tuning", "finetuning",
+  "generative ai", "ia generativa", "ai generativa", "modelo de linguagem",
+  // Image/video gen
+  "midjourney", "stable diffusion", "dall-e", "dalle", "runway ml",
+  "sora ai", "openai sora", " sora.", " sora,", " sora ", "hugging face", "huggingface",
+  // Tooling
+  "perplexity", "mcp server", "model context protocol",
 ];
 
-const BUSINESS_TOKENS = [
-  // Marketing & growth
-  "marketing", "growth", "seo", "geo", "sem ", "social media", "influencer",
-  "email marketing", "newsletter", "lead", "leads", "funnel", "funil",
-  "conversion", "conversao", "conversão", "cac", "ltv", "churn",
-  // Paid ads
-  "ads", "anuncio", "anúncio", "trafego pago", "tráfego pago", "paid",
-  "google ads", "meta ads", "facebook ads", "instagram ads", "tiktok ads",
-  "linkedin ads", "youtube ads", "advertising", "campanha",
-  // Copy & content
-  "copy", "copywriting", "headline", "cta", "sales page", "vsl", "landing page",
-  "content marketing", "conteudo", "conteúdo", "editorial",
-  // Ecommerce & products
-  "ecommerce", "e-commerce", "shopify", "woocommerce", "loja virtual",
-  "dropshipping", "amazon", "mercado livre", "magalu", "checkout",
-  // Infoproducts & courses
-  "infoproduto", "infoprodutos", "hotmart", "kiwify", "eduzz", "braip",
-  "curso online", "lancamento", "lançamento", "afiliado", "afiliados",
-  // Business / entrepreneurship
-  "startup", "saas", "b2b", "b2c", "empresa", "negocio", "negócio",
-  "empreend", "entrepreneur", "ceo ", "founder", "small business",
-  "revenue", "mrr", "arr", "roi", "pipeline", "crm", "vendas", "sales",
-  // Ops / productivity in business context
-  "workflow", "produtividade", "productivity", "operations", "operacoes",
-];
-
-function hasAny(text: string, tokens: string[]): boolean {
-  return tokens.some((t) => text.includes(t));
-}
-
-function isRelevant(title: string, description: string): boolean {
+function mentionsAi(title: string, description: string): boolean {
   const text = ` ${title.toLowerCase()} ${description.toLowerCase()} `;
-  return hasAny(text, AI_TOKENS) && hasAny(text, BUSINESS_TOKENS);
+  return AI_TOKENS.some((t) => text.includes(t));
 }
 
-function detectLang(text: string): string {
-  const ptWords = ["para", "com", "que", "uma", "como", "mais", "por", "são", "está", "você", "não"];
-  const ptCount = ptWords.filter((w) => text.toLowerCase().includes(` ${w} `)).length;
-  return ptCount >= 2 ? "pt" : "en";
+// ─── Portuguese detector — defensive gate ──────────────────────────
+// Mesmo cuidando das fontes, alguns feeds BR misturam posts EN.
+// Este gate barra qualquer item que não pareça PT.
+const PT_MARKERS = [
+  " para ", " com ", " que ", " uma ", " como ", " mais ", " por ", " são ",
+  " está ", " você ", " não ", " isso ", " essa ", " esse ", " quando ",
+  " sobre ", " dos ", " das ", " também ", " já ", " nos ", " nas ", " pelo ",
+  " pela ", " ser ", " dar ", " fazer ", " ter ", " mas ", " seu ", " sua ",
+];
+
+function looksPortuguese(text: string): boolean {
+  const t = ` ${text.toLowerCase()} `;
+  return PT_MARKERS.filter((w) => t.includes(w)).length >= 2;
 }
 
 // ─── RSS/Atom parser ────────────────────────────────────────────────
@@ -203,20 +155,11 @@ function parseItems(xml: string) {
 }
 
 function stripHtml(html: string): string {
-  // Order matters: Reddit + some RSS feeds ship doubly-escaped HTML inside
-  // <description> CDATA blocks (e.g. &lt;table&gt;). If we decode entities
-  // BEFORE stripping tags, the decoded '<table>' would re-enter the tag set
-  // and need a second pass. Instead: strip real tags FIRST, then decode
-  // entities, then strip any tags that emerged from decoding, and repeat
-  // once more to catch triple-escaped payloads.
   let out = html.replace(/<[^>]*>/g, " ");
-  // First entity decode pass
   out = out
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
-  // Strip any tags that appeared from decoding
   out = out.replace(/<[^>]*>/g, " ");
-  // Strip HTML comments (e.g. <!-- SC_OFF -->)
   out = out.replace(/<!--[\s\S]*?-->/g, " ");
   return out.replace(/\s+/g, " ").trim();
 }
@@ -230,12 +173,14 @@ Deno.serve(async () => {
     );
 
     let totalInserted = 0;
-    let totalSkipped = 0;
+    let totalSkippedDup = 0;
+    let totalSkippedRelevance = 0;
+    let totalSkippedLang = 0;
 
     for (const feed of RSS_FEEDS) {
       try {
         const res = await fetch(feed.url, {
-          headers: { "User-Agent": "sinapse-club-curator/2.0 (+https://forum.sinapse.club)" },
+          headers: { "User-Agent": "sinapse-club-curator/3.0 (+https://forum.sinapse.club)" },
           signal: AbortSignal.timeout(8000),
         });
 
@@ -245,22 +190,28 @@ Deno.serve(async () => {
         const items = parseItems(xml);
 
         for (const item of items.slice(0, 8)) { // max 8 per feed per run
-          // Skip dedup
+          // Dedup
           const { data: exists } = await supabase
             .from("curated_content")
             .select("id")
             .eq("source_url", item.link)
             .limit(1);
-          if (exists && exists.length > 0) { totalSkipped++; continue; }
+          if (exists && exists.length > 0) { totalSkippedDup++; continue; }
 
-          // Relevance gate — skip items that don't mention AI at all.
-          // Prevents lottery/curiosity/space content from leaking in as "LLMs & Agentes".
-          if (!isRelevant(item.title, item.description)) {
-            totalSkipped++;
+          const combined = `${item.title} ${item.description}`;
+
+          // PT gate (defensive — sempre aplica)
+          if (!looksPortuguese(combined)) {
+            totalSkippedLang++;
             continue;
           }
 
-          const lang = detectLang(`${item.title} ${item.description}`);
+          // AI relevance gate — só pra fontes business
+          if (feed.tier === "business" && !mentionsAi(item.title, item.description)) {
+            totalSkippedRelevance++;
+            continue;
+          }
+
           const category = detectCategory(item.title, item.description, feed.category);
 
           const { error } = await supabase.from("curated_content").insert({
@@ -269,12 +220,11 @@ Deno.serve(async () => {
             source_author: item.author || null,
             original_text: item.description || item.title,
             title: item.title,
-            original_lang: lang,
-            // If already PT, mark as translated so publish picks it up
-            translated_text: lang === "pt" ? (item.description || item.title) : null,
-            translation_status: lang === "pt" ? "translated" : "pending",
+            original_lang: "pt",
+            translated_text: item.description || item.title,
+            translation_status: "translated", // legacy field — sempre PT no MVP
             category,
-            relevance_score: 0.75,
+            relevance_score: feed.tier === "ai" ? 0.85 : 0.75,
             is_published: false,
           });
 
@@ -286,7 +236,14 @@ Deno.serve(async () => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, inserted: totalInserted, skipped: totalSkipped, feeds: RSS_FEEDS.length }),
+      JSON.stringify({
+        success: true,
+        inserted: totalInserted,
+        skipped_dup: totalSkippedDup,
+        skipped_relevance: totalSkippedRelevance,
+        skipped_lang: totalSkippedLang,
+        feeds: RSS_FEEDS.length,
+      }),
       { headers: { "Content-Type": "application/json" } }
     );
   } catch (err) {
