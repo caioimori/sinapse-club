@@ -198,13 +198,16 @@ export function ThreadDetail({ thread }: ThreadDetailProps) {
         }}
       >
         <span className="tabular-nums">
-          {thread.replies_count}{" "}
-          {thread.replies_count === 1 ? "resposta" : "respostas"}
+          {thread.replies_count === 0
+            ? "Seja o primeiro a comentar"
+            : `${thread.replies_count} ${thread.replies_count === 1 ? "resposta" : "respostas"}`}
         </span>
-        <span className="flex items-center gap-1 tabular-nums">
-          <Eye className="h-3 w-3" />
-          {thread.views_count}
-        </span>
+        {thread.views_count > 0 && (
+          <span className="flex items-center gap-1 tabular-nums">
+            <Eye className="h-3 w-3" />
+            {thread.views_count}
+          </span>
+        )}
       </div>
     </article>
   );
