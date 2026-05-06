@@ -25,7 +25,7 @@ export function LpHero() {
         className="pointer-events-none absolute left-1/2 top-1/3 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.03] blur-3xl"
       />
 
-      <div className="relative mx-auto max-w-screen-2xl px-[clamp(1rem,4vw,4rem)] text-center [&>*]:max-w-[min(64rem,90vw)] [&>*]:mx-auto">
+      <div className="relative mx-auto max-w-4xl px-4 text-center">
         {/* Eyebrow badge */}
         <div
           className="mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-muted-foreground opacity-0"
@@ -51,9 +51,8 @@ export function LpHero() {
 
         {/* Subheadline */}
         <p
-          className="mx-auto mb-10 text-base font-light leading-relaxed text-muted-foreground opacity-0 sm:text-lg"
+          className="mx-auto mb-10 max-w-xl text-base font-light leading-relaxed text-muted-foreground opacity-0 sm:text-lg"
           style={{
-            maxWidth: "min(36rem, 90vw)",
             animation: "fade-in-up 0.7s ease-out 0.45s forwards",
           }}
         >
@@ -62,9 +61,9 @@ export function LpHero() {
           de R$ 5k. A partir de R$ 29,90/mês.
         </p>
 
-        {/* CTAs — hierarquia primary >> ghost */}
+        {/* CTAs */}
         <div
-          className="flex flex-col items-center gap-2 opacity-0 sm:flex-row sm:justify-center sm:gap-4"
+          className="flex flex-col items-center gap-3 opacity-0 sm:flex-row sm:justify-center"
           style={{
             animation: "fade-in-up 0.7s ease-out 0.6s forwards",
           }}
@@ -73,32 +72,31 @@ export function LpHero() {
             href="#precos"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "group h-14 bg-foreground text-background [a]:hover:bg-foreground/90 border-0 px-8 text-base font-bold shadow-[var(--shadow-md)] transition-all duration-300 hover:shadow-[var(--shadow-xl)] hover:-translate-y-0.5"
+              "group h-12 bg-foreground text-background [a]:hover:bg-foreground/90 border-0 px-7 text-sm font-semibold shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5"
             )}
           >
-            Começar agora
-            <ArrowRight className="ml-2 size-5 transition-transform duration-300 group-hover:translate-x-1" />
+            Ver planos
+            <ArrowRight className="ml-2 size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
           <Link
             href="#solucao"
-            className="h-10 px-3 text-xs text-muted-foreground/70 transition-colors hover:text-foreground inline-flex items-center"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "lg" }),
+              "h-12 px-5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            )}
           >
-            ou veja como funciona
+            Ver como funciona
           </Link>
         </div>
 
-        {/* Trust line — risk reversal + social proof sutil */}
+        {/* Trust line */}
         <p
-          className="mt-7 text-xs text-muted-foreground opacity-0"
+          className="mt-6 text-xs text-muted-foreground opacity-0"
           style={{
             animation: "fade-in 0.6s ease-out 0.85s forwards",
           }}
         >
-          <span className="font-semibold text-foreground/80">7 dias de garantia incondicional</span>
-          {" · "}
-          cancele quando quiser
-          {" · "}
-          R$ 29,90/mês
+          7 dias de garantia · cancele quando quiser
         </p>
       </div>
     </section>
