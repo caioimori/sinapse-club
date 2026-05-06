@@ -1,7 +1,7 @@
 # Status Vivo — sinapse.club
 
 > Snapshot do estado atual do projeto. Ler isso primeiro.
-> **Última atualização:** 2026-05-06 (sessão noite 5→6: humanização, curadoria PT-only, auditoria UX + 18 fixes funcionais)
+> **Última atualização:** 2026-05-06 (sessão YOLO: auditoria UX S2+S3 + 7 quick wins + Bloco C residual — 9 PRs)
 
 ---
 
@@ -112,35 +112,25 @@
 
 ---
 
-## 🔄 Próximo passo (quando Caio retomar — agora no Warp)
+## 🔄 Próximo passo
 
-### Quick wins UX pendentes (roadmap auditoria)
-Os 7 quick wins identificados na Sessão 1 da auditoria UX, todos < 2h:
-1. LP hero: hierarquia primary vs ghost CTA
-2. Sidebar limpa "Em breve" agrupado/colapsado
-3. Onboarding com gancho de valor (substitui "É opcional")
-4. Cleanup rotas duplicadas (`/feed`, `/notifications`, `/pricing`, `/lp`)
-5. A11y dos bots + indicador de tab ativa
-6. Indicador força de senha em /register
-7. Empty state forum pra novato
+### Bloco A — causas-raiz de conversão (única coisa que move agulha)
 
-### Auditoria UX — Sessões 2 e 3 pendentes
-- **Sessão 2 (~3h):** Mobile audit dedicado + Funnel SQL deep dive
-- **Sessão 3 (~3h):** Empty/error states + síntese final + implementação dos 7 quick wins
+A auditoria S2 identificou 4 causas-raiz que explicam 0 tentativas de subscription, 0 posts orgânicos em 7d, 80% drop em email signup. Os 7 quick wins entregues nesta sessão tocam em sintomas. **Bloco A ataca causas:**
 
-### Bloco C residual da auditoria funcional (não-críticos)
-- #20 Emoji picker pode cortar em mobile pequeno
-- #11 Cache de role pode invalidar quando user muda role (precisa refresh manual)
+1. **A1 — Auto-login pós-confirmação de email** (~2h) — resolve drop de 80% no email signup
+2. **A2 — Pricing redesign** (diferenciar features, social proof, garantia em destaque) — sai de 0 tentativas
+3. **A3 — Email digest semanal automático via Resend** — gancho de retention day-2+
+4. **A4 — Empty social proof** ("Seja o primeiro a curtir" em vez de "0 likes")
+
+Total estimado: 8-10h (1 sessão dedicada).
 
 ### Pagamentos / testabilidade
-- Stripe test mode pra testar sem cobrar:
-  - Soier cria test mode keys + 3 products test no Stripe Dashboard
-  - Configura no Vercel preview env
-  - Permite testar checkout completo em preview com cartão `4242 4242 4242 4242`
-- Auditoria UX revelou: **0 paying users em 14 humans cadastrados** — pipeline conversão precisa validação real
+- Stripe test mode (Soier cria keys + products test → Vercel preview env)
+- Auditoria S2 confirmou: **0 paying users · 0 tentativas em 14 humans** — Bloco A é prerequisito pra paid media
 
-### Bugs originais auth restantes
-- Caio mandou 5 primeiros bugs auth, faltam os outros (lista original com ele)
+### Bugs auth restantes
+- Lista original com Caio (5 primeiros foram entregues, faltam os outros)
 
 ---
 
@@ -177,10 +167,21 @@ Os 7 quick wins identificados na Sessão 1 da auditoria UX, todos < 2h:
 - **#57** `feat(community): personas humanizadas + fix botão notificações`
 - **#58** `docs(auditoria): UX audit Sessão 1 — 5 gargalos críticos + 7 quick wins`
 - **#59** `fix(forum): 18 fixes funcionais — UX impecável nas interações core`
+- **#60** `docs(auditoria): UX Sessão 2 — funnel SQL + mobile audit revelam causas-raiz`
+- **#61** `refactor: QW#1 — cleanup rotas duplicadas (/feed /notifications /lp)`
+- **#62** `feat(sidebar): QW#2 — Em breve agrupado/colapsável`
+- **#63** `feat(lp): QW#3 — hero CTA hierarquia primary >> ghost`
+- **#64** `fix(mobile-nav): QW#6 — a11y + indicador de tab ativa`
+- **#65** `feat(register): QW#7 — indicador força de senha`
+- **#66** `feat(onboarding): QW#4 — gancho de valor substitui "É opcional"`
+- **#67** `feat(forum): QW#5 — banner de boas-vindas pra novato (0 posts)`
+- **#68** `fix(forum,follow): Bloco C — emoji mobile + cache role TTL`
 
 ## Documentos de auditoria salvos
 - `docs/auditoria/2026-05-05-ux-deep-audit-PLAN.md` — plano 7 fases
 - `docs/auditoria/2026-05-05-ux-deep-audit-REPORT-S1.md` — Sessão 1 completa
+- `docs/auditoria/2026-05-06-ux-deep-audit-REPORT-S2.md` — Sessão 2 (funnel + mobile)
+- `docs/auditoria/2026-05-06-ux-deep-audit-REPORT-S3-FINAL.md` — síntese final + roadmap Bloco A
 - `docs/auditoria/2026-05-05-functional-audit-REPORT.md` — auditoria funcional + 18 fixes
 - `docs/auditoria/2026-05-05-ux-audit-REPORT.md` — auditoria de regressão pós-PRs
 - `docs/stories/CURADORIA-PT-ONLY.story.md`
