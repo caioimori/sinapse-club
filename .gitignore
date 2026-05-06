@@ -68,6 +68,7 @@ Thumbs.db
 # SINAPSE runtime artifacts
 .sinapse-ai/.cache/
 .sinapse-ai/.tmp/
+.tmp/
 
 # Supabase temp files
 supabase/.temp/
