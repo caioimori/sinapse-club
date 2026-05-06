@@ -11,13 +11,15 @@ export const metadata = {
 export default async function LeaderboardPage() {
   const supabase = await createClient();
 
-  // All-time (reputation total)
+  // All-time (reputation total).
+  // Inclui human + curator_persona (bots humanizados competem por decisão de
+  // produto). @sinapse-bot (curator_bot) fica de fora.
   const { data: allTimeProfiles } = await supabase
     .from("profiles")
     .select(
       "id, username, display_name, avatar_url, reputation, role, professional_role_id, professional_roles!professional_role_id(name, cluster)",
     )
-    .eq("profile_type", "human")
+    .in("profile_type", ["human", "curator_persona"])
     .gt("reputation", 0)
     .order("reputation", { ascending: false })
     .limit(50) as any;

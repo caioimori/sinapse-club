@@ -61,9 +61,22 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
   const isForumRoute = pathname.startsWith("/forum");
   const isOnNotifs = pathname.startsWith("/notificacoes");
 
+  // Quando entra em /notificacoes, zera o badge IMEDIATAMENTE pra UX
+  // não ficar esperando o próximo poll de 30s.
+  useEffect(() => {
+    if (isOnNotifs) setUnreadCount(0);
+  }, [isOnNotifs]);
+
+  // Listener pro evento disparado por NotificationsMarkRead — zera o badge
+  // assim que o usuário clica "marcar todas como lidas".
+  useEffect(() => {
+    function onCleared() { setUnreadCount(0); }
+    window.addEventListener("notifications-cleared", onCleared);
+    return () => window.removeEventListener("notifications-cleared", onCleared);
+  }, []);
+
   useEffect(() => {
     if (!profile?.id) return;
-
     let active = true;
 
     async function fetchUnread() {
@@ -76,21 +89,13 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
     }
 
     fetchUnread();
-
-    // Poll every 30s — cheap and avoids realtime complexity for now
     const interval = setInterval(fetchUnread, 30_000);
-
-    // Clear when user visits the notifications page
-    if (isOnNotifs && unreadCount > 0) {
-      setUnreadCount(0);
-    }
 
     return () => {
       active = false;
       clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.id, isOnNotifs]);
+  }, [profile?.id, supabase]);
 
   return (
     <aside

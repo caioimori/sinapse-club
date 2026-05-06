@@ -39,7 +39,7 @@ interface PostAuthor {
   avatar_url: string | null;
   role: string;
   reputation?: number;
-  profile_type?: "human" | "curator_bot";
+  profile_type?: "human" | "curator_persona" | "curator_bot";
 }
 
 interface QuotedPost {
@@ -384,7 +384,7 @@ export function PostCard({
         )}
 
         {/* Action bar (Twitter-style, spread across) */}
-        <div className="flex items-center justify-between mt-3 max-w-md -ml-2">
+        <div className="flex items-center justify-between mt-3 max-w-[28rem] -ml-2">
           {/* Reply */}
           <Link href={`/posts/${id}`}>
             <button className="group flex items-center gap-1.5 text-muted-foreground hover:text-muted-foreground transition-colors">
