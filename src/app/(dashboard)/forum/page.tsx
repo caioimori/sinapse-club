@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ForumComposer } from "@/components/forum/forum-composer";
 import { ForumTabs } from "@/components/forum/forum-tabs";
 import { InfiniteThreadFeed } from "@/components/forum/infinite-thread-feed";
+import { NoviceWelcomeBanner } from "@/components/forum/novice-welcome-banner";
 import type { ThreadData } from "@/components/forum/thread-list-item";
 import { TrendingUsers } from "@/components/forum/trending-users";
 import { StickySidebar } from "@/components/forum/sticky-sidebar";
@@ -35,6 +36,7 @@ async function ForumFeed({
 
   let userRole = "free";
   let userProfile: any = null;
+  let userHasPosted = true;
 
   if (user) {
     const { data: profile } = await supabase
@@ -44,6 +46,16 @@ async function ForumFeed({
       .single();
     userProfile = profile;
     userRole = (profile as any)?.role ?? "free";
+
+    // Verifica se usuário já postou — banner novato só aparece se nunca postou
+    if ((profile as any)?.profile_type === "human") {
+      const { count: postCount } = await supabase
+        .from("posts")
+        .select("id", { count: "exact", head: true })
+        .eq("author_id", user.id)
+        .eq("type", "thread");
+      userHasPosted = (postCount ?? 0) > 0;
+    }
   }
 
   // Fetch who the current user follows (for "Seguindo" tab)
@@ -235,6 +247,14 @@ async function ForumFeed({
           categories={categories}
           userRole={userRole}
         />
+
+        {/* Novato: banner de orientação até primeira publicação */}
+        {user && userProfile && (
+          <NoviceWelcomeBanner
+            username={userProfile?.display_name || userProfile?.username}
+            hasPosted={userHasPosted}
+          />
+        )}
 
         {/* Sort controls */}
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--border-subtle)]">
