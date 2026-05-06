@@ -98,7 +98,8 @@ export default function RegisterPage() {
             <p className="text-[14px] leading-relaxed text-muted-foreground">
               Enviamos um link de confirmação para{" "}
               <strong className="font-medium text-foreground">{email}</strong>. Clique no link
-              pra ativar sua conta.
+              e <strong className="font-medium text-foreground">você entra direto no fórum</strong> —
+              sem precisar logar de novo.
             </p>
             <div className="border border-border/60 bg-muted/30 p-3 text-left">
               <p className="flex items-start gap-2 text-[12px] text-muted-foreground">
@@ -125,9 +126,9 @@ export default function RegisterPage() {
               </Button>
             )}
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              Ja confirmou?{" "}
+              Problemas?{" "}
               <Link href="/login" className="text-foreground underline underline-offset-4 hover:opacity-70">
-                Entrar agora
+                Entrar manualmente
               </Link>
             </p>
           </div>

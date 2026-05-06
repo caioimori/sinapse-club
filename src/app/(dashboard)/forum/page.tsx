@@ -4,6 +4,7 @@ import { ForumComposer } from "@/components/forum/forum-composer";
 import { ForumTabs } from "@/components/forum/forum-tabs";
 import { InfiniteThreadFeed } from "@/components/forum/infinite-thread-feed";
 import { NoviceWelcomeBanner } from "@/components/forum/novice-welcome-banner";
+import { WelcomeToast } from "@/components/auth/welcome-toast";
 import type { ThreadData } from "@/components/forum/thread-list-item";
 import { TrendingUsers } from "@/components/forum/trending-users";
 import { StickySidebar } from "@/components/forum/sticky-sidebar";
@@ -221,6 +222,7 @@ async function ForumFeed({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-5 w-full">
+      <WelcomeToast />
       {/* Main feed — border lateral cobre composer + lista */}
       <div className="min-w-0 border-l border-r border-[var(--border-subtle)]">
         {/* Sticky: tabs */}
