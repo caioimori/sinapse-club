@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Bookmark, Share2, Link2 } from "lucide-react";
+import { Heart, Bookmark, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -30,14 +31,17 @@ export function ThreadActions({
   const [saved, setSaved] = useState(initialSaved);
   const [saves, setSaves] = useState(savesCount);
   const [shares, setShares] = useState(sharesCount);
-  const [copied, setCopied] = useState(false);
+  const [pendingLike, setPendingLike] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false);
+  const [pendingShare, setPendingShare] = useState(false);
   const supabase = createClient();
 
   async function handleLike() {
-    if (!currentUserId) return;
+    if (!currentUserId || pendingLike) return;
     const wasLiked = liked;
     setLiked(!wasLiked);
     setLikes((l) => (wasLiked ? Math.max(0, l - 1) : l + 1));
+    setPendingLike(true);
 
     try {
       if (!wasLiked) {
@@ -59,17 +63,20 @@ export function ThreadActions({
         if (error) throw error;
       }
     } catch {
-      // Rollback on failure (e.g., bot account, RLS block)
       setLiked(wasLiked);
       setLikes((l) => (wasLiked ? l + 1 : Math.max(0, l - 1)));
+      toast.error("Não foi possível registrar sua curtida.");
+    } finally {
+      setPendingLike(false);
     }
   }
 
   async function handleSave() {
-    if (!currentUserId) return;
+    if (!currentUserId || pendingSave) return;
     const wasSaved = saved;
     setSaved(!wasSaved);
     setSaves((s) => (wasSaved ? Math.max(0, s - 1) : s + 1));
+    setPendingSave(true);
 
     try {
       if (!wasSaved) {
@@ -93,21 +100,27 @@ export function ThreadActions({
     } catch {
       setSaved(wasSaved);
       setSaves((s) => (wasSaved ? s + 1 : Math.max(0, s - 1)));
+      toast.error("Não foi possível salvar a publicação.");
+    } finally {
+      setPendingSave(false);
     }
   }
 
   async function handleShare() {
+    if (pendingShare) return;
+    setPendingShare(true);
+
     const url = `${window.location.origin}/forum/thread/${threadId}`;
+    let copied = false;
     try {
       await navigator.clipboard.writeText(url);
+      copied = true;
+      toast.success("Link copiado para a área de transferência.");
     } catch {
-      // ignora erro de clipboard (browser sem permissao)
+      toast.info("Copie manualmente: " + url, { duration: 8000 });
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
 
-    // Persiste share (idempotente por unique constraint — duplicar nao conta 2x)
-    if (currentUserId) {
+    if (currentUserId && copied) {
       const prevShares = shares;
       setShares((s) => s + 1);
       const { error } = await (supabase as any).from("reactions").insert({
@@ -116,11 +129,12 @@ export function ThreadActions({
         target_id: threadId,
         type: "share",
       });
-      // Se duplicado (unique violation) nao incrementa
       if (error) {
+        // Provavelmente unique violation (ja compartilhou) — não conta de novo
         setShares(prevShares);
       }
     }
+    setPendingShare(false);
   }
 
   return (
@@ -133,6 +147,8 @@ export function ThreadActions({
           liked && "text-[var(--accent-like)]"
         )}
         onClick={handleLike}
+        disabled={!currentUserId || pendingLike}
+        aria-label={liked ? "Descurtir publicação" : "Curtir publicação"}
       >
         <Heart className={cn("h-3.5 w-3.5", liked && "fill-current")} />
         {likes > 0 && <span className="tabular-nums">{likes}</span>}
@@ -146,6 +162,8 @@ export function ThreadActions({
           saved && "text-foreground"
         )}
         onClick={handleSave}
+        disabled={!currentUserId || pendingSave}
+        aria-label={saved ? "Remover dos salvos" : "Salvar publicação"}
       >
         <Bookmark className={cn("h-3.5 w-3.5", saved && "fill-current")} />
         {saves > 0 ? <span className="tabular-nums">{saves}</span> : "Salvar"}
@@ -156,18 +174,11 @@ export function ThreadActions({
         size="sm"
         className="h-8 gap-1.5 text-xs text-muted-foreground px-2.5"
         onClick={handleShare}
+        disabled={pendingShare}
+        aria-label="Compartilhar publicação"
       >
-        {copied ? (
-          <>
-            <Link2 className="h-3.5 w-3.5" />
-            Copiado!
-          </>
-        ) : (
-          <>
-            <Share2 className="h-3.5 w-3.5" />
-            {shares > 0 ? <span className="tabular-nums">{shares}</span> : "Compartilhar"}
-          </>
-        )}
+        <Share2 className="h-3.5 w-3.5" />
+        {shares > 0 ? <span className="tabular-nums">{shares}</span> : "Compartilhar"}
       </Button>
     </div>
   );
