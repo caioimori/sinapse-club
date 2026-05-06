@@ -17,11 +17,17 @@ export function NotificationsMarkRead({ unreadIds }: NotificationsMarkReadProps)
 
   async function markAll() {
     if (done || isPending) return;
-    await (supabase as any)
+    const { error } = await (supabase as any)
       .from("notifications")
       .update({ read: true })
       .in("id", unreadIds);
+    if (error) return;
     setDone(true);
+    // Avisa o badge do sidebar/mobile-nav pra zerar imediatamente,
+    // sem esperar o próximo poll de 30s.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("notifications-cleared"));
+    }
     startTransition(() => router.refresh());
   }
 

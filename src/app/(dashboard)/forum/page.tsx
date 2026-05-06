@@ -141,7 +141,7 @@ async function ForumFeed({
     supabase
       .from("profiles")
       .select("id, username, display_name, avatar_url, headline")
-      .eq("profile_type", "human")
+      .in("profile_type", ["human", "curator_persona"])
       .neq("id", user?.id ?? "00000000-0000-0000-0000-000000000000")
       .order("level", { ascending: false })
       .limit(6),
