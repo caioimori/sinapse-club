@@ -169,19 +169,27 @@ export function Sidebar({ profile, professionalRole, className }: SidebarProps) 
 
           <Separator className="my-3" />
 
-          {/* ── Em breve ──────────────────────────────── */}
-          <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-            Em breve
-          </p>
-          {comingSoonItems.map((item) => (
-            <div
-              key={item.name}
-              className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground/40 cursor-default select-none"
+          {/* ── Em breve (colapsado por default — reduz overload visual) ── */}
+          <details className="group">
+            <summary
+              className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden"
+              aria-label={`Em breve — ${comingSoonItems.length} features`}
             >
-              <item.icon className="h-4 w-4 flex-shrink-0" />
-              <span className="flex-1">{item.name}</span>
+              <span className="flex-1">Em breve</span>
+              <span className="text-[10px] opacity-60 group-open:rotate-180 transition-transform" aria-hidden="true">▾</span>
+            </summary>
+            <div className="mt-0.5 space-y-0.5">
+              {comingSoonItems.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground/40 cursor-default select-none"
+                >
+                  <item.icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1">{item.name}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </details>
 
           <Separator className="my-3" />
 
