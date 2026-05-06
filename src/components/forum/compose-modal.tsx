@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { ComposerEmojiPicker } from "@/components/forum/composer-emoji-picker";
@@ -20,6 +21,9 @@ import { showPaywallToast } from "@/components/access/paywall-toast";
 const PAID_ROLES = new Set(["pro", "premium", "instructor", "admin"]);
 
 const CHAR_LIMIT = 2000;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB — bate com bucket allowed_size
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const DRAFT_KEY = "sinapse:compose:draft";
 
 function nanoid(len = 12) {
   return Math.random().toString(36).slice(2, 2 + len);
@@ -45,6 +49,9 @@ export function ComposeModal() {
   // Submit
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Drag & drop
+  const [isDragging, setIsDragging] = useState(false);
 
   // User
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
@@ -115,6 +122,32 @@ export function ComposeModal() {
     el.style.height = `${el.scrollHeight}px`;
   }, [text]);
 
+  // Restaura draft ao abrir o modal (apenas se nada foi digitado ainda)
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return;
+    if (text || title) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { title?: string; text?: string };
+      if (draft.title) setTitle(draft.title);
+      if (draft.text) setText(draft.text);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Salva draft a cada change (apenas texto/título — imagem/poll não persistem)
+  useEffect(() => {
+    if (!isOpen || typeof window === "undefined") return;
+    if (!text && !title) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ text, title }));
+      } catch {}
+    }, 500);
+    return () => clearTimeout(t);
+  }, [text, title, isOpen]);
+
   // Escape to close
   useEffect(() => {
     if (!isOpen) return;
@@ -128,15 +161,39 @@ export function ComposeModal() {
     setText(""); setTitle(""); setError(null);
     setImageFile(null); setImagePreview(null);
     setPoll(null); setShowEmoji(false);
+    // Limpa draft ao publicar/fechar limpo
+    if (typeof window !== "undefined") {
+      try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    }
   }
 
   // ── Image handling ─────────────────────────────────────────────
+  function pickImage(file: File) {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Formato não suportado. Use JPG, PNG, WebP ou GIF.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      const mb = (file.size / 1024 / 1024).toFixed(1);
+      toast.error(`Imagem muito grande (${mb}MB). Máximo 5MB.`);
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    pickImage(file);
     e.target.value = "";
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) pickImage(file);
   }
 
   function removeImage() {
@@ -145,7 +202,7 @@ export function ComposeModal() {
     setImagePreview(null);
   }
 
-  async function uploadImage(uid: string): Promise<string | null> {
+  async function uploadImage(uid: string): Promise<{ url: string; path: string } | null> {
     if (!imageFile) return null;
     setImageUploading(true);
     const ext = imageFile.name.split(".").pop() ?? "jpg";
@@ -156,7 +213,7 @@ export function ComposeModal() {
     setImageUploading(false);
     if (error || !data) return null;
     const { data: { publicUrl } } = supabase.storage.from("posts").getPublicUrl(data.path);
-    return publicUrl;
+    return { url: publicUrl, path: data.path };
   }
 
   // ── Emoji insert ───────────────────────────────────────────────
@@ -186,10 +243,14 @@ export function ComposeModal() {
     setError(null);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      toast.error("Sessão expirada. Faça login novamente.");
+      return;
+    }
 
     const uid = userId ?? user.id;
-    const imageUrl = await uploadImage(uid);
+    const uploaded = await uploadImage(uid);
 
     const pollPayload = poll && poll.options.filter((o) => o.trim()).length >= 2
       ? { options: poll.options.filter((o) => o.trim()), duration_days: poll.duration_days }
@@ -204,22 +265,32 @@ export function ComposeModal() {
         content_plain: text,
         type: "thread",
         tags: [],
-        image_url: imageUrl,
+        image_url: uploaded?.url ?? null,
         poll_options: pollPayload,
       });
 
     setLoading(false);
     if (insertError) {
+      // Cleanup: imagem upada mas post não criado → apaga do Storage
+      if (uploaded?.path) {
+        try {
+          await supabase.storage.from("posts").remove([uploaded.path]);
+        } catch {
+          // best effort — não bloqueia recovery
+        }
+      }
       const msg = (insertError as { message?: string }).message ?? "";
       const isPaywall = /paywall|policy|permission|forbidden|tier/i.test(msg);
       if (isPaywall) {
-        setError("Voce precisa assinar pra publicar no forum.");
-        showPaywallToast("publicar no forum");
+        setError("Você precisa assinar pra publicar no fórum.");
+        showPaywallToast("publicar no fórum");
       } else {
-        setError("Nao foi possivel publicar agora. Tente em alguns segundos.");
+        setError("Não foi possível publicar agora. Tente em alguns segundos.");
+        toast.error("Não foi possível publicar.");
       }
       return;
     }
+    toast.success("Publicado.");
     handleClose();
     router.refresh();
   }
@@ -227,21 +298,28 @@ export function ComposeModal() {
   if (!mounted || !isOpen) return null;
 
   const charCount = text.length;
+  const showCount = charCount > 0; // sempre que digitou algo
+  const overLimit = charCount > CHAR_LIMIT;
   const nearLimit = charCount > CHAR_LIMIT * 0.85;
-  const canPublish = text.trim().length > 0 && !loading && !imageUploading;
+  const canPublish = text.trim().length > 0 && !overLimit && !loading && !imageUploading;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-[8vh] px-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} aria-hidden />
+      <div className="absolute inset-0 bg-neutral-950/60" onClick={handleClose} aria-hidden />
 
       {/* Modal */}
       <div
-        className="relative z-10 w-full max-w-xl bg-background rounded-2xl shadow-2xl border border-[var(--border-subtle)] overflow-hidden"
+        className={`relative z-10 w-full max-w-[36rem] bg-background rounded-2xl shadow-2xl border overflow-hidden transition-colors ${
+          isDragging ? "border-foreground/50 ring-2 ring-foreground/20" : "border-[var(--border-subtle)]"
+        }`}
         style={{ animation: "modalIn 160ms ease-out forwards" }}
         role="dialog"
         aria-modal="true"
         aria-label="Criar publicação"
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
       >
         {/* Header */}
         <div className="flex items-center px-4 py-3 border-b border-[var(--border-subtle)]">
@@ -286,7 +364,7 @@ export function ComposeModal() {
                 <Image src={imagePreview} alt="Preview" fill className="object-cover" sizes="560px" />
                 <button
                   onClick={removeImage}
-                  className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-950/70 text-white hover:bg-neutral-950/90 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -358,9 +436,9 @@ export function ComposeModal() {
 
           {/* Right: char count + publish */}
           <div className="flex items-center gap-3">
-            {nearLimit && (
-              <span className={`text-sm tabular-nums ${charCount >= CHAR_LIMIT ? "text-destructive" : "text-muted-foreground"}`}>
-                {CHAR_LIMIT - charCount}
+            {showCount && (
+              <span className={`text-xs tabular-nums ${overLimit ? "text-destructive" : nearLimit ? "text-amber-500" : "text-muted-foreground"}`}>
+                {charCount}/{CHAR_LIMIT}
               </span>
             )}
             <button

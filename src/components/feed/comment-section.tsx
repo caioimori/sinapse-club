@@ -4,13 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Heart, Reply } from "lucide-react";
+import { Heart, Reply, X as CloseIcon, MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 
 type SupabaseAny = ReturnType<typeof createClient>;
+
+const MIN_LEN = 3;
+const MAX_LEN = 1000;
 
 interface Comment {
   id: string;
@@ -40,49 +45,85 @@ export function CommentSection({
   likedCommentIds = [],
 }: CommentSectionProps) {
   const [text, setText] = useState("");
-  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const likedSet = new Set(likedCommentIds);
 
-  async function handleSubmit(parentId: string | null = null) {
-    if (!text.trim()) return;
+  const trimmed = text.trim();
+  const tooShort = trimmed.length > 0 && trimmed.length < MIN_LEN;
+  const tooLong = trimmed.length > MAX_LEN;
+  const canSubmit = trimmed.length >= MIN_LEN && !tooLong && !loading;
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
     setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      setLoading(false);
+      return;
+    }
 
-    await (supabase as any).from("comments").insert({
+    const { error } = await (supabase as any).from("comments").insert({
       post_id: postId,
       author_id: user.id,
-      parent_id: parentId,
-      content: text.trim(),
+      parent_id: replyTo?.id ?? null,
+      content: trimmed,
     });
+
+    setLoading(false);
+    if (error) {
+      toast.error("Não foi possível publicar o comentário. Tente novamente.");
+      return;
+    }
 
     setText("");
     setReplyTo(null);
-    setLoading(false);
+    toast.success(replyTo ? "Resposta publicada." : "Comentário publicado.");
     router.refresh();
   }
 
   return (
     <div className="space-y-4">
-      {/* New comment */}
+      {/* New comment composer */}
       <div className="flex gap-3">
         <div className="flex-1 space-y-2">
+          {replyTo && (
+            <div className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
+              <span>Respondendo a <span className="font-medium text-foreground">@{replyTo.author}</span></span>
+              <button
+                onClick={() => setReplyTo(null)}
+                className="rounded-full p-0.5 hover:bg-muted"
+                aria-label="Cancelar resposta"
+              >
+                <CloseIcon className="h-3 w-3" />
+              </button>
+            </div>
+          )}
           <Textarea
-            placeholder="Escreva um comentario..."
+            placeholder={replyTo ? `Responder @${replyTo.author}...` : "Escreva um comentário..."}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            maxLength={MAX_LEN + 50}
             className="min-h-[80px] bg-muted border-0 resize-none"
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between gap-3">
+            <span className={cn(
+              "text-xs tabular-nums",
+              tooShort && "text-destructive",
+              tooLong && "text-destructive",
+              !tooShort && !tooLong && "text-muted-foreground"
+            )}>
+              {tooShort ? `Mín. ${MIN_LEN} caracteres` : tooLong ? `${trimmed.length - MAX_LEN} excedido` : `${trimmed.length}/${MAX_LEN}`}
+            </span>
             <Button
               size="sm"
               className="bg-foreground border-0"
-              onClick={() => handleSubmit(replyTo)}
-              disabled={loading || !text.trim()}
+              onClick={handleSubmit}
+              disabled={!canSubmit}
             >
               {loading ? "Enviando..." : replyTo ? "Responder" : "Comentar"}
             </Button>
@@ -91,18 +132,25 @@ export function CommentSection({
       </div>
 
       {/* Comments list */}
-      <div className="space-y-3">
-        {comments.map((comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            onReply={(id) => { setReplyTo(id); }}
-            currentUserId={currentUserId}
-            initialLiked={likedSet.has(comment.id)}
-            supabase={supabase}
-          />
-        ))}
-      </div>
+      {comments.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+          <MessageCircle className="h-8 w-8 text-muted-foreground/50" />
+          <p className="mt-2 text-sm text-muted-foreground">Seja o primeiro a comentar</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              onReply={(id, author) => setReplyTo({ id, author })}
+              currentUserId={currentUserId}
+              likedSet={likedSet}
+              supabase={supabase}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -112,24 +160,24 @@ function CommentItem({
   onReply,
   depth = 0,
   currentUserId,
-  initialLiked = false,
+  likedSet,
   supabase,
 }: {
   comment: Comment;
-  onReply: (id: string) => void;
+  onReply: (id: string, author: string) => void;
   depth?: number;
   currentUserId?: string;
-  initialLiked?: boolean;
+  likedSet: Set<string>;
   supabase: SupabaseAny;
 }) {
-  const [liked, setLiked] = useState(initialLiked);
+  const [liked, setLiked] = useState(likedSet.has(comment.id));
   const [likes, setLikes] = useState(comment.likes_count);
   const [pending, setPending] = useState(false);
+  const authorName = comment.author.display_name || comment.author.username;
 
   async function handleLike() {
     if (!currentUserId || pending) return;
     const wasLiked = liked;
-    // Otimistic
     setLiked(!wasLiked);
     setLikes((l) => (wasLiked ? Math.max(0, l - 1) : l + 1));
     setPending(true);
@@ -154,9 +202,9 @@ function CommentItem({
         if (error) throw error;
       }
     } catch {
-      // Rollback em erro
       setLiked(wasLiked);
       setLikes((l) => (wasLiked ? l + 1 : Math.max(0, l - 1)));
+      toast.error("Não foi possível registrar sua reação.");
     } finally {
       setPending(false);
     }
@@ -170,15 +218,20 @@ function CommentItem({
   return (
     <div className={cn("space-y-2", depth > 0 && "ml-8 border-l-2 border-border pl-4")}>
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground/80 text-xs font-medium text-white">
-          {comment.author.display_name?.[0]?.toUpperCase() || comment.author.username[0].toUpperCase()}
-        </div>
+        <Avatar className="h-8 w-8 shrink-0">
+          {comment.author.avatar_url ? (
+            <AvatarImage src={comment.author.avatar_url} alt={authorName} />
+          ) : null}
+          <AvatarFallback className="text-xs">
+            {authorName[0]?.toUpperCase() ?? "?"}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{comment.author.display_name || comment.author.username}</span>
+            <span className="text-sm font-medium">{authorName}</span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
-          <p className="mt-1 text-sm text-foreground/90">{comment.content}</p>
+          <p className="mt-1 text-sm text-foreground/90 whitespace-pre-wrap">{comment.content}</p>
           <div className="mt-1.5 flex items-center gap-2">
             <Button
               variant="ghost"
@@ -194,7 +247,7 @@ function CommentItem({
               variant="ghost"
               size="sm"
               className="h-7 gap-1 text-xs text-muted-foreground px-2"
-              onClick={() => onReply(comment.id)}
+              onClick={() => onReply(comment.id, comment.author.username)}
             >
               <Reply className="h-3 w-3" />
               Responder
@@ -203,7 +256,7 @@ function CommentItem({
         </div>
       </div>
 
-      {/* Nested replies */}
+      {/* Nested replies — passa likedSet recursivo */}
       {comment.replies?.map((reply) => (
         <CommentItem
           key={reply.id}
@@ -211,7 +264,7 @@ function CommentItem({
           onReply={onReply}
           depth={depth + 1}
           currentUserId={currentUserId}
-          initialLiked={false}
+          likedSet={likedSet}
           supabase={supabase}
         />
       ))}
