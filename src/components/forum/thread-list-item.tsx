@@ -491,7 +491,11 @@ export function ThreadListItem({ thread, showCategory = false, previewMode = fal
             <button
               type="button"
               onClick={handleReply}
-              aria-label={`Responder (${thread.replies_count} respostas)`}
+              aria-label={
+                thread.replies_count > 0
+                  ? `Responder (${thread.replies_count} respostas)`
+                  : "Responder — seja o primeiro a comentar"
+              }
               className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors cursor-pointer"
             >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
@@ -519,7 +523,13 @@ export function ThreadListItem({ thread, showCategory = false, previewMode = fal
             {/* Like */}
             <button
               type="button"
-              aria-label={liked ? "Remover curtida" : "Curtir"}
+              aria-label={
+                liked
+                  ? "Remover curtida"
+                  : likesCount === 0
+                    ? "Seja o primeiro a curtir"
+                    : `Curtir (${likesCount})`
+              }
               aria-pressed={liked}
               onClick={handleLike}
               className={cn("group flex items-center gap-1.5 text-[13px] transition-colors", liked ? "text-[var(--accent-like)]" : "hover:text-[var(--accent-like)]")}
@@ -537,7 +547,11 @@ export function ThreadListItem({ thread, showCategory = false, previewMode = fal
             {/* Views */}
             <button
               type="button"
-              aria-label={`${thread.views_count} visualizações`}
+              aria-label={
+                thread.views_count > 0
+                  ? `${thread.views_count} visualizações`
+                  : "Visualizações"
+              }
               className="group flex items-center gap-1.5 text-[13px] hover:text-foreground transition-colors"
             >
               <span className="flex items-center justify-center h-8 w-8 rounded-full group-hover:bg-foreground/8 transition-colors">
