@@ -12,6 +12,34 @@ import { AuthSideVisual } from "@/components/auth/auth-side-visual";
 
 const VALID_PLANS = new Set(["mensal", "semestral", "anual"]);
 
+type PasswordStrength = {
+  score: 0 | 1 | 2 | 3 | 4;
+  label: string;
+  color: string;
+};
+
+function evaluatePassword(pw: string): PasswordStrength {
+  if (pw.length === 0) return { score: 0, label: "", color: "" };
+  let score = 0;
+  if (pw.length >= 8) score += 1;
+  if (pw.length >= 12) score += 1;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw)) score += 1;
+  if (pw.length >= 16 || /[^A-Za-z0-9]/.test(pw)) score += 1;
+  const labels = ["Muito fraca", "Fraca", "Razoável", "Boa", "Excelente"];
+  const colors = [
+    "bg-destructive",
+    "bg-destructive",
+    "bg-amber-500",
+    "bg-emerald-500",
+    "bg-emerald-600",
+  ];
+  return {
+    score: Math.min(score, 4) as PasswordStrength["score"],
+    label: labels[Math.min(score, 4)],
+    color: colors[Math.min(score, 4)],
+  };
+}
+
 export default function RegisterPage() {
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan")?.toLowerCase() ?? "";
@@ -293,8 +321,32 @@ export default function RegisterPage() {
                 autoComplete="new-password"
                 minLength={8}
                 required
+                aria-describedby="password-strength"
                 className="h-11 text-[14px]"
               />
+              {password.length > 0 && (() => {
+                const strength = evaluatePassword(password);
+                return (
+                  <div id="password-strength" className="space-y-1.5" aria-live="polite">
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <span
+                          key={i}
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            i < strength.score ? strength.color : "bg-muted"
+                          }`}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      <span className="text-foreground">{strength.label}</span>
+                      {strength.score < 2 && password.length < 8 && " · mínimo 8 caracteres"}
+                      {strength.score >= 2 && strength.score < 4 && " · adicione maiúscula, número ou símbolo"}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* LGPD Consent — links VISÍVEIS com underline forte */}
