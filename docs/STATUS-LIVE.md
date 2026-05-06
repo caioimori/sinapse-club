@@ -1,7 +1,8 @@
 # Status Vivo — sinapse.club
 
 > Snapshot do estado atual do projeto. Ler isso primeiro.
-> **Última atualização:** 2026-05-06 (sessão YOLO: auditoria UX S2+S3 + 7 quick wins + Bloco C residual — 9 PRs)
+> **Última atualização:** 2026-05-06 (sessão YOLO completa: auditoria + 7 QWs + Bloco C + Bloco A + secrets cfg — 15 PRs)
+> **Status soft launch:** ✅ verde pra divulgação até 50 pessoas. Próximo bloco (Pro plans + RLS hardening) só >100.
 
 ---
 
@@ -112,25 +113,51 @@
 
 ---
 
-## 🔄 Próximo passo
+## ✅ Bloco A entregue (06/05) — causas-raiz atacadas
 
-### Bloco A — causas-raiz de conversão (única coisa que move agulha)
+Os 4 fixes profundos que atacam diretamente as causas-raiz da auditoria S2:
 
-A auditoria S2 identificou 4 causas-raiz que explicam 0 tentativas de subscription, 0 posts orgânicos em 7d, 80% drop em email signup. Os 7 quick wins entregues nesta sessão tocam em sintomas. **Bloco A ataca causas:**
+| Fix | PR | O que faz | Status infra |
+|---|---|---|---|
+| **A1** Auto-login pós-confirm email | #71 | `/auth/callback` aceita PKCE + token_hash → cross-device safe. WelcomeToast no /forum. | live |
+| **A2** Pricing diferenciado | #72 | Anual ganha Q&A mensal Caio + badge fundador. Risk reversal. Social proof real do DB. | live |
+| **A3** Email digest semanal | #74 | Edge function `weekly-digest` + pg_cron domingo 21h UTC + /unsubscribe LGPD. | live + smoke test OK (9 emails enviados em 06/05 com message_id Resend) |
+| **A4** Empty social proof | #73 | "Seja o primeiro a curtir" em vez de "0 likes" em aria-labels e thread-detail | live |
 
-1. **A1 — Auto-login pós-confirmação de email** (~2h) — resolve drop de 80% no email signup
-2. **A2 — Pricing redesign** (diferenciar features, social proof, garantia em destaque) — sai de 0 tentativas
-3. **A3 — Email digest semanal automático via Resend** — gancho de retention day-2+
-4. **A4 — Empty social proof** ("Seja o primeiro a curtir" em vez de "0 likes")
+## 🔐 Configurações externas feitas (06/05, via chrome-devtools)
 
-Total estimado: 8-10h (1 sessão dedicada).
+| Onde | Secret | Valor |
+|---|---|---|
+| Supabase Edge Function | `RESEND_API_KEY` | key `sinapse-club-weekly-digest` (re_A64w95Zc...) — Full access |
+| Supabase Edge Function | `DIGEST_UNSUBSCRIBE_SECRET` | base64 32-byte random (gravado no Vault de credentials) |
+| Vercel `sinapse-club` env | `DIGEST_UNSUBSCRIBE_SECRET` | mesma string (Production + Preview) |
 
-### Pagamentos / testabilidade
+Pra rotar a key digest no futuro: gerar com `openssl rand -base64 32` e atualizar nos 2 lugares (Supabase + Vercel) — token unsubscribe antigo invalida.
+
+## 🚀 Status soft launch — verde pra 50 pessoas
+
+Caio confirmou checkout Stripe testado e funcional. Auditoria fechada, Bloco A entregue, infra/auth/digest validados em prod. **Pode divulgar pra ~50 pessoas (círculo próximo)**:
+
+- Link canônico de divulgação: **`https://forum.sinapse.club`** (NÃO `sinapse.club` — esse é LP de mentoria Turma 03)
+- Resend Free aguenta tranquilo (~200 emails/mês com 50 humans)
+- Supabase Free aguenta (50/50K MAU, conn pool ok)
+
+## 🔄 Próximo bloco — só ativa quando passar 80-100 pessoas
+
+Pra escalar pra 1000 pessoas (4 bloqueadores reais):
+
+1. **Vercel Hobby → Pro** ($20/mês, Soier) — Hobby ToS proíbe uso comercial
+2. **Supabase Free → Pro** ($25/mês, Soier) — pool, MAU, PITR backup
+3. **Resend Free → Pro** ($20/mês, Caio) — 3K → 50K emails/mês
+4. **108 advisors Supabase** (RLS, indexes, search_path) — sessão dedicada ~3-4h
+
+Mais riscos não-bloqueador (rate limit Upstash, captcha, Sentry) — entram quando passar de 200.
+
+### Pagamentos / testabilidade pendente
 - Stripe test mode (Soier cria keys + products test → Vercel preview env)
-- Auditoria S2 confirmou: **0 paying users · 0 tentativas em 14 humans** — Bloco A é prerequisito pra paid media
 
-### Bugs auth restantes
-- Lista original com Caio (5 primeiros foram entregues, faltam os outros)
+### Métricas a medir em 7d
+3 queries SQL no `REPORT-S3-FINAL.md` (onboarding completion, first-post rate de novatos, signup→login conversion por canal).
 
 ---
 
@@ -149,9 +176,10 @@ Total estimado: 8-10h (1 sessão dedicada).
 
 | URL | Propósito |
 |---|---|
-| `sinapse.club` | Landing estática (LP v3, fora do Next.js) |
-| `forum.sinapse.club` | App Next.js completo (forum, checkout, login, etc) |
+| `sinapse.club` | LP de venda da **mentoria Turma 03** (NÃO é a LP do fórum — repo separado) |
+| `forum.sinapse.club` | LP do fórum + app Next.js completo (forum, checkout, login, digest, unsubscribe) |
 | `forum.sinapse.club/api/webhooks/stripe` | Webhook handler Stripe |
+| `forum.sinapse.club/unsubscribe?u=&t=` | Unsubscribe LGPD do digest semanal (token HMAC) |
 
 ---
 
@@ -176,6 +204,12 @@ Total estimado: 8-10h (1 sessão dedicada).
 - **#66** `feat(onboarding): QW#4 — gancho de valor substitui "É opcional"`
 - **#67** `feat(forum): QW#5 — banner de boas-vindas pra novato (0 posts)`
 - **#68** `fix(forum,follow): Bloco C — emoji mobile + cache role TTL`
+- **#69** `docs(auditoria): UX Sessão 3 FINAL — síntese + roadmap Bloco A`
+- **#70** `revert: desfaz QW#3 — LP é território separado, não tocar`
+- **#71** `feat(auth): A1 — auto-login pós-confirmação de email (cross-device)`
+- **#72** `feat(pricing): A2 — diferenciar planos + social proof + risk reversal`
+- **#73** `feat(forum): A4 — empty social proof nos posts`
+- **#74** `feat(email): A3 — digest semanal automático via Resend (LGPD-compliant)`
 
 ## Documentos de auditoria salvos
 - `docs/auditoria/2026-05-05-ux-deep-audit-PLAN.md` — plano 7 fases
